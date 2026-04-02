@@ -80,6 +80,21 @@
         .auto-fill-bar { display: flex; align-items: center; gap: 12px; background: #edf5ff; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; }
         .auto-fill-bar label { font-weight: 600; font-size: 0.9em; white-space: nowrap; }
         .auto-fill-bar .btn { padding: 8px 16px; font-size: 0.85em; }
+
+        /* Guide Section */
+        .guide-banner { background: #edf5ff; border: 1px solid #c8dff6; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        .guide-toggle { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; cursor: pointer; user-select: none; }
+        .guide-toggle h3 { font-size: 0.95em; color: #1a5276; display: flex; align-items: center; gap: 8px; }
+        .guide-toggle .arrow { font-size: 1em; color: #5dade2; transition: transform 0.3s; }
+        .guide-toggle .arrow.open { transform: rotate(180deg); }
+        .guide-body { display: none; padding: 0 20px 18px 20px; }
+        .guide-body.open { display: block; }
+        .guide-body h4 { font-size: 0.88em; color: #1a5276; margin: 14px 0 6px; padding-bottom: 4px; border-bottom: 1px solid #d6eaf8; }
+        .guide-body h4:first-child { margin-top: 0; }
+        .guide-body p, .guide-body li { font-size: 0.84em; color: #555; line-height: 1.7; }
+        .guide-body ol, .guide-body ul { padding-left: 20px; margin: 4px 0 10px; }
+        .guide-body code { background: #d6eaf8; padding: 2px 6px; border-radius: 3px; font-size: 0.88em; font-family: 'Menlo', monospace; }
+        .guide-body .step-badge { display: inline-block; background: #3498db; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 0.75em; line-height: 20px; margin-right: 6px; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -95,6 +110,44 @@
     </div>
 
     <div class="container">
+
+        <!-- ═══ 사용 가이드 ═══ -->
+        <div class="guide-banner">
+            <div class="guide-toggle" onclick="toggleGuide()">
+                <h3>📖 Admin 사용 가이드</h3>
+                <span class="arrow" id="guideArrow">▼</span>
+            </div>
+            <div class="guide-body" id="guideBody">
+                <h4>🔵 미리보기</h4>
+                <p>아래 설정을 수정한 뒤 상단 <code>미리보기</code> 버튼을 클릭하면, 현재 설정이 반영된 대시보드를 페이지 하단에서 바로 확인할 수 있습니다. 실제 배포 전에 데이터가 올바르게 표시되는지 점검하는 용도입니다.</p>
+
+                <h4>🟢 index.html 다운로드</h4>
+                <p>현재 입력된 설정(리포트 제목, 기간, 인사이트 등)이 주입된 <strong>정적 대시보드 파일</strong>을 다운로드합니다. 아래 순서로 사용하세요.</p>
+                <ol>
+                    <li><span class="step-badge">1</span>Admin에서 해당 월의 설정을 모두 입력</li>
+                    <li><span class="step-badge">2</span><code>index.html 다운로드</code> 클릭 → 파일이 로컬에 저장됨</li>
+                    <li><span class="step-badge">3</span>GitHub 저장소(<code>gloup-rachel/reports</code>)에 접속</li>
+                    <li><span class="step-badge">4</span>기존 <code>index.html</code> 파일을 다운로드받은 파일로 교체 업로드</li>
+                    <li><span class="step-badge">5</span>1~2분 후 GitHub Pages에 반영 완료</li>
+                </ol>
+                <p>※ live.html은 실시간 데이터를 자동으로 불러오므로 별도 업로드가 필요하지 않습니다. index.html만 교체하면 됩니다.</p>
+
+                <h4>⬜ 설정 JSON 내보내기</h4>
+                <p>현재 Admin에 입력된 모든 설정값을 <code>.json</code> 파일로 저장합니다. 매월 설정을 백업하거나, 팀원과 설정을 공유할 때 사용하세요.</p>
+                <ul>
+                    <li>파일명 형식: <code>respace_settings_2026-03.json</code></li>
+                    <li>리포트 정보, 주차 설정, 인사이트, 액션 아이템 등 모든 항목이 포함됩니다</li>
+                </ul>
+
+                <h4>⬜ 설정 JSON 불러오기</h4>
+                <p>이전에 내보낸 <code>.json</code> 파일을 불러와 Admin 폼에 자동으로 채워넣습니다. 활용 시나리오:</p>
+                <ul>
+                    <li><strong>월간 교체</strong> — 지난달 JSON을 불러온 뒤 월/기간만 수정하면 빠르게 세팅 가능</li>
+                    <li><strong>백업 복원</strong> — 실수로 내용을 지웠을 때 직전 백업 JSON을 불러오기</li>
+                    <li><strong>팀 공유</strong> — 다른 담당자가 세팅한 JSON을 받아서 불러오기</li>
+                </ul>
+            </div>
+        </div>
 
         <!-- ═══ Section 1: 리포트 기본 정보 + 주차 설정 ═══ -->
         <div class="section-card">
@@ -450,9 +503,19 @@
             // live 대시보드 HTML을 fetch하거나 내장 템플릿 사용
             // 여기서는 SETTINGS 블록만 교체하는 방식
             try {
-                const resp = await fetch('리스페이스_월간리포트_실시간.html');
-                if (!resp.ok) throw new Error('Cannot fetch template');
-                let html = await resp.text();
+                // GitHub Pages: live.html, 로컬: 리스페이스_월간리포트_실시간.html 순서로 시도
+                const candidates = ['live.html', '리스페이스_월간리포트_실시간.html'];
+                let html = null;
+                for (const fname of candidates) {
+                    try {
+                        const resp = await fetch(fname);
+                        if (resp.ok) { html = await resp.text(); break; }
+                    } catch (_) {}
+                }
+                if (!html) {
+                    showToast('live.html 파일을 찾을 수 없습니다. 동일 경로에 배포되어 있는지 확인하세요.');
+                    return null;
+                }
 
                 // SETTINGS 블록 교체
                 const settingsStr = generateSettingsJS(settings);
@@ -462,8 +525,8 @@
                 );
                 return html;
             } catch (e) {
-                console.warn('Template fetch failed, prompting user:', e);
-                showToast('동일 폴더에 리스페이스_월간리포트_실시간.html이 있어야 합니다');
+                console.warn('Template fetch failed:', e);
+                showToast('대시보드 템플릿 로드에 실패했습니다. 콘솔을 확인하세요.');
                 return null;
             }
         }
@@ -585,6 +648,14 @@ ${leadDealJS}
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        // Guide toggle
+        function toggleGuide() {
+            const body = document.getElementById('guideBody');
+            const arrow = document.getElementById('guideArrow');
+            body.classList.toggle('open');
+            arrow.classList.toggle('open');
         }
 
         // Toast
