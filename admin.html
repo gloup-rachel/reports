@@ -3,1763 +3,605 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리스페이스 리포트 어드민</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>리스페이스 Live 대시보드 Admin</title>
     <style>
-        * {
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        input, textarea, select {
-            -webkit-user-select: text;
-            user-select: text;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; }
+        .admin-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 30px; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+        .admin-header h1 { font-size: 1.6em; margin-bottom: 6px; }
+        .admin-header p { opacity: 0.8; font-size: 0.9em; }
+        .admin-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .btn { padding: 10px 24px; border: none; border-radius: 6px; font-size: 0.95em; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
+        .btn-outline { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.5); }
+        .btn-outline:hover { background: rgba(255,255,255,0.1); }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-        }
+        /* Section Cards */
+        .section-card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden; }
+        .section-header { padding: 18px 24px; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .section-header h2 { font-size: 1.1em; color: #1a1a2e; display: flex; align-items: center; gap: 8px; }
+        .section-header .badge { background: #3498db; color: white; padding: 2px 10px; border-radius: 10px; font-size: 0.75em; }
+        .section-header .toggle { font-size: 1.2em; color: #999; transition: transform 0.3s; }
+        .section-header .toggle.open { transform: rotate(180deg); }
+        .section-body { padding: 24px; display: none; }
+        .section-body.open { display: block; }
 
-        .header-gradient {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        }
-
-        .accordion-header {
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-weight: 600;
-            color: #333;
-            transition: all 0.3s;
-        }
-
-        .accordion-header:hover {
-            background: #eeeeee;
-        }
-
-        .accordion-header.active {
-            background: #4C72B0;
-            color: white;
-            border-color: #4C72B0;
-        }
-
-        .accordion-header .toggle-icon {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-            transition: transform 0.3s;
-            font-size: 18px;
-        }
-
-        .accordion-header.active .toggle-icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            display: none;
-            padding: 20px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-top: none;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        .accordion-content.active {
-            display: block;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                max-height: 0;
-            }
-            to {
-                opacity: 1;
-                max-height: 1000px;
-            }
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
+        /* Form Elements */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.85em; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .form-group .hint { font-size: 0.78em; color: #999; margin-bottom: 6px; }
+        input[type="text"], input[type="month"], input[type="date"], select {
+            width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.95em; font-family: inherit;
             transition: border-color 0.2s;
         }
+        input:focus, textarea:focus, select:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
+        textarea { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9em; font-family: inherit; resize: vertical; min-height: 80px; line-height: 1.6; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #4C72B0;
-            box-shadow: 0 0 0 3px rgba(76, 114, 176, 0.1);
-        }
+        /* Week rows */
+        .week-row { display: grid; grid-template-columns: 100px 1fr 1fr 40px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .week-row:last-child { border-bottom: none; }
+        .week-label { font-weight: 600; font-size: 0.9em; color: #1a1a2e; }
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-        }
+        /* Insight / Action Item cards */
+        .item-card { background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #3498db; position: relative; }
+        .item-card.p1 { border-left-color: #e74c3c; }
+        .item-card.p2 { border-left-color: #f39c12; }
+        .item-card.p3 { border-left-color: #3498db; }
+        .item-card .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .item-card .item-num { font-weight: 700; font-size: 0.85em; color: #888; }
+        .item-card .item-actions { display: flex; gap: 6px; }
+        .item-card .item-actions button { background: none; border: none; cursor: pointer; font-size: 1.1em; padding: 2px 6px; border-radius: 4px; }
+        .item-card .item-actions button:hover { background: #e0e0e0; }
+        .priority-select { width: 100px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85em; }
+        .add-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; background: #f0f4f8; border: 2px dashed #bbb; border-radius: 8px; color: #666; cursor: pointer; font-size: 0.9em; margin-top: 8px; transition: all 0.2s; }
+        .add-btn:hover { background: #e8edf2; border-color: #999; }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 16px;
-        }
+        /* Lead/Deal Insights */
+        .text-line { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .text-line input { flex: 1; }
+        .text-line button { background: none; border: none; cursor: pointer; font-size: 1.1em; padding: 4px; }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+        /* Preview iframe */
+        .preview-frame { width: 100%; height: 600px; border: 2px solid #ddd; border-radius: 8px; margin-top: 15px; }
 
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
+        /* Toast */
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a2e; color: white; padding: 14px 24px; border-radius: 8px; font-size: 0.9em; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; }
 
-        .btn-primary {
-            background: #4C72B0;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #3d5a8a;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(76, 114, 176, 0.3);
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #d0d0d0;
-        }
-
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #229954;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .priority-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-            color: white;
-            margin-right: 8px;
-        }
-
-        .priority-1 { background: #e74c3c; }
-        .priority-2 { background: #f39c12; }
-        .priority-3 { background: #f1c40f; color: #333; }
-
-        .array-editor {
-            background: #f9f9f9;
-            padding: 12px;
-            border-radius: 6px;
-            margin: 12px 0;
-        }
-
-        .array-item {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 8px;
-            margin-bottom: 8px;
-            align-items: end;
-        }
-
-        .array-item.compact {
-            grid-template-columns: 1fr 1fr auto;
-        }
-
-        .array-item input {
-            padding: 8px;
-            font-size: 12px;
-        }
-
-        .btn-remove {
-            padding: 6px 10px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            min-width: 60px;
-        }
-
-        .btn-remove:hover {
-            background: #c0392b;
-        }
-
-        .grid-editor {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin: 12px 0;
-        }
-
-        .grid-editor input {
-            padding: 6px;
-            font-size: 11px;
-            text-align: center;
-        }
-
-        .text-muted {
-            color: #999;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .stats-box {
-            background: #f0f4f8;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .stats-box h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 12px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
-
-        .stat-item {
-            background: white;
-            padding: 12px;
-            border-radius: 6px;
-            border-left: 3px solid #4C72B0;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #777;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-
-        .stat-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #333;
-        }
+        /* Auto-generate month info */
+        .auto-fill-bar { display: flex; align-items: center; gap: 12px; background: #edf5ff; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; }
+        .auto-fill-bar label { font-weight: 600; font-size: 0.9em; white-space: nowrap; }
+        .auto-fill-bar .btn { padding: 8px 16px; font-size: 0.85em; }
     </style>
 </head>
-<body class="bg-gray-100">
-    <!-- Header -->
-    <div class="header-gradient sticky-header">
-        <div class="max-w-7xl mx-auto px-6 py-8">
-            <h1 class="text-4xl font-bold text-white mb-2">리스페이스 리포트 어드민</h1>
-            <p class="text-blue-200 text-sm">대시보드 설정 편집 및 다운로드</p>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Action Buttons -->
-        <div class="mb-8">
-            <div class="button-group">
-                <button class="btn btn-success" onclick="previewDashboard()">
-                    👁️ 미리보기 (새 탭에서 열기)
-                </button>
-                <button class="btn btn-primary" onclick="downloadDashboard()">
-                    📥 HTML 다운로드 (index.html)
-                </button>
-                <button class="btn btn-secondary" onclick="resetAllFields()">
-                    🔄 초기화 (원래 값으로)
-                </button>
-            </div>
-        </div>
-
-        <!-- Form Sections -->
-        <div id="form-container" class="space-y-4">
-            <!-- 1. 기본 정보 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📋 기본 정보</span>
-                </div>
-                <div class="accordion-content active">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>리포트 제목</label>
-                            <input type="text" class="field" data-field="reportTitle" placeholder="리포트 제목">
-                        </div>
-                        <div class="form-group">
-                            <label>리포트 부제목</label>
-                            <input type="text" class="field" data-field="reportSubtitle" placeholder="리포트 부제목">
-                        </div>
-                        <div class="form-group">
-                            <label>리포트 기간</label>
-                            <input type="text" class="field" data-field="reportPeriod" placeholder="기간">
-                        </div>
-                        <div class="form-group">
-                            <label>리포트 작성일</label>
-                            <input type="text" class="field" data-field="reportDate" placeholder="작성일">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>데이터 소스</label>
-                            <input type="text" class="field" data-field="dataSources" placeholder="데이터 소스">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. KPI 카드 (8개) -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📊 KPI 카드 (상단 요약)</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="kpi-editor" class="array-editor">
-                        <!-- KPI items will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. 리드/딜 퍼널 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>🎯 리드/딜 퍼널</span>
-                </div>
-                <div class="accordion-content">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>GA4 세션 값</label>
-                            <input type="number" class="field" data-field="funnel.sessions.value" placeholder="값">
-                        </div>
-                        <div class="form-group">
-                            <label>GA4 세션 라벨</label>
-                            <input type="text" class="field" data-field="funnel.sessions.label" placeholder="라벨">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>전환이벤트 값</label>
-                            <input type="number" class="field" data-field="funnel.events.value" placeholder="값">
-                        </div>
-                        <div class="form-group">
-                            <label>전환이벤트 라벨</label>
-                            <input type="text" class="field" data-field="funnel.events.label" placeholder="라벨">
-                        </div>
-                        <div class="form-group">
-                            <label>전환이벤트 전환율</label>
-                            <input type="text" class="field" data-field="funnel.events.rate" placeholder="32.1%">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>리드 값</label>
-                            <input type="number" class="field" data-field="funnel.leads.value" placeholder="값">
-                        </div>
-                        <div class="form-group">
-                            <label>리드 라벨</label>
-                            <input type="text" class="field" data-field="funnel.leads.label" placeholder="라벨">
-                        </div>
-                        <div class="form-group">
-                            <label>리드 리드율</label>
-                            <input type="text" class="field" data-field="funnel.leads.rate" placeholder="1.9%">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>딜 값</label>
-                            <input type="number" class="field" data-field="funnel.deals.value" placeholder="값">
-                        </div>
-                        <div class="form-group">
-                            <label>딜 라벨</label>
-                            <input type="text" class="field" data-field="funnel.deals.label" placeholder="라벨">
-                        </div>
-                        <div class="form-group">
-                            <label>딜 딜율</label>
-                            <input type="text" class="field" data-field="funnel.deals.rate" placeholder="165.9%">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. 채널별 전환 기여 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📈 채널별 전환 기여</span>
-                </div>
-                <div class="accordion-content">
-                    <h4 class="font-bold mb-4 text-sm">Contact Channel (상담문의)</h4>
-                    <div class="form-group">
-                        <label>총 건수</label>
-                        <input type="number" class="field" data-field="contactChannel.total" placeholder="919">
-                    </div>
-                    <div class="form-group">
-                        <label>채널 이름 (쉼표로 구분)</label>
-                        <input type="text" class="field" data-field="contactChannel.labels-csv" placeholder="채널1, 채널2, ...">
-                    </div>
-                    <div class="form-group">
-                        <label>데이터 (쉼표로 구분)</label>
-                        <input type="text" class="field" data-field="contactChannel.data-csv" placeholder="190, 178, 178, ...">
-                    </div>
-
-                    <hr class="my-6">
-
-                    <h4 class="font-bold mb-4 text-sm">Download Channel (소개서 다운로드)</h4>
-                    <div class="form-group">
-                        <label>총 건수</label>
-                        <input type="number" class="field" data-field="downloadChannel.total" placeholder="851">
-                    </div>
-                    <div class="form-group">
-                        <label>채널 이름 (쉼표로 구분)</label>
-                        <input type="text" class="field" data-field="downloadChannel.labels-csv" placeholder="채널1, 채널2, ...">
-                    </div>
-                    <div class="form-group">
-                        <label>데이터 (쉼표로 구분)</label>
-                        <input type="text" class="field" data-field="downloadChannel.data-csv" placeholder="252, 158, 122, ...">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. 주간 데이터 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📅 주간 데이터</span>
-                </div>
-                <div class="accordion-content">
-                    <h4 class="font-bold mb-4 text-sm">주간 라벨 (W1, W2, ... - 쉼표로 구분)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklyLabels-csv" placeholder="W1, W2, W3, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">네이버 광고비 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklySpend.naver-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">구글 광고비 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklySpend.google-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Meta 광고비 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklySpend.meta-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">주간 세션 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklySessions-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Contact 전환 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklyConversion.contact-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Download 전환 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklyConversion.download-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Project 전환 (5개 주)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="weeklyConversion.project-csv" placeholder="값1, 값2, ...">
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. 매체별 광고 성과 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>🔍 매체별 광고 성과</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="ad-performance-editor" class="array-editor">
-                        <!-- Ad performance items will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 7. GA4 트래픽 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📈 GA4 트래픽 분석</span>
-                </div>
-                <div class="accordion-content">
-                    <h4 class="font-bold mb-4 text-sm">Doughnut 차트 라벨 (쉼표로 구분)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="ga4Traffic.doughnutLabels-csv" placeholder="채널1, 채널2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Doughnut 차트 데이터 (쉼표로 구분)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="ga4Traffic.doughnutData-csv" placeholder="값1, 값2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Engagement 라벨 (쉼표로 구분)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="ga4Traffic.engagementLabels-csv" placeholder="채널1, 채널2, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">Engagement 비율 (쉼표로 구분)</h4>
-                    <div class="form-group">
-                        <input type="text" class="field" data-field="ga4Traffic.engagementRates-csv" placeholder="68.1, 67.9, ...">
-                    </div>
-
-                    <h4 class="font-bold mb-4 text-sm mt-4">트래픽 테이블 (7개 행)</h4>
-                    <div id="ga4-traffic-table-editor" class="array-editor">
-                        <!-- Traffic table rows will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 8. 일별 전환 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>📅 일별 전환 (31일)</span>
-                </div>
-                <div class="accordion-content">
-                    <p class="text-sm text-gray-600 mb-4">아래에 Contact, Download, Project 전환 수를 입력하세요. 빈칸은 null로 처리됩니다.</p>
-
-                    <h4 class="font-bold mb-3 text-sm">상담문의(Contact) - 31일</h4>
-                    <div id="daily-contact-grid" class="grid-editor">
-                        <!-- Will be generated -->
-                    </div>
-
-                    <h4 class="font-bold mb-3 text-sm mt-6">소개서 다운로드(Download) - 31일</h4>
-                    <div id="daily-download-grid" class="grid-editor">
-                        <!-- Will be generated -->
-                    </div>
-
-                    <h4 class="font-bold mb-3 text-sm mt-6">프로젝트 보기(Project) - 31일</h4>
-                    <div id="daily-project-grid" class="grid-editor">
-                        <!-- Will be generated -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 9. Meta 타겟 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>🎯 Meta 타겟별 성과</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="meta-targets-editor" class="array-editor">
-                        <!-- Meta target items will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 10. 핵심 인사이트 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>💡 핵심 인사이트</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="insights-editor" class="array-editor">
-                        <!-- Insights will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 11. 액션 아이템 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>✅ 액션 아이템</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="action-items-editor" class="array-editor">
-                        <!-- Action items will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- 12. 리드/딜 인사이트 박스 -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    <span class="toggle-icon">▼</span>
-                    <span>💬 리드/딜 인사이트 박스</span>
-                </div>
-                <div class="accordion-content">
-                    <div id="lead-deal-insights-editor" class="array-editor">
-                        <!-- Lead/deal insights will be generated here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ================================================================
-        // Dashboard Template (will be injected with CONFIG from form)
-        // ================================================================
-        const DASHBOARD_TEMPLATE_BEFORE = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리스페이스 3월 월간 퍼포먼스 리포트</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"><\/script>
-    <script src="https://cdn.tailwindcss.com"><\/script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-        body { font-family: 'Noto Sans KR', 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; }
-        .hero-title { font-size: 2.5em; font-weight: 700; margin-bottom: 8px; }
-        .hero-subtitle { font-size: 1.1em; opacity: 0.9; }
-        .hero-meta { font-size: 0.9em; opacity: 0.7; margin-top: 16px; }
-        .section { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; margin-bottom: 32px; }
-        .section-header { background: #f8f9fa; padding: 20px; border-bottom: 2px solid #e0e0e0; font-size: 1.2em; font-weight: 700; color: #333; }
-        .section-content { padding: 24px; }
-        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-        .kpi-card { padding: 20px; border-radius: 8px; text-align: center; color: white; }
-        .kpi-card.lead { background: #e74c3c; }
-        .kpi-card.deal { background: #27ae60; }
-        .kpi-card.event { background: #3498db; }
-        .kpi-card.session { background: #9b59b6; }
-        .kpi-card.budget { background: #f39c12; }
-        .kpi-card.impression { background: #e67e22; }
-        .kpi-card.click { background: #16a085; }
-        .kpi-card.ctr { background: #2980b9; }
-        .kpi-label { font-size: 0.9em; opacity: 0.85; margin-bottom: 8px; }
-        .kpi-value { font-size: 2em; font-weight: 700; }
-        .kpi-subtext { font-size: 0.8em; opacity: 0.75; margin-top: 8px; }
-        .funnel-container { display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; }
-        .funnel-step { flex: 1; min-width: 150px; text-align: center; }
-        .funnel-box { background: #f0f4f8; padding: 16px; border-radius: 8px; border-left: 4px solid #4C72B0; }
-        .funnel-value { font-size: 1.8em; font-weight: 700; color: #333; }
-        .funnel-label { font-size: 0.9em; color: #666; margin-top: 8px; }
-        .funnel-rate { font-size: 0.85em; color: #4C72B0; font-weight: 600; margin-top: 8px; }
-        .funnel-arrow { padding: 0 12px; color: #999; font-size: 1.5em; }
-        #lead-deal-insights { background: #f9f9f9; padding: 16px; border-radius: 8px; line-height: 1.8; }
-        #lead-deal-insights p { margin-bottom: 10px; font-size: 0.9em; color: #444; }
-        .chart-container { position: relative; height: 300px; margin-bottom: 24px; }
-        .color-naver { color: #4C72B0; }
-        .color-google { color: #55A868; }
-        .color-meta { color: #2D7BF6; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        th { background: #f8f9fa; font-weight: 600; color: #333; }
-        tr:hover { background: #f9f9f9; }
-        .insight-card { background: #f9f9f9; padding: 16px; border-radius: 8px; border-left: 4px solid #4C72B0; margin-bottom: 16px; }
-        .insight-title { font-weight: 600; margin-bottom: 8px; color: #333; }
-        .insight-body { font-size: 0.9em; line-height: 1.6; color: #555; }
-        .priority-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 700; color: white; margin-right: 8px; }
-        .priority-1 { background: #e74c3c; }
-        .priority-2 { background: #f39c12; }
-        .priority-3 { background: #f1c40f; color: #333; }
-        .action-item { background: #f9f9f9; padding: 16px; border-radius: 8px; border-left: 4px solid #e74c3c; margin-bottom: 12px; }
-        .action-item.p2 { border-color: #f39c12; }
-        .action-item.p3 { border-color: #f1c40f; }
-        .action-text { color: #333; line-height: 1.6; font-size: 0.95em; }
-        @media (max-width: 768px) {
-            .kpi-container { grid-template-columns: repeat(2, 1fr); }
-            .funnel-container { flex-direction: column; }
-            .funnel-arrow { padding: 8px 0; }
-        }
-    <\/style>
-</head>
 <body>
-    <!-- Hero Section -->
-    <div class="hero">
-        <div class="max-w-6xl mx-auto px-6 py-12">
-            <div class="hero-title" id="header-title">리스페이스 3월 월간 퍼포먼스 리포트</div>
-            <div class="hero-subtitle" id="header-subtitle">2026년 3월 1일 ~ 3월 31일 | B2B 리드 수집 중심 분석</div>
-            <div class="hero-meta" id="header-meta"></div>
+    <div class="admin-header">
+        <h1>리스페이스 Live 대시보드 Admin</h1>
+        <p>매월 아래 설정만 수정하면 대시보드가 자동으로 업데이트됩니다</p>
+        <div class="admin-actions">
+            <button class="btn btn-primary" onclick="previewDashboard()">미리보기</button>
+            <button class="btn btn-success" onclick="downloadHTML()">index.html 다운로드</button>
+            <button class="btn btn-outline" onclick="exportJSON()">설정 JSON 내보내기</button>
+            <button class="btn btn-outline" onclick="importJSON()">설정 JSON 불러오기</button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="max-w-6xl mx-auto px-6 py-12">
-        <!-- KPI Cards -->
-        <div class="section">
-            <div class="section-header">📊 주요 지표 (Key Performance Indicators)</div>
-            <div class="section-content">
-                <div class="kpi-container" id="kpi-container"></div>
-            </div>
-        </div>
+    <div class="container">
 
-        <!-- Funnel & Insights -->
-        <div class="section">
-            <div class="section-header">🎯 리드/딜 전환 퍼널</div>
-            <div class="section-content">
-                <div id="funnel-container" class="funnel-container"></div>
-                <div style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e0e0e0;" id="lead-deal-insights"></div>
+        <!-- ═══ Section 1: 리포트 기본 정보 + 주차 설정 ═══ -->
+        <div class="section-card">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>📅 리포트 기본 정보 & 주차 설정 <span class="badge">매월 필수</span></h2>
+                <span class="toggle open">▼</span>
             </div>
-        </div>
+            <div class="section-body open">
+                <div class="auto-fill-bar">
+                    <label>대상 월 선택:</label>
+                    <input type="month" id="autoMonth" value="2026-03" style="width: 180px;">
+                    <button class="btn btn-primary" onclick="autoFillMonth()">자동 채우기</button>
+                    <span style="font-size: 0.8em; color: #666;">→ 제목, 기간, 주차가 자동으로 설정됩니다</span>
+                </div>
 
-        <!-- Channel Analysis -->
-        <div class="section">
-            <div class="section-header">📈 채널별 전환 기여</div>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">상담문의 (click_contact)</h3>
-                        <div class="chart-container">
-                            <canvas id="contactChannelChart"><\/canvas>
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>리포트 제목</label>
+                        <input type="text" id="reportTitle" value="리스페이스 3월 월간 퍼포먼스 리포트">
                     </div>
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">소개서 다운로드 (click_download_intro)</h3>
-                        <div class="chart-container">
-                            <canvas id="downloadChannelChart"><\/canvas>
-                        </div>
+                    <div class="form-group">
+                        <label>타겟 월 (YYYY-MM)</label>
+                        <input type="text" id="targetMonth" value="2026-03">
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Weekly Analysis -->
-        <div class="section">
-            <div class="section-header">📅 주간 트렌드 분석</div>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">광고비 추이</h3>
-                        <div class="chart-container">
-                            <canvas id="weeklySpendChart"><\/canvas>
-                        </div>
+                <div class="form-group">
+                    <label>리포트 부제</label>
+                    <input type="text" id="reportSubtitle" value="2026년 3월 1일 ~ 3월 31일 | B2B 리드 수집 중심 분석">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>리포트 기간</label>
+                        <input type="text" id="reportPeriod" value="2026년 3월 1일 ~ 3월 31일">
                     </div>
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">전환 추이</h3>
-                        <div class="chart-container">
-                            <canvas id="weeklyConversionChart"><\/canvas>
-                        </div>
+                    <div class="form-group">
+                        <label>리포트 생성일</label>
+                        <input type="text" id="reportDate" value="2026년 4월 2일">
                     </div>
                 </div>
-                <div style="margin-top: 24px;">
-                    <h3 style="font-weight: 600; margin-bottom: 12px;">세션 & 리드/딜</h3>
-                    <div class="chart-container">
-                        <canvas id="weeklyLeadDealChart"><\/canvas>
-                    </div>
+                <div class="form-group">
+                    <label>데이터 소스</label>
+                    <input type="text" id="dataSources" value="네이버 광고주센터, 구글 애즈, Meta 광고관리자, Google Analytics 4, 리캐치">
                 </div>
+
+                <h3 style="margin: 20px 0 12px; font-size: 1em; color: #1a1a2e;">주차 구분</h3>
+                <div class="hint" style="margin-bottom: 10px; font-size: 0.82em; color: #999;">각 주차의 라벨, 시작일, 종료일을 설정하세요. W5는 월말 잔여 일수가 적을 경우에만 사용.</div>
+                <div id="weeksContainer"></div>
+                <button class="add-btn" onclick="addWeek()">+ 주차 추가</button>
             </div>
         </div>
 
-        <!-- Ad Performance -->
-        <div class="section">
-            <div class="section-header">🔍 매체별 광고 성과 비교</div>
-            <div class="section-content">
-                <div style="overflow-x: auto;">
-                    <table id="ad-performance-table">
-                        <thead>
-                            <tr>
-                                <th>매체</th>
-                                <th>노출</th>
-                                <th>클릭</th>
-                                <th>CTR</th>
-                                <th>광고비</th>
-                                <th>CPC</th>
-                                <th>전환</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <!-- ═══ Section 2: 핵심 인사이트 ═══ -->
+        <div class="section-card">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>💡 핵심 인사이트 <span class="badge">분석 후 수정</span></h2>
+                <span class="toggle">▼</span>
+            </div>
+            <div class="section-body">
+                <div class="hint" style="margin-bottom: 12px;">우선순위 1(최우선/빨강) → 2(높음/주황) → 3(보통/파랑)</div>
+                <div id="insightsContainer"></div>
+                <button class="add-btn" onclick="addInsight()">+ 인사이트 추가</button>
             </div>
         </div>
 
-        <!-- GA4 Traffic -->
-        <div class="section">
-            <div class="section-header">📈 GA4 트래픽 분석</div>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">세션 분포</h3>
-                        <div class="chart-container">
-                            <canvas id="ga4DoughnutChart"><\/canvas>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 style="font-weight: 600; margin-bottom: 12px;">채널별 Engagement Rate</h3>
-                        <div class="chart-container">
-                            <canvas id="ga4EngagementChart"><\/canvas>
-                        </div>
-                    </div>
-                </div>
-                <div style="overflow-x: auto;">
-                    <h3 style="font-weight: 600; margin-bottom: 12px;">트래픽 소스 상세</h3>
-                    <table id="ga4-traffic-table">
-                        <thead>
-                            <tr>
-                                <th>트래픽 소스</th>
-                                <th>세션</th>
-                                <th>사용자</th>
-                                <th>Engaged Sessions</th>
-                                <th>Engagement Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <!-- ═══ Section 3: 액션 아이템 + 리드/딜 인사이트 ═══ -->
+        <div class="section-card">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>✅ 액션 아이템 & 리드/딜 인사이트 <span class="badge">분석 후 수정</span></h2>
+                <span class="toggle">▼</span>
+            </div>
+            <div class="section-body">
+                <h3 style="margin-bottom: 12px; font-size: 1em;">액션 아이템</h3>
+                <div class="hint" style="margin-bottom: 10px;">우선순위 1 = [최우선], 2 = [높음] 또는 [중간]</div>
+                <div id="actionItemsContainer"></div>
+                <button class="add-btn" onclick="addActionItem()">+ 액션 아이템 추가</button>
+
+                <h3 style="margin: 25px 0 12px; font-size: 1em;">리드/딜 인사이트 (Hero 섹션 하단)</h3>
+                <div class="hint" style="margin-bottom: 10px;">상담문의/소개서 다운 기여 Top 3 등 핵심 수치 요약</div>
+                <div id="leadDealContainer"></div>
+                <button class="add-btn" onclick="addLeadDealLine()">+ 라인 추가</button>
             </div>
         </div>
 
-        <!-- Daily Conversion -->
-        <div class="section">
-            <div class="section-header">📅 일별 전환이벤트 트렌드</div>
-            <div class="section-content">
-                <div class="chart-container">
-                    <canvas id="dailyConversionChart"><\/canvas>
-                </div>
+        <!-- ═══ 미리보기 영역 ═══ -->
+        <div class="section-card" id="previewSection" style="display: none;">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>👁 대시보드 미리보기</h2>
+                <span class="toggle open">▼</span>
             </div>
-        </div>
-
-        <!-- Meta Targets -->
-        <div class="section">
-            <div class="section-header">🎯 Meta 타겟별 성과</div>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;" id="meta-targets-container"></div>
+            <div class="section-body open">
+                <iframe id="previewFrame" class="preview-frame"></iframe>
             </div>
-        </div>
-
-        <!-- Insights -->
-        <div class="section">
-            <div class="section-header">💡 핵심 인사이트</div>
-            <div class="section-content" id="insights-container"></div>
-        </div>
-
-        <!-- Action Items -->
-        <div class="section">
-            <div class="section-header">✅ 액션 아이템</div>
-            <div class="section-content" id="action-items-container"></div>
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; padding: 40px 0; color: #999; font-size: 0.9em;">
-            <p>리스페이스 3월 월간 퍼포먼스 리포트</p>
-            <p id="footer-date" style="margin-top: 8px;"></p>
         </div>
     </div>
+
+    <div class="toast" id="toast"></div>
+    <input type="file" id="jsonFileInput" accept=".json" style="display: none;" onchange="handleJSONImport(event)">
 
     <script>
-        `;
+        // ═══════════════════════════════════════════════════════════════
+        // 초기 데이터 (현재 3월 설정)
+        // ═══════════════════════════════════════════════════════════════
 
-        const DASHBOARD_TEMPLATE_AFTER = `
+        let currentWeeks = [
+            { label: 'W1\\n(3/1-8)', start: '2026-03-01', end: '2026-03-08' },
+            { label: 'W2\\n(3/9-15)', start: '2026-03-09', end: '2026-03-15' },
+            { label: 'W3\\n(3/16-22)', start: '2026-03-16', end: '2026-03-22' },
+            { label: 'W4\\n(3/23-29)', start: '2026-03-23', end: '2026-03-29' },
+            { label: 'W5\\n(3/30-31)', start: '2026-03-30', end: '2026-03-31' }
+        ];
 
-        // ═══════════════════════════════════════════════════════════════════
-        // 자동 생성 로직
-        // ═══════════════════════════════════════════════════════════════════
+        let currentInsights = [
+            { priority: 1, title: "1. 리드 수집 채널: '검색 의도'와 '브랜드 인지' 두 축의 차별화", body: "상담문의(click_contact) 919건 중 네이버+구글 검색광고가 352건(38.3%)으로 가장 큰 비중. 검색 의도를 가진 유저가 직접 상담으로 이어지는 경로가 가장 효과적. 반면 소개서 다운로드(click_download_intro) 851건은 Referral(29.6%)과 Direct(18.6%)가 주도하여, 브랜드 인지도가 높은 유저가 자료를 먼저 수집하는 패턴. 리드 파이프라인은 '검색광고 → 상담' + '브랜드 인지 → 소개서 다운' 두 트랙으로 운영 필요." },
+            { priority: 1, title: "2. 네이버 검색광고: 상담문의 기여 1위(20.7%)이나 비용 효율 의문", body: "월 광고비 ₩2,036,175 투자 중 네이버 검색광고의 click_contact 기여는 190건(20.7%)으로 1위. 그러나 CPC ₩4,305로 구글(₩632)의 6.8배, CTR 0.89%로 구글(11.94%)의 1/13 수준." },
+            { priority: 2, title: "3. Meta DA: 인지도 확산에 강점, 리드 전환에는 약세", body: "Meta는 세션 1,281건(19.3%)으로 유입량 1위이나, click_contact 기여는 30건(3.3%)으로 최하위." },
+            { priority: 2, title: "4. Meta Core B(글로벌) 타겟: 전환율 41.8%로 최고, 그러나 CPC도 ₩900", body: "4개 타겟 중 Core B가 전환수 71건(전체 218건의 32.6%), 전환율 41.8%로 최고 성과." },
+            { priority: 3, title: "5. 3월 말 전환 급증: 3/31 click_contact 98건(월 최고치)", body: "click_contact가 3/26(79건), 3/31(98건)으로 월말에 급증." },
+            { priority: 3, title: "6. 주중/주말 B2B 패턴 & 네이버 전환 추적", body: "토·일 세션이 평일 대비 급감하는 명확한 B2B 패턴." }
+        ];
 
-        Chart.defaults.font.family = "'Noto Sans KR', 'Segoe UI', Roboto, sans-serif";
-        Chart.defaults.color = '#666';
+        let currentActionItems = [
+            { priority: 1, text: "[최우선] 네이버 전환 스크립트 오류 해결 — GA4에서 190건 click_contact 확인되나 네이버 자체 전환 0건." },
+            { priority: 1, text: "[최우선] 구글 검색광고 예산 확대 검토 — CTR 11.94%, CPC ₩632, click_contact 162건으로 비용 대비 리드 기여 최고 효율." },
+            { priority: 2, text: "[높음] Meta 광고 KPI 재설정 — 리드 직접 전환보다 인지도 확산 + 리타겟팅 풀 확보로 역할 재정의." },
+            { priority: 2, text: "[높음] 월말 집중 예산 배분 전략 — 3/26, 3/31 전환 급증 패턴 활용." },
+            { priority: 2, text: "[중간] 주중 집중 광고 운영 — 주말 세션 70-80% 급감." },
+            { priority: 2, text: "[중간] Referral 유입 경로 상세 분석 — 소개서 다운로드의 29.6%가 Referral." }
+        ];
 
-        const colors = {
-            naver: '#4C72B0', google: '#55A868', meta: '#2D7BF6', ga4: '#DD8452',
-            direct: '#7B68EE', referral: '#FF6B6B', organic: '#4ECDC4',
-            contact: '#e74c3c', download: '#27ae60', project: '#f39c12'
-        };
+        let currentLeadDeal = [
+            "상담문의(click_contact) 기여 Top 3: 네이버 검색광고(20.7%) > Direct(19.4%) > 구글 CPC(17.6%)",
+            "소개서 다운로드(click_download_intro) 기여 Top 3: Referral(29.6%) > Direct(18.6%) > 구글 오가닉(14.3%)",
+            "→ 상담 문의는 '검색 의도'가 있는 채널(네이버+구글 검색광고)이 38.3% 기여",
+            "→ 소개서 다운로드는 Referral·Direct 등 브랜드 인지 기반 채널이 48.2% 기여",
+            "→ Meta DA는 프로젝트 보기(16.9%)에서 상대적 강점, 상담/소개서에는 약세(3.3%/9.4%)"
+        ];
 
-        function formatNumber(num) {
-            return new Intl.NumberFormat('ko-KR').format(num);
+        // ═══════════════════════════════════════════════════════════════
+        // UI 렌더링 함수
+        // ═══════════════════════════════════════════════════════════════
+
+        function toggleSection(header) {
+            const body = header.nextElementSibling;
+            const toggle = header.querySelector('.toggle');
+            body.classList.toggle('open');
+            toggle.classList.toggle('open');
         }
 
-        // 헤더 업데이트
-        document.getElementById('header-title').textContent = CONFIG.reportTitle;
-        document.getElementById('header-subtitle').textContent = CONFIG.reportSubtitle;
-        document.getElementById('header-meta').textContent = 'DATA SOURCES: ' + CONFIG.dataSources;
-        document.getElementById('footer-date').textContent = '작성일: ' + CONFIG.reportDate;
-
-        // KPI 카드 생성
-        const kpiContainer = document.getElementById('kpi-container');
-        CONFIG.kpi.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'kpi-card ' + item.class;
-            card.innerHTML = '<div class="kpi-label">' + item.label + '</div>' +
-                '<div class="kpi-value">' + (typeof item.value === 'number' ? formatNumber(item.value) : item.value) +
-                '<span style="font-size: 0.5em;">' + item.unit + '</span></div>' +
-                '<div class="kpi-subtext">' + item.subtext + '</div>';
-            kpiContainer.appendChild(card);
-        });
-
-        // 펀넬 생성
-        const funnelContainer = document.getElementById('funnel-container');
-        funnelContainer.innerHTML = '<div class="funnel-step"><div class="funnel-box"><div class="funnel-value">' + formatNumber(CONFIG.funnel.sessions.value) + '</div><div class="funnel-label">' + CONFIG.funnel.sessions.label + '</div></div></div>' +
-            '<div class="funnel-arrow">→</div>' +
-            '<div class="funnel-step"><div class="funnel-box"><div class="funnel-value">' + formatNumber(CONFIG.funnel.events.value) + '</div><div class="funnel-label">' + CONFIG.funnel.events.label + '</div></div><div class="funnel-rate">전환율: ' + CONFIG.funnel.events.rate + '</div></div>' +
-            '<div class="funnel-arrow">→</div>' +
-            '<div class="funnel-step"><div class="funnel-box"><div class="funnel-value">' + formatNumber(CONFIG.funnel.leads.value) + '</div><div class="funnel-label">' + CONFIG.funnel.leads.label + '</div></div><div class="funnel-rate">리드율: ' + CONFIG.funnel.leads.rate + '</div></div>' +
-            '<div class="funnel-arrow">→</div>' +
-            '<div class="funnel-step"><div class="funnel-box"><div class="funnel-value">' + formatNumber(CONFIG.funnel.deals.value) + '</div><div class="funnel-label">' + CONFIG.funnel.deals.label + '</div></div><div class="funnel-rate">딜율: ' + CONFIG.funnel.deals.rate + '</div></div>';
-
-        // 리드/딜 인사이트 박스
-        const insightBox = document.getElementById('lead-deal-insights');
-        insightBox.innerHTML = CONFIG.leadDealInsights.map(function(text) {
-            const colonIndex = text.indexOf(':');
-            if (colonIndex > -1) {
-                return '<p><strong>' + text.substring(0, colonIndex + 1) + '<\/strong> ' + text.substring(colonIndex + 1) + '<\/p>';
-            } else {
-                return '<p>' + text + '<\/p>';
-            }
-        }).join('');
-
-        // Contact Channel Chart
-        const contactCtx = document.getElementById('contactChannelChart').getContext('2d');
-        new Chart(contactCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.contactChannel.labels,
-                datasets: [{
-                    label: 'click_contact (건)',
-                    data: CONFIG.contactChannel.data,
-                    backgroundColor: [colors.naver, colors.direct, colors.referral, colors.google, colors.organic, colors.naver, colors.meta],
-                    borderRadius: 4, barPercentage: 0.8
-                }]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(context) {
-                        const pct = ((context.parsed.x / CONFIG.contactChannel.total) * 100).toFixed(1);
-                        return context.parsed.x + '건 (' + pct + '%)';
-                    }}}
-                },
-                scales: {
-                    x: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}
-                }
-            }
-        });
-
-        // Download Channel Chart
-        const downloadCtx = document.getElementById('downloadChannelChart').getContext('2d');
-        new Chart(downloadCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.downloadChannel.labels,
-                datasets: [{
-                    label: 'click_download_intro (건)',
-                    data: CONFIG.downloadChannel.data,
-                    backgroundColor: [colors.referral, colors.direct, colors.organic, colors.google, colors.meta, colors.naver, colors.naver],
-                    borderRadius: 4, barPercentage: 0.8
-                }]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(context) {
-                        const pct = ((context.parsed.x / CONFIG.downloadChannel.total) * 100).toFixed(1);
-                        return context.parsed.x + '건 (' + pct + '%)';
-                    }}}
-                },
-                scales: {
-                    x: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}
-                }
-            }
-        });
-
-        // Weekly Spend Chart
-        const weeklySpendCtx = document.getElementById('weeklySpendChart').getContext('2d');
-        new Chart(weeklySpendCtx, {
-            type: 'line',
-            data: {
-                labels: CONFIG.weeklyLabels,
-                datasets: [
-                    { label: '네이버', data: CONFIG.weeklySpend.naver, borderColor: colors.naver, backgroundColor: 'rgba(76, 114, 176, 0.1)', tension: 0.3, fill: true },
-                    { label: '구글', data: CONFIG.weeklySpend.google, borderColor: colors.google, backgroundColor: 'rgba(85, 168, 104, 0.1)', tension: 0.3, fill: true },
-                    { label: 'Meta', data: CONFIG.weeklySpend.meta, borderColor: colors.meta, backgroundColor: 'rgba(45, 123, 246, 0.1)', tension: 0.3, fill: true }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { ticks: { callback: function(value) { return '₩' + formatNumber(value); }}} }
-            }
-        });
-
-        // Weekly Conversion Chart
-        const weeklyConversionCtx = document.getElementById('weeklyConversionChart').getContext('2d');
-        new Chart(weeklyConversionCtx, {
-            type: 'line',
-            data: {
-                labels: CONFIG.weeklyLabels,
-                datasets: [
-                    { label: '상담문의', data: CONFIG.weeklyConversion.contact, borderColor: colors.contact, backgroundColor: 'rgba(231, 76, 60, 0.1)', tension: 0.3, fill: true },
-                    { label: '소개서 다운', data: CONFIG.weeklyConversion.download, borderColor: colors.download, backgroundColor: 'rgba(39, 174, 96, 0.1)', tension: 0.3, fill: true },
-                    { label: '프로젝트 보기', data: CONFIG.weeklyConversion.project, borderColor: colors.project, backgroundColor: 'rgba(243, 156, 18, 0.1)', tension: 0.3, fill: true }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Weekly Lead/Deal Chart
-        const weeklyLeadDealCtx = document.getElementById('weeklyLeadDealChart').getContext('2d');
-        new Chart(weeklyLeadDealCtx, {
-            type: 'line',
-            data: {
-                labels: CONFIG.weeklyLabels,
-                datasets: [
-                    { label: '세션', data: CONFIG.weeklySessions, borderColor: '#7B68EE', yAxisID: 'y', tension: 0.3 },
-                    { label: '리드', data: CONFIG.weeklyLeadDeal.leads, borderColor: colors.contact, yAxisID: 'y1', tension: 0.3 },
-                    { label: '딜', data: CONFIG.weeklyLeadDeal.deals, borderColor: colors.download, yAxisID: 'y1', tension: 0.3 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: {
-                    y: { type: 'linear', position: 'left', beginAtZero: true },
-                    y1: { type: 'linear', position: 'right', beginAtZero: true }
-                }
-            }
-        });
-
-        // Ad Performance Table
-        const adTable = document.getElementById('ad-performance-table').getElementsByTagName('tbody')[0];
-        CONFIG.adPerformance.forEach(function(item) {
-            const row = adTable.insertRow();
-            row.innerHTML = '<td><span class="' + item.colorClass + '">' + item.name + '<\/span><\/td>' +
-                '<td>' + formatNumber(item.impressions) + '<\/td>' +
-                '<td>' + formatNumber(item.clicks) + '<\/td>' +
-                '<td>' + item.ctr + '<\/td>' +
-                '<td>₩' + formatNumber(item.spend) + '<\/td>' +
-                '<td>₩' + formatNumber(item.cpc) + '<\/td>' +
-                '<td>' + item.conversions + '<\/td>';
-        });
-
-        // GA4 Doughnut Chart
-        const ga4DoughnutCtx = document.getElementById('ga4DoughnutChart').getContext('2d');
-        new Chart(ga4DoughnutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: CONFIG.ga4Traffic.doughnutLabels,
-                datasets: [{
-                    data: CONFIG.ga4Traffic.doughnutData,
-                    backgroundColor: ['#2D7BF6', '#7B68EE', '#55A868', '#4ECDC4', '#FF6B6B', '#4C72B0', '#F4A261']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-        });
-
-        // GA4 Engagement Chart
-        const ga4EngagementCtx = document.getElementById('ga4EngagementChart').getContext('2d');
-        new Chart(ga4EngagementCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.ga4Traffic.engagementLabels,
-                datasets: [{
-                    label: 'Engagement Rate (%)',
-                    data: CONFIG.ga4Traffic.engagementRates,
-                    backgroundColor: '#2D7BF6'
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, max: 100, ticks: { callback: function(value) { return value + '%'; }}} }
-            }
-        });
-
-        // GA4 Traffic Table
-        const ga4Table = document.getElementById('ga4-traffic-table').getElementsByTagName('tbody')[0];
-        CONFIG.ga4Traffic.trafficTable.forEach(function(item) {
-            const row = ga4Table.insertRow();
-            row.innerHTML = '<td><span class="' + item.colorClass + '">' + item.name + '<\/span><\/td>' +
-                '<td>' + formatNumber(item.sessions) + '<\/td>' +
-                '<td>' + formatNumber(item.users) + '<\/td>' +
-                '<td>' + formatNumber(item.engaged) + '<\/td>' +
-                '<td>' + item.rate + '<\/td>';
-        });
-
-        // Daily Conversion Chart
-        const dailyConversionCtx = document.getElementById('dailyConversionChart').getContext('2d');
-        new Chart(dailyConversionCtx, {
-            type: 'line',
-            data: {
-                labels: CONFIG.dailyConversion.days.map(function(d) { return d + '일'; }),
-                datasets: [
-                    { label: '상담문의', data: CONFIG.dailyConversion.contact, borderColor: colors.contact, tension: 0.1 },
-                    { label: '소개서 다운', data: CONFIG.dailyConversion.download, borderColor: colors.download, tension: 0.1 },
-                    { label: '프로젝트 보기', data: CONFIG.dailyConversion.project, borderColor: colors.project, tension: 0.1 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        // Meta Targets
-        const metaContainer = document.getElementById('meta-targets-container');
-        CONFIG.metaTargets.forEach(function(target) {
-            const card = document.createElement('div');
-            card.className = 'insight-card';
-            card.style.borderLeft = '4px solid #2D7BF6';
-            card.innerHTML = '<div class="insight-title">' + target.name + '<\/div>' +
-                '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: #666;">' +
-                '<div>📊 노출: ' + formatNumber(target.impressions) + '<\/div>' +
-                '<div>🖱️ 클릭: ' + formatNumber(target.clicks) + ' (' + target.ctr + ')<\/div>' +
-                '<div>💰 광고비: ₩' + formatNumber(target.spend) + '<\/div>' +
-                '<div>📌 CPC: ₩' + formatNumber(target.cpc) + '<\/div>' +
-                '<div>✅ 전환: ' + formatNumber(target.conversions) + '<\/div>' +
-                '<div>🎯 전환율: ' + target.convRate + '<\/div>' +
-                '<\/div>';
-            metaContainer.appendChild(card);
-        });
-
-        // Insights
-        const insightsContainer = document.getElementById('insights-container');
-        CONFIG.insights.forEach(function(insight) {
-            const card = document.createElement('div');
-            card.className = 'insight-card';
-            card.innerHTML = '<div class="insight-title"><span class="priority-badge priority-' + insight.priority + '">우선순위 ' + insight.priority + '<\/span>' + insight.title + '<\/div>' +
-                '<div class="insight-body">' + insight.body + '<\/div>';
-            insightsContainer.appendChild(card);
-        });
-
-        // Action Items
-        const actionItemsContainer = document.getElementById('action-items-container');
-        CONFIG.actionItems.forEach(function(item) {
-            const card = document.createElement('div');
-            card.className = 'action-item p' + item.priority;
-            card.innerHTML = '<span class="priority-badge priority-' + item.priority + '">우선순위 ' + item.priority + '<\/span>' +
-                '<span class="action-text">' + item.text + '<\/span>';
-            actionItemsContainer.appendChild(card);
-        });
-    <\/script>
-</body>
-</html>`;
-
-        // ================================================================
-        // State Management
-        // ================================================================
-        let formState = {};
-        let originalConfig = null;
-
-        // Load original config from dashboard
-        async function loadOriginalConfig() {
-            try {
-                // Read current dashboard HTML
-                const response = await fetch('./리스페이스_3월_월간리포트_대시보드_최종.html');
-                const html = await response.text();
-
-                // Extract CONFIG from HTML
-                const configMatch = html.match(/const CONFIG = ({[\s\S]*?});/);
-                if (configMatch) {
-                    const configStr = configMatch[1];
-                    originalConfig = eval('(' + configStr + ')');
-                    initializeForm();
-                }
-            } catch (e) {
-                console.log('Could not load original config, using defaults');
-                initializeForm();
-            }
+        function renderWeeks() {
+            const container = document.getElementById('weeksContainer');
+            container.innerHTML = currentWeeks.map((w, i) => `
+                <div class="week-row">
+                    <span class="week-label">W${i + 1}</span>
+                    <input type="date" value="${w.start}" onchange="updateWeek(${i}, 'start', this.value)">
+                    <input type="date" value="${w.end}" onchange="updateWeek(${i}, 'end', this.value)">
+                    <button onclick="removeWeek(${i})" style="background:none;border:none;cursor:pointer;font-size:1.2em;" title="삭제">🗑</button>
+                </div>
+            `).join('');
         }
 
-        // ================================================================
-        // Initialize Form
-        // ================================================================
-        function initializeForm() {
-            // Get config from embedded data or create defaults
-            const CONFIG = window.EMBEDDED_CONFIG || originalConfig || {
-                reportTitle: "리스페이스 3월 월간 퍼포먼스 리포트",
-                reportSubtitle: "2026년 3월 1일 ~ 3월 31일 | B2B 리드 수집 중심 분석",
-                reportPeriod: "2026년 3월 1일 ~ 3월 31일",
-                reportDate: "2026년 4월 2일",
-                dataSources: "네이버 광고주센터, 구글 애즈, Meta 광고관리자, Google Analytics 4, 리캐치",
-                kpi: [
-                    { class: "lead", label: "리드(소개서 다운)", value: 41, unit: "건", subtext: "Recatch 기준" },
-                    { class: "deal", label: "딜(상담문의)", value: 68, unit: "건", subtext: "Recatch 기준" },
-                    { class: "event", label: "전환이벤트 합계", value: 2130, unit: "건", subtext: "GA4 기준" },
-                    { class: "session", label: "GA4 세션수", value: 6637, unit: "", subtext: "신규 4,151명" },
-                    { class: "budget", label: "총 광고비", value: "₩3.2M", unit: "", subtext: "네이버+구글+Meta" },
-                    { class: "impression", label: "총 노출", value: 109416, unit: "", subtext: "전 매체" },
-                    { class: "click", label: "총 클릭", value: 2240, unit: "", subtext: "CTR 2.05%" },
-                    { class: "ctr", label: "평균 CTR", value: "2.05%", unit: "", subtext: "채널 평균" }
-                ],
-                funnel: {
-                    sessions: { value: 6637, label: "GA4 세션" },
-                    events: { value: 2130, label: "전환이벤트", rate: "32.1%" },
-                    leads: { value: 41, label: "리드", rate: "1.9%" },
-                    deals: { value: 68, label: "딜", rate: "165.9%" }
-                },
-                contactChannel: {
-                    total: 919,
-                    labels: ['네이버 검색광고', 'Direct', '기타', '구글 CPC', '구글 오가닉', '네이버 오가닉', 'Meta DA'],
-                    data: [190, 178, 178, 162, 97, 84, 30]
-                },
-                downloadChannel: {
-                    total: 851,
-                    labels: ['기타', 'Direct', '구글 오가닉', '구글 CPC', 'Meta DA', '네이버 검색광고', '네이버 오가닉'],
-                    data: [252, 158, 122, 121, 80, 73, 45]
-                },
-                weeklyLabels: ['W1\n(3/1-8)', 'W2\n(3/9-15)', 'W3\n(3/16-22)', 'W4\n(3/23-29)', 'W5\n(3/30-31)'],
-                weeklySpend: {
-                    naver: [357181, 493878, 524436, 452166, 208514],
-                    google: [27571, 153757, 314372, 73087, 31239],
-                    meta: [0, 144919, 183539, 167344, 74245]
-                },
-                weeklyConversion: {
-                    contact: [295, 322, 427, 459, 416],
-                    download: [267, 267, 433, 458, 426],
-                    project: [116, 152, 114, 117, 99]
-                },
-                weeklySessions: [801, 2004, 1719, 1468, 645],
-                weeklyLeadDeal: {
-                    contact: [295, 322, 427, 459, 416],
-                    download: [267, 267, 433, 458, 426],
-                    leads: [4, 17, 15, 4, 1],
-                    deals: [13, 18, 20, 7, 10]
-                },
-                adPerformance: [
-                    { name: "네이버 검색광고", colorClass: "color-naver", impressions: 53364, clicks: 473, ctr: "0.89%", spend: 2036175, cpc: 4305, conversions: "0 (측정불가)" },
-                    { name: "구글 검색광고", colorClass: "color-google", impressions: 7951, clicks: 949, ctr: "11.94%", spend: 600026, cpc: 632, conversions: "312" },
-                    { name: "Meta 광고", colorClass: "color-meta", impressions: 48101, clicks: 818, ctr: "1.70%", spend: 570047, cpc: 697, conversions: "218" }
-                ],
-                ga4Traffic: {
-                    doughnutLabels: ['Meta DA', 'Direct', '구글 CPC', '구글 오가닉', 'Referral', '네이버 검색광고', '네이버 오가닉'],
-                    doughnutData: [1281, 1229, 1078, 1031, 827, 674, 517],
-                    engagementLabels: ['Referral', '네이버 검색광고', '구글 CPC', '구글 오가닉', 'Direct', '네이버 오가닉', 'Meta DA'],
-                    engagementRates: [68.1, 67.9, 64.0, 57.5, 50.1, 63.1, 27.6],
-                    trafficTable: [
-                        { name: "Meta(Instagram) DA", colorClass: "color-meta", sessions: 1281, users: 1261, engaged: 354, rate: "27.6%" },
-                        { name: "직접 유입(Direct)", colorClass: "", sessions: 1229, users: 1060, engaged: 616, rate: "50.1%" },
-                        { name: "구글 검색광고(CPC)", colorClass: "color-google", sessions: 1078, users: 857, engaged: 690, rate: "64.0%" },
-                        { name: "구글 오가닉", colorClass: "color-google", sessions: 1031, users: 816, engaged: 593, rate: "57.5%" },
-                        { name: "기타(Referral 등)", colorClass: "", sessions: 827, users: 640, engaged: 563, rate: "68.1%" },
-                        { name: "네이버 검색광고", colorClass: "color-naver", sessions: 674, users: 502, engaged: 458, rate: "67.9%" },
-                        { name: "네이버 오가닉", colorClass: "color-naver", sessions: 517, users: 353, engaged: 326, rate: "63.1%" }
-                    ]
-                },
-                dailyConversion: {
-                    days: Array.from({length: 31}, (_, i) => i + 1),
-                    contact: [26, 37, 30, 29, 0, 3, 2, 16, 47, 47, 30, 23, 5, 3, 49, 33, 46, 48, 30, 3, 3, 34, 50, 52, 79, 39, 0, 5, 52, 98, null],
-                    download: [53, 4, 10, 9, 0, 2, 5, 67, 13, 15, 9, 12, 12, 33, 68, 48, 37, 21, 6, 9, 47, 54, 38, 81, 20, 0, 7, 77, 94, null, null],
-                    project: [28, 5, 3, 20, 3, 1, 4, 31, 21, 26, 6, 15, 11, 30, 7, 13, 4, 9, 1, 2, 9, 6, 24, 21, 4, 0, 2, 13, 41, null, null]
-                },
-                metaTargets: [
-                    { name: "Core A (엔터프라이즈)", impressions: 10875, clicks: 218, ctr: "2.00%", spend: 150858, cpc: 692, conversions: 53, convRate: "24.3%" },
-                    { name: "Core B (글로벌)", impressions: 13687, clicks: 170, ctr: "1.24%", spend: 153033, cpc: 900, conversions: 71, convRate: "41.8%" },
-                    { name: "Core C (엔터/IP)", impressions: 11364, clicks: 147, ctr: "1.29%", spend: 156595, cpc: 1065, conversions: 43, convRate: "29.3%" },
-                    { name: "Strategic B (공공기관)", impressions: 12175, clicks: 283, ctr: "2.32%", spend: 109561, cpc: 387, conversions: 51, convRate: "18.0%" }
-                ],
-                insights: [
-                    { priority: 1, title: "1. 리드 수집 채널: '검색 의도'와 '브랜드 인지' 두 축의 차별화", body: "상담문의(click_contact) 919건 중 네이버+구글 검색광고가 352건(38.3%)으로 가장 큰 비중..." },
-                    { priority: 1, title: "2. 네이버 검색광고: 상담문의 기여 1위(20.7%)이나 비용 효율 의문", body: "월 광고비 ₩2,036,175 투자 중 네이버 검색광고의 click_contact 기여는 190건(20.7%)으로 1위..." },
-                    { priority: 2, title: "3. Meta DA: 인지도 확산에 강점, 리드 전환에는 약세", body: "Meta는 세션 1,281건(19.3%)으로 유입량 1위이나, click_contact 기여는 30건(3.3%)으로 최하위..." },
-                    { priority: 2, title: "4. Meta Core B(글로벌) 타겟: 전환율 41.8%로 최고", body: "4개 타겟 중 Core B가 전환수 71건(전체 218건의 32.6%), 전환율 41.8%로 최고 성과..." },
-                    { priority: 3, title: "5. 3월 말 전환 급증: 3/31 click_contact 98건(월 최고치)", body: "click_contact가 3/26(79건), 3/31(98건)으로 월말에 급증..." },
-                    { priority: 3, title: "6. 주중/주말 B2B 패턴 & 네이버 전환 추적", body: "토·일 세션이 평일 대비 급감하는 명확한 B2B 패턴..." }
-                ],
-                actionItems: [
-                    { priority: 1, text: "[최우선] 네이버 전환 스크립트 오류 해결..." },
-                    { priority: 1, text: "[최우선] 구글 검색광고 예산 확대 검토..." },
-                    { priority: 2, text: "[높음] Meta 광고 KPI 재설정..." },
-                    { priority: 2, text: "[높음] 월말 집중 예산 배분 전략..." },
-                    { priority: 2, text: "[중간] 주중 집중 광고 운영..." },
-                    { priority: 2, text: "[중간] Referral 유입 경로 상세 분석..." }
-                ],
-                leadDealInsights: [
-                    "상담문의(click_contact) 기여 Top 3: 네이버 검색광고(20.7%) > Direct(19.4%) > 구글 CPC(17.6%)",
-                    "소개서 다운로드(click_download_intro) 기여 Top 3: Referral(29.6%) > Direct(18.6%) > 구글 오가닉(14.3%)",
-                    "→ 상담 문의는 '검색 의도'가 있는 채널(네이버+구글 검색광고)이 38.3% 기여",
-                    "→ 소개서 다운로드는 Referral·Direct 등 브랜드 인지 기반 채널이 48.2% 기여",
-                    "→ Meta DA는 프로젝트 보기(16.9%)에서 상대적 강점, 상담/소개서에는 약세(3.3%/9.4%)"
-                ]
-            };
-
-            formState = JSON.parse(JSON.stringify(CONFIG));
-            renderForm();
-        }
-
-        // ================================================================
-        // Render Form Fields
-        // ================================================================
-        function renderForm() {
-            // Basic info
-            populateBasicFields();
-
-            // KPI cards
-            renderKPIEditor();
-
-            // Ad performance
-            renderAdPerformanceEditor();
-
-            // GA4 traffic table
-            renderGA4TrafficTableEditor();
-
-            // Daily conversion grids
-            renderDailyConversionGrids();
-
-            // Meta targets
-            renderMetaTargetsEditor();
-
-            // Insights
-            renderInsightsEditor();
-
-            // Action items
-            renderActionItemsEditor();
-
-            // Lead/deal insights
-            renderLeadDealInsightsEditor();
-        }
-
-        function populateBasicFields() {
-            document.querySelectorAll('.field[data-field]').forEach(input => {
-                const field = input.dataset.field;
-                let value = getValueByPath(formState, field);
-
-                if (field.includes('-csv')) {
-                    // Handle array fields
-                    const basePath = field.replace('-csv', '');
-                    const arr = getValueByPath(formState, basePath);
-                    if (Array.isArray(arr)) {
-                        value = arr.join(', ');
-                    }
-                    input.value = value || '';
-                } else if (!field.includes('kpi') && !field.includes('adPerformance') && !field.includes('insights') &&
-                           !field.includes('actionItems') && !field.includes('metaTargets') && !field.includes('dailyConversion')) {
-                    input.value = value || '';
-                }
-
-                input.addEventListener('change', () => saveFieldValue(input));
-            });
-        }
-
-        function renderKPIEditor() {
-            const container = document.getElementById('kpi-editor');
-            container.innerHTML = '';
-            formState.kpi.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">KPI ${idx + 1}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>클래스</label>
-                            <input type="text" value="${item.class}" onchange="formState.kpi[${idx}].class = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>라벨</label>
-                            <input type="text" value="${item.label}" onchange="formState.kpi[${idx}].label = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>값</label>
-                            <input type="text" value="${item.value}" onchange="formState.kpi[${idx}].value = isNaN(this.value) ? this.value : parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>단위</label>
-                            <input type="text" value="${item.unit}" onchange="formState.kpi[${idx}].unit = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>부설명</label>
-                            <input type="text" value="${item.subtext}" onchange="formState.kpi[${idx}].subtext = this.value">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(itemHtml);
-            });
-        }
-
-        function renderAdPerformanceEditor() {
-            const container = document.getElementById('ad-performance-editor');
-            container.innerHTML = '';
-            formState.adPerformance.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">${item.name}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>매체명</label>
-                            <input type="text" value="${item.name}" onchange="formState.adPerformance[${idx}].name = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>노출</label>
-                            <input type="number" value="${item.impressions}" onchange="formState.adPerformance[${idx}].impressions = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>클릭</label>
-                            <input type="number" value="${item.clicks}" onchange="formState.adPerformance[${idx}].clicks = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>CTR</label>
-                            <input type="text" value="${item.ctr}" onchange="formState.adPerformance[${idx}].ctr = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>광고비</label>
-                            <input type="number" value="${item.spend}" onchange="formState.adPerformance[${idx}].spend = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>CPC</label>
-                            <input type="number" value="${item.cpc}" onchange="formState.adPerformance[${idx}].cpc = parseInt(this.value)">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>전환</label>
-                            <input type="text" value="${item.conversions}" onchange="formState.adPerformance[${idx}].conversions = this.value">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(itemHtml);
-            });
-        }
-
-        function renderGA4TrafficTableEditor() {
-            const container = document.getElementById('ga4-traffic-table-editor');
-            container.innerHTML = '';
-            formState.ga4Traffic.trafficTable.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">${item.name}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>채널명</label>
-                            <input type="text" value="${item.name}" onchange="formState.ga4Traffic.trafficTable[${idx}].name = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>세션</label>
-                            <input type="number" value="${item.sessions}" onchange="formState.ga4Traffic.trafficTable[${idx}].sessions = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>사용자</label>
-                            <input type="number" value="${item.users}" onchange="formState.ga4Traffic.trafficTable[${idx}].users = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>Engaged</label>
-                            <input type="number" value="${item.engaged}" onchange="formState.ga4Traffic.trafficTable[${idx}].engaged = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>비율</label>
-                            <input type="text" value="${item.rate}" onchange="formState.ga4Traffic.trafficTable[${idx}].rate = this.value">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(itemHtml);
-            });
-        }
-
-        function renderDailyConversionGrids() {
-            // Contact
-            const contactGrid = document.getElementById('daily-contact-grid');
-            contactGrid.innerHTML = '';
-            formState.dailyConversion.contact.forEach((val, idx) => {
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.value = val === null ? '' : val;
-                input.placeholder = 'Day ' + (idx + 1);
-                input.onchange = () => {
-                    formState.dailyConversion.contact[idx] = input.value === '' ? null : parseInt(input.value);
-                };
-                contactGrid.appendChild(input);
-            });
-
-            // Download
-            const downloadGrid = document.getElementById('daily-download-grid');
-            downloadGrid.innerHTML = '';
-            formState.dailyConversion.download.forEach((val, idx) => {
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.value = val === null ? '' : val;
-                input.placeholder = 'Day ' + (idx + 1);
-                input.onchange = () => {
-                    formState.dailyConversion.download[idx] = input.value === '' ? null : parseInt(input.value);
-                };
-                downloadGrid.appendChild(input);
-            });
-
-            // Project
-            const projectGrid = document.getElementById('daily-project-grid');
-            projectGrid.innerHTML = '';
-            formState.dailyConversion.project.forEach((val, idx) => {
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.value = val === null ? '' : val;
-                input.placeholder = 'Day ' + (idx + 1);
-                input.onchange = () => {
-                    formState.dailyConversion.project[idx] = input.value === '' ? null : parseInt(input.value);
-                };
-                projectGrid.appendChild(input);
-            });
-        }
-
-        function renderMetaTargetsEditor() {
-            const container = document.getElementById('meta-targets-editor');
-            container.innerHTML = '';
-            formState.metaTargets.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">${item.name}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>타겟명</label>
-                            <input type="text" value="${item.name}" onchange="formState.metaTargets[${idx}].name = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>노출</label>
-                            <input type="number" value="${item.impressions}" onchange="formState.metaTargets[${idx}].impressions = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>클릭</label>
-                            <input type="number" value="${item.clicks}" onchange="formState.metaTargets[${idx}].clicks = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>CTR</label>
-                            <input type="text" value="${item.ctr}" onchange="formState.metaTargets[${idx}].ctr = this.value">
-                        </div>
-                        <div class="form-group">
-                            <label>광고비</label>
-                            <input type="number" value="${item.spend}" onchange="formState.metaTargets[${idx}].spend = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>CPC</label>
-                            <input type="number" value="${item.cpc}" onchange="formState.metaTargets[${idx}].cpc = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>전환</label>
-                            <input type="number" value="${item.conversions}" onchange="formState.metaTargets[${idx}].conversions = parseInt(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>전환율</label>
-                            <input type="text" value="${item.convRate}" onchange="formState.metaTargets[${idx}].convRate = this.value">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(itemHtml);
-            });
-        }
-
-        function renderInsightsEditor() {
-            const container = document.getElementById('insights-editor');
-            container.innerHTML = '';
-            formState.insights.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">인사이트 ${idx + 1}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>우선순위</label>
-                            <select onchange="formState.insights[${idx}].priority = parseInt(this.value)">
-                                <option value="1" ${item.priority === 1 ? 'selected' : ''}>1 (최우선)</option>
-                                <option value="2" ${item.priority === 2 ? 'selected' : ''}>2 (높음)</option>
-                                <option value="3" ${item.priority === 3 ? 'selected' : ''}>3 (중간)</option>
+        function renderInsights() {
+            const container = document.getElementById('insightsContainer');
+            container.innerHTML = currentInsights.map((item, i) => `
+                <div class="item-card p${item.priority}">
+                    <div class="item-header">
+                        <span class="item-num">인사이트 #${i + 1}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <select class="priority-select" onchange="updateInsight(${i}, 'priority', Number(this.value))">
+                                <option value="1" ${item.priority === 1 ? 'selected' : ''}>P1 최우선</option>
+                                <option value="2" ${item.priority === 2 ? 'selected' : ''}>P2 높음</option>
+                                <option value="3" ${item.priority === 3 ? 'selected' : ''}>P3 보통</option>
                             </select>
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>제목</label>
-                            <input type="text" value="${item.title}" onchange="formState.insights[${idx}].title = this.value">
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>내용</label>
-                            <textarea onchange="formState.insights[${idx}].body = this.value">${item.body}</textarea>
+                            <div class="item-actions">
+                                ${i > 0 ? `<button onclick="moveInsight(${i}, -1)" title="위로">↑</button>` : ''}
+                                ${i < currentInsights.length - 1 ? `<button onclick="moveInsight(${i}, 1)" title="아래로">↓</button>` : ''}
+                                <button onclick="removeInsight(${i})" title="삭제">🗑</button>
+                            </div>
                         </div>
                     </div>
-                `;
-                container.appendChild(itemHtml);
-            });
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label>제목</label>
+                        <input type="text" value="${escapeHtml(item.title)}" onchange="updateInsight(${i}, 'title', this.value)">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>본문</label>
+                        <textarea rows="3" onchange="updateInsight(${i}, 'body', this.value)">${escapeHtml(item.body)}</textarea>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function renderActionItemsEditor() {
-            const container = document.getElementById('action-items-editor');
-            container.innerHTML = '';
-            formState.actionItems.forEach((item, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #ddd;';
-                itemHtml.innerHTML = `
-                    <div style="font-weight: 600; margin-bottom: 8px;">액션 아이템 ${idx + 1}</div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>우선순위</label>
-                            <select onchange="formState.actionItems[${idx}].priority = parseInt(this.value)">
-                                <option value="1" ${item.priority === 1 ? 'selected' : ''}>1 (최우선)</option>
-                                <option value="2" ${item.priority === 2 ? 'selected' : ''}>2 (높음)</option>
-                                <option value="3" ${item.priority === 3 ? 'selected' : ''}>3 (중간)</option>
+        function renderActionItems() {
+            const container = document.getElementById('actionItemsContainer');
+            container.innerHTML = currentActionItems.map((item, i) => `
+                <div class="item-card p${item.priority}">
+                    <div class="item-header">
+                        <span class="item-num">액션 #${i + 1}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <select class="priority-select" onchange="updateAction(${i}, 'priority', Number(this.value))">
+                                <option value="1" ${item.priority === 1 ? 'selected' : ''}>P1 최우선</option>
+                                <option value="2" ${item.priority === 2 ? 'selected' : ''}>P2 높음/중간</option>
                             </select>
-                        </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>텍스트</label>
-                            <textarea onchange="formState.actionItems[${idx}].text = this.value">${item.text}</textarea>
+                            <div class="item-actions">
+                                ${i > 0 ? `<button onclick="moveAction(${i}, -1)" title="위로">↑</button>` : ''}
+                                ${i < currentActionItems.length - 1 ? `<button onclick="moveAction(${i}, 1)" title="아래로">↓</button>` : ''}
+                                <button onclick="removeAction(${i})" title="삭제">🗑</button>
+                            </div>
                         </div>
                     </div>
-                `;
-                container.appendChild(itemHtml);
-            });
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <textarea rows="2" onchange="updateAction(${i}, 'text', this.value)">${escapeHtml(item.text)}</textarea>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function renderLeadDealInsightsEditor() {
-            const container = document.getElementById('lead-deal-insights-editor');
-            container.innerHTML = '';
-            formState.leadDealInsights.forEach((text, idx) => {
-                const itemHtml = document.createElement('div');
-                itemHtml.style.cssText = 'background: white; padding: 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #ddd;';
-                const input = document.createElement('textarea');
-                input.style.cssText = 'width: 100%; padding: 8px; font-size: 13px;';
-                input.value = text;
-                input.onchange = () => {
-                    formState.leadDealInsights[idx] = input.value;
-                };
-                itemHtml.innerHTML = `<div style="font-weight: 600; margin-bottom: 8px;">라인 ${idx + 1}</div>`;
-                itemHtml.appendChild(input);
-                container.appendChild(itemHtml);
-            });
+        function renderLeadDeal() {
+            const container = document.getElementById('leadDealContainer');
+            container.innerHTML = currentLeadDeal.map((line, i) => `
+                <div class="text-line">
+                    <input type="text" value="${escapeHtml(line)}" onchange="currentLeadDeal[${i}] = this.value">
+                    <button onclick="removeLeadDealLine(${i})" title="삭제">🗑</button>
+                </div>
+            `).join('');
         }
 
-        // ================================================================
-        // Utility Functions
-        // ================================================================
-        function getValueByPath(obj, path) {
-            return path.split('.').reduce((acc, part) => {
-                if (part.includes('[')) {
-                    const m = part.match(/(\w+)\[(\d+)\]/);
-                    return acc[m[1]][m[2]];
+        // ═══════════════════════════════════════════════════════════════
+        // CRUD 함수
+        // ═══════════════════════════════════════════════════════════════
+
+        function updateWeek(i, field, val) { currentWeeks[i][field] = val; autoUpdateWeekLabel(i); }
+        function autoUpdateWeekLabel(i) {
+            const w = currentWeeks[i];
+            const s = w.start.split('-'), e = w.end.split('-');
+            currentWeeks[i].label = `W${i+1}\\n(${parseInt(s[1])}/${parseInt(s[2])}-${parseInt(e[2])})`;
+        }
+        function removeWeek(i) { currentWeeks.splice(i, 1); renderWeeks(); }
+        function addWeek() {
+            const last = currentWeeks[currentWeeks.length - 1];
+            const nextStart = new Date(last.end);
+            nextStart.setDate(nextStart.getDate() + 1);
+            const nextEnd = new Date(nextStart);
+            nextEnd.setDate(nextEnd.getDate() + 6);
+            currentWeeks.push({
+                label: `W${currentWeeks.length + 1}`,
+                start: nextStart.toISOString().split('T')[0],
+                end: nextEnd.toISOString().split('T')[0]
+            });
+            renderWeeks();
+        }
+
+        function updateInsight(i, field, val) { currentInsights[i][field] = val; if (field === 'priority') renderInsights(); }
+        function moveInsight(i, dir) { [currentInsights[i], currentInsights[i+dir]] = [currentInsights[i+dir], currentInsights[i]]; renderInsights(); }
+        function removeInsight(i) { currentInsights.splice(i, 1); renderInsights(); }
+        function addInsight() { currentInsights.push({ priority: 2, title: '', body: '' }); renderInsights(); }
+
+        function updateAction(i, field, val) { currentActionItems[i][field] = val; if (field === 'priority') renderActionItems(); }
+        function moveAction(i, dir) { [currentActionItems[i], currentActionItems[i+dir]] = [currentActionItems[i+dir], currentActionItems[i]]; renderActionItems(); }
+        function removeAction(i) { currentActionItems.splice(i, 1); renderActionItems(); }
+        function addActionItem() { currentActionItems.push({ priority: 2, text: '' }); renderActionItems(); }
+
+        function removeLeadDealLine(i) { currentLeadDeal.splice(i, 1); renderLeadDeal(); }
+        function addLeadDealLine() { currentLeadDeal.push(''); renderLeadDeal(); }
+
+        function escapeHtml(str) { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 자동 채우기 (월 선택 시)
+        // ═══════════════════════════════════════════════════════════════
+
+        function autoFillMonth() {
+            const monthInput = document.getElementById('autoMonth').value;
+            if (!monthInput) return;
+            const [year, month] = monthInput.split('-').map(Number);
+            const monthStr = month + '월';
+            const lastDay = new Date(year, month, 0).getDate();
+
+            document.getElementById('targetMonth').value = monthInput;
+            document.getElementById('reportTitle').value = `리스페이스 ${monthStr} 월간 퍼포먼스 리포트`;
+            document.getElementById('reportSubtitle').value = `${year}년 ${month}월 1일 ~ ${month}월 ${lastDay}일 | B2B 리드 수집 중심 분석`;
+            document.getElementById('reportPeriod').value = `${year}년 ${month}월 1일 ~ ${month}월 ${lastDay}일`;
+
+            const nextMonth = month === 12 ? 1 : month + 1;
+            const nextYear = month === 12 ? year + 1 : year;
+            const today = new Date();
+            document.getElementById('reportDate').value = `${nextYear}년 ${nextMonth}월 ${today.getDate()}일`;
+
+            // 자동 주차 생성
+            currentWeeks = [];
+            let day = 1;
+            let weekNum = 1;
+            while (day <= lastDay) {
+                const start = `${monthInput}-${String(day).padStart(2, '0')}`;
+                let endDay = Math.min(day + 6, lastDay);
+                // 마지막 주차가 3일 이하면 이전 주차에 합침
+                if (lastDay - endDay > 0 && lastDay - endDay <= 3 && endDay + 1 <= lastDay) {
+                    // 아직 합치지 않음 — 다음 반복에서 처리
                 }
-                return acc && acc[part];
-            }, obj);
-        }
-
-        function setValueByPath(obj, path, value) {
-            const keys = path.split('.');
-            let current = obj;
-            for (let i = 0; i < keys.length - 1; i++) {
-                const key = keys[i];
-                if (!current[key]) current[key] = {};
-                current = current[key];
-            }
-            current[keys[keys.length - 1]] = value;
-        }
-
-        function saveFieldValue(input) {
-            const field = input.dataset.field;
-            if (field.includes('-csv')) {
-                const basePath = field.replace('-csv', '');
-                const arr = input.value.split(',').map(s => {
-                    const trimmed = s.trim();
-                    return isNaN(trimmed) ? trimmed : parseInt(trimmed);
+                const end = `${monthInput}-${String(endDay).padStart(2, '0')}`;
+                currentWeeks.push({
+                    label: `W${weekNum}\\n(${month}/${day}-${endDay})`,
+                    start, end
                 });
-                setValueByPath(formState, basePath, arr);
-            } else {
-                const value = isNaN(input.value) ? input.value : (input.type === 'number' ? parseInt(input.value) : input.value);
-                setValueByPath(formState, field, value);
+                day = endDay + 1;
+                weekNum++;
+            }
+            renderWeeks();
+            showToast(`${monthStr} 설정이 자동으로 채워졌습니다`);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // SETTINGS JSON 생성
+        // ═══════════════════════════════════════════════════════════════
+
+        function buildSettings() {
+            return {
+                spreadsheetId: '1_J-qPpFpz5CjYv33a9pxZNBhyEgHfZtgK1upS-oZKbU',
+                reportTitle: document.getElementById('reportTitle').value,
+                reportSubtitle: document.getElementById('reportSubtitle').value,
+                reportPeriod: document.getElementById('reportPeriod').value,
+                reportDate: document.getElementById('reportDate').value,
+                dataSources: document.getElementById('dataSources').value,
+                sheets: {
+                    naverAd: '네이버 검색광고',
+                    googleAd: '구글 검색광고',
+                    metaAd: 'Meta 광고',
+                    ga4Traffic: 'GA4 트래픽',
+                    ga4Conversion: 'GA4 전환이벤트',
+                    recatchLead: '리캐치_리드',
+                    recatchDeal: '리캐치_딜'
+                },
+                targetMonth: document.getElementById('targetMonth').value,
+                weeks: currentWeeks.map(w => ({
+                    label: w.label, start: w.start, end: w.end
+                })),
+                insights: currentInsights.map(ins => ({
+                    priority: ins.priority, title: ins.title, body: ins.body
+                })),
+                actionItems: currentActionItems.map(a => ({
+                    priority: a.priority, text: a.text
+                })),
+                leadDealInsights: [...currentLeadDeal]
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 대시보드 HTML 생성 (SETTINGS 주입)
+        // ═══════════════════════════════════════════════════════════════
+
+        async function generateDashboardHTML() {
+            const settings = buildSettings();
+
+            // live 대시보드 HTML을 fetch하거나 내장 템플릿 사용
+            // 여기서는 SETTINGS 블록만 교체하는 방식
+            try {
+                const resp = await fetch('리스페이스_월간리포트_실시간.html');
+                if (!resp.ok) throw new Error('Cannot fetch template');
+                let html = await resp.text();
+
+                // SETTINGS 블록 교체
+                const settingsStr = generateSettingsJS(settings);
+                html = html.replace(
+                    /const SETTINGS = \{[\s\S]*?\n        \};/,
+                    settingsStr
+                );
+                return html;
+            } catch (e) {
+                console.warn('Template fetch failed, prompting user:', e);
+                showToast('동일 폴더에 리스페이스_월간리포트_실시간.html이 있어야 합니다');
+                return null;
             }
         }
 
-        function toggleAccordion(header) {
-            const content = header.nextElementSibling;
-            const isActive = header.classList.contains('active');
+        function generateSettingsJS(s) {
+            const weeksJS = s.weeks.map(w =>
+                `                { label: '${w.label}', start: '${w.start}', end: '${w.end}' }`
+            ).join(',\n');
 
-            header.classList.toggle('active');
-            content.classList.toggle('active');
+            const insightsJS = s.insights.map(ins =>
+                `                { priority: ${ins.priority}, title: ${JSON.stringify(ins.title)}, body: ${JSON.stringify(ins.body)} }`
+            ).join(',\n');
+
+            const actionsJS = s.actionItems.map(a =>
+                `                { priority: ${a.priority}, text: ${JSON.stringify(a.text)} }`
+            ).join(',\n');
+
+            const leadDealJS = s.leadDealInsights.map(l =>
+                `                ${JSON.stringify(l)}`
+            ).join(',\n');
+
+            return `const SETTINGS = {
+            spreadsheetId: '${s.spreadsheetId}',
+            reportTitle: ${JSON.stringify(s.reportTitle)},
+            reportSubtitle: ${JSON.stringify(s.reportSubtitle)},
+            reportPeriod: ${JSON.stringify(s.reportPeriod)},
+            reportDate: ${JSON.stringify(s.reportDate)},
+            dataSources: ${JSON.stringify(s.dataSources)},
+            sheets: {
+                naverAd: '네이버 검색광고',
+                googleAd: '구글 검색광고',
+                metaAd: 'Meta 광고',
+                ga4Traffic: 'GA4 트래픽',
+                ga4Conversion: 'GA4 전환이벤트',
+                recatchLead: '리캐치_리드',
+                recatchDeal: '리캐치_딜'
+            },
+            targetMonth: '${s.targetMonth}',
+            weeks: [
+${weeksJS}
+            ],
+            insights: [
+${insightsJS}
+            ],
+            actionItems: [
+${actionsJS}
+            ],
+            leadDealInsights: [
+${leadDealJS}
+            ]
+        }`;
         }
 
-        function previewDashboard() {
-            // Generate dashboard HTML with current form state
-            const html = generateDashboardHTML(formState);
+        // ═══════════════════════════════════════════════════════════════
+        // 미리보기 / 다운로드 / JSON 내보내기·불러오기
+        // ═══════════════════════════════════════════════════════════════
 
-            // Create blob and open in new tab
-            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        async function previewDashboard() {
+            const html = await generateDashboardHTML();
+            if (!html) return;
+            const frame = document.getElementById('previewFrame');
+            const blob = new Blob([html], { type: 'text/html' });
+            frame.src = URL.createObjectURL(blob);
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+            showToast('미리보기가 생성되었습니다');
+        }
+
+        async function downloadHTML() {
+            const html = await generateDashboardHTML();
+            if (!html) return;
+            const blob = new Blob([html], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('index.html이 다운로드되었습니다 → GitHub에 업로드하세요');
         }
 
-        function downloadDashboard() {
-            const html = generateDashboardHTML(formState);
-            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'index.html';
-            link.click();
+        function exportJSON() {
+            const settings = buildSettings();
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `respace_settings_${settings.targetMonth}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('설정 JSON이 내보내기 되었습니다');
         }
 
-        function generateDashboardHTML(config) {
-            const configStr = JSON.stringify(config, null, 8);
-            return DASHBOARD_TEMPLATE_BEFORE + '        const CONFIG = ' + configStr + ';' + DASHBOARD_TEMPLATE_AFTER;
+        function importJSON() {
+            document.getElementById('jsonFileInput').click();
         }
 
-        function resetAllFields() {
-            if (confirm('정말 모든 필드를 초기값으로 초기화하시겠습니까?')) {
-                formState = JSON.parse(JSON.stringify(originalConfig || {}));
-                renderForm();
-                populateBasicFields();
-            }
+        function handleJSONImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    document.getElementById('reportTitle').value = data.reportTitle || '';
+                    document.getElementById('reportSubtitle').value = data.reportSubtitle || '';
+                    document.getElementById('reportPeriod').value = data.reportPeriod || '';
+                    document.getElementById('reportDate').value = data.reportDate || '';
+                    document.getElementById('dataSources').value = data.dataSources || '';
+                    document.getElementById('targetMonth').value = data.targetMonth || '';
+                    if (data.weeks) { currentWeeks = data.weeks; renderWeeks(); }
+                    if (data.insights) { currentInsights = data.insights; renderInsights(); }
+                    if (data.actionItems) { currentActionItems = data.actionItems; renderActionItems(); }
+                    if (data.leadDealInsights) { currentLeadDeal = data.leadDealInsights; renderLeadDeal(); }
+                    showToast('설정이 불러와졌습니다');
+                } catch (err) {
+                    showToast('JSON 파일을 읽을 수 없습니다');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
         }
 
-        // Initialize on load
-        window.addEventListener('load', loadOriginalConfig);
+        // Toast
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // 초기 렌더링
+        // ═══════════════════════════════════════════════════════════════
+        renderWeeks();
+        renderInsights();
+        renderActionItems();
+        renderLeadDeal();
     </script>
 </body>
 </html>
