@@ -164,53 +164,100 @@
             border-left-color: #e74c3c;
         }
 
-        /* Funnel */
+        /* Funnel — Y-shape branching */
         .funnel-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-around;
             margin: 30px 0;
-            flex-wrap: wrap;
-            gap: 20px;
+            gap: 0;
+        }
+
+        .funnel-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
         }
 
         .funnel-step {
             text-align: center;
-            flex: 1;
             min-width: 150px;
         }
 
         .funnel-box {
             background: white;
             border: 2px solid #4C72B0;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 15px 20px;
-            margin-bottom: 10px;
             font-weight: 600;
         }
+        .funnel-box.start { border-color: #3498db; background: #f0f7ff; }
+        .funnel-box.path-a { border-color: #e74c3c; background: #fef5f5; }
+        .funnel-box.path-b { border-color: #f39c12; background: #fefbf0; }
 
         .funnel-value {
             font-size: 1.8em;
-            color: #e74c3c;
-            margin-bottom: 5px;
+            color: #1a1a2e;
+            margin-bottom: 4px;
         }
 
         .funnel-label {
-            font-size: 0.9em;
+            font-size: 0.88em;
             color: #666;
         }
 
         .funnel-rate {
-            font-size: 0.85em;
+            font-size: 0.82em;
             color: #999;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        .funnel-arrow {
-            font-size: 2em;
+        .funnel-arrow-down {
+            font-size: 1.6em;
             color: #bbb;
-            margin: 0 10px;
+            margin: 8px 0;
         }
+
+        .funnel-arrow-inline {
+            font-size: 1.6em;
+            color: #bbb;
+        }
+
+        .funnel-branch {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 0;
+            position: relative;
+        }
+        .funnel-branch::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: calc(50% - 100px);
+            width: 200px;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .funnel-branch-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 180px;
+        }
+
+        .funnel-path-label {
+            font-size: 0.78em;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+            color: white;
+        }
+        .funnel-path-label.a { background: #e74c3c; }
+        .funnel-path-label.b { background: #f39c12; }
 
         /* Charts */
         .chart-container {
@@ -416,8 +463,8 @@
         @media (max-width: 768px) {
             .header h1 { font-size: 1.6em; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .funnel-container { flex-direction: column; }
-            .funnel-arrow { transform: rotate(90deg); margin: 5px 0; }
+            .funnel-branch { flex-direction: column; gap: 20px; align-items: center; }
+            .funnel-branch::before { display: none; }
             .chart-container { height: 300px; }
             .insight-cards { grid-template-columns: 1fr; }
         }
@@ -554,9 +601,10 @@
             <h2>🎯 Meta 광고 타겟 페르소나별 성과</h2>
             <div class="annotation">※ Core A/B/C + Strategic B 광고세트 성과 분석</div>
 
-            <h3>CTR vs 전환율</h3>
-            <div class="chart-container">
-                <canvas id="metaPerformanceChart"></canvas>
+            <h3>CTR · CPC · 전환수 비교</h3>
+            <div class="annotation">※ 막대: 전환수 · CPC (좌축) / 선: CTR% (우축)</div>
+            <div class="chart-container tall">
+                <canvas id="metaComboChart"></canvas>
             </div>
 
             <h3>Meta 광고세트 상세 성과</h3>
@@ -686,9 +734,15 @@
             ],
             funnel: {
                 sessions: { value: 0, label: 'GA4 세션' },
-                events: { value: 0, label: '전환이벤트', rate: '0%' },
-                leads: { value: 0, label: '리드', rate: '0%' },
-                deals: { value: 0, label: '딜', rate: '0%' }
+                events: { value: 0, label: '전환이벤트 합계', rate: '0%' },
+                pathA: {
+                    event: { value: 0, label: 'click_contact', rate: '0%' },
+                    result: { value: 0, label: '딜(상담문의)', rate: '0%' }
+                },
+                pathB: {
+                    event: { value: 0, label: 'click_download_intro', rate: '0%' },
+                    result: { value: 0, label: '리드(소개서)', rate: '0%' }
+                }
             },
             contactChannel: { total: 0, labels: [], data: [] },
             downloadChannel: { total: 0, labels: [], data: [] },
@@ -1062,15 +1116,27 @@
                 config.kpi[1] = { class: 'deal', label: '딜(상담문의)', value: totalDeals, unit: '건', subtext: 'Recatch 기준' };
             }
 
-            // ── 5. 퍼널 계산 ──
+            // ── 5. 퍼널 계산 (Y형 분기) ──
+            // 경로 A: GA4 세션 → click_contact → 딜
+            // 경로 B: GA4 세션 → click_download_intro → 리드
             if (liveCount > 0) {
                 const sessions = typeof config.kpi[3].value === 'number' ? config.kpi[3].value : pn(config.kpi[3].value);
                 const events = typeof config.kpi[2].value === 'number' ? config.kpi[2].value : pn(config.kpi[2].value);
+                const contactTotal = config.contactChannel ? config.contactChannel.total : 0;
+                const downloadTotal = config.downloadChannel ? config.downloadChannel.total : 0;
+                const leads = totalLeads || pn(config.kpi[0].value);
+                const deals = totalDeals || pn(config.kpi[1].value);
                 config.funnel = {
                     sessions: { value: sessions, label: 'GA4 세션' },
-                    events: { value: events, label: '전환이벤트', rate: sessions > 0 ? (events / sessions * 100).toFixed(1) + '%' : '0%' },
-                    leads: { value: totalLeads || pn(config.kpi[0].value), label: '리드', rate: events > 0 ? ((totalLeads || pn(config.kpi[0].value)) / events * 100).toFixed(1) + '%' : '0%' },
-                    deals: { value: totalDeals || pn(config.kpi[1].value), label: '딜', rate: totalLeads > 0 ? (totalDeals / totalLeads * 100).toFixed(1) + '%' : '0%' }
+                    events: { value: events, label: '전환이벤트 합계', rate: sessions > 0 ? (events / sessions * 100).toFixed(1) + '%' : '0%' },
+                    pathA: {
+                        event: { value: contactTotal, label: 'click_contact', rate: sessions > 0 ? (contactTotal / sessions * 100).toFixed(1) + '%' : '0%' },
+                        result: { value: deals, label: '딜(상담문의)', rate: contactTotal > 0 ? (deals / contactTotal * 100).toFixed(1) + '%' : '0%' }
+                    },
+                    pathB: {
+                        event: { value: downloadTotal, label: 'click_download_intro', rate: sessions > 0 ? (downloadTotal / sessions * 100).toFixed(1) + '%' : '0%' },
+                        result: { value: leads, label: '리드(소개서)', rate: downloadTotal > 0 ? (leads / downloadTotal * 100).toFixed(1) + '%' : '0%' }
+                    }
                 };
             }
 
@@ -1128,28 +1194,71 @@
             renderFunnel() {
                 const container = document.getElementById('funnel-container');
                 const f = this.config.funnel;
-                const steps = [
-                    { value: f.sessions.value, label: f.sessions.label },
-                    { value: f.events.value, label: f.events.label, rate: f.events.rate },
-                    { value: f.leads.value, label: f.leads.label, rate: f.leads.rate },
-                    { value: f.deals.value, label: f.deals.label, rate: f.deals.rate }
-                ];
 
-                let html = '';
-                steps.forEach((step, index) => {
-                    html += `
+                container.innerHTML = `
+                    <!-- 상단: GA4 세션 → 전환이벤트 합계 -->
+                    <div class="funnel-top-row">
                         <div class="funnel-step">
-                            <div class="funnel-box">
-                                <div class="funnel-value">${step.value.toLocaleString()}</div>
-                                <div class="funnel-label">${step.label}</div>
-                                ${step.rate ? `<div class="funnel-rate">${step.rate}</div>` : ''}
+                            <div class="funnel-box start">
+                                <div class="funnel-value">${f.sessions.value.toLocaleString()}</div>
+                                <div class="funnel-label">${f.sessions.label}</div>
                             </div>
                         </div>
-                    `;
-                    if (index < steps.length - 1) html += '<div class="funnel-arrow">→</div>';
-                });
+                        <div class="funnel-arrow-inline">→</div>
+                        <div class="funnel-step">
+                            <div class="funnel-box start">
+                                <div class="funnel-value">${f.events.value.toLocaleString()}</div>
+                                <div class="funnel-label">${f.events.label}</div>
+                                <div class="funnel-rate">전환율 ${f.events.rate}</div>
+                            </div>
+                        </div>
+                    </div>
 
-                container.innerHTML = html;
+                    <div class="funnel-arrow-down">↓</div>
+
+                    <!-- 하단: 2갈래 분기 -->
+                    <div class="funnel-branch">
+                        <!-- 경로 A: click_contact → 딜 -->
+                        <div class="funnel-branch-path">
+                            <div class="funnel-path-label a">경로 A: 상담문의</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-a">
+                                    <div class="funnel-value">${f.pathA.event.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathA.event.label}</div>
+                                    <div class="funnel-rate">세션 대비 ${f.pathA.event.rate}</div>
+                                </div>
+                            </div>
+                            <div class="funnel-arrow-down">↓</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-a">
+                                    <div class="funnel-value">${f.pathA.result.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathA.result.label}</div>
+                                    <div class="funnel-rate">전환율 ${f.pathA.result.rate}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 경로 B: click_download_intro → 리드 -->
+                        <div class="funnel-branch-path">
+                            <div class="funnel-path-label b">경로 B: 소개서 다운</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-b">
+                                    <div class="funnel-value">${f.pathB.event.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathB.event.label}</div>
+                                    <div class="funnel-rate">세션 대비 ${f.pathB.event.rate}</div>
+                                </div>
+                            </div>
+                            <div class="funnel-arrow-down">↓</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-b">
+                                    <div class="funnel-value">${f.pathB.result.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathB.result.label}</div>
+                                    <div class="funnel-rate">전환율 ${f.pathB.result.rate}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
             renderChannelCharts() {
@@ -1555,25 +1664,77 @@
             }
 
             renderMetaPerformance() {
-                // Meta CTR vs Conversion Chart
-                const metaCtx = document.getElementById('metaPerformanceChart').getContext('2d');
+                const targets = this.config.metaTargets;
+                const labels = targets.map(t => t.name);
 
-                this.charts.metaPerformance = new Chart(metaCtx, {
-                    type: 'scatter',
+                // 콤보 차트: 막대(전환수, CPC) + 선(CTR) — 듀얼 Y축
+                this.charts.metaCombo = new Chart(document.getElementById('metaComboChart').getContext('2d'), {
+                    type: 'bar',
                     data: {
-                        datasets: [{
-                            label: 'Meta 광고세트',
-                            data: this.config.metaTargets.map(t => ({
-                                x: parseFloat(t.ctr),
-                                y: parseFloat(t.convRate)
-                            })),
-                            backgroundColor: '#2D7BF6'
-                        }]
+                        labels,
+                        datasets: [
+                            {
+                                label: '전환수',
+                                data: targets.map(t => t.conversions),
+                                backgroundColor: 'rgba(52, 152, 219, 0.75)',
+                                borderRadius: 4,
+                                yAxisID: 'y',
+                                order: 2
+                            },
+                            {
+                                label: 'CPC (₩)',
+                                data: targets.map(t => t.cpc),
+                                backgroundColor: 'rgba(243, 156, 18, 0.75)',
+                                borderRadius: 4,
+                                yAxisID: 'y',
+                                order: 3
+                            },
+                            {
+                                label: 'CTR (%)',
+                                data: targets.map(t => parseFloat(t.ctr)),
+                                type: 'line',
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 2.5,
+                                pointRadius: 5,
+                                pointBackgroundColor: '#e74c3c',
+                                fill: false,
+                                yAxisID: 'y1',
+                                order: 1
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: { x: { title: { display: true, text: 'CTR (%)' } }, y: { title: { display: true, text: '전환율 (%)' } } }
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        if (ctx.dataset.label === 'CPC (₩)') return `CPC: ₩${ctx.raw.toLocaleString()}`;
+                                        if (ctx.dataset.label === 'CTR (%)') return `CTR: ${ctx.raw}%`;
+                                        return `전환수: ${ctx.raw.toLocaleString()}건`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                position: 'left',
+                                beginAtZero: true,
+                                title: { display: true, text: '전환수 / CPC (₩)', font: { size: 11 } },
+                                ticks: { callback: v => v.toLocaleString() }
+                            },
+                            y1: {
+                                position: 'right',
+                                beginAtZero: true,
+                                title: { display: true, text: 'CTR (%)', font: { size: 11 } },
+                                ticks: { callback: v => v + '%' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
                     }
                 });
 
