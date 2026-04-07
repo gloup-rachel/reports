@@ -1323,7 +1323,7 @@
 
         function formatPercent(n) {
             if (n === null || n === undefined || isNaN(n)) return '0.00%';
-            return Number(n).toFixed(2) + '%';
+            return (Number(n) * 100).toFixed(2) + '%';
         }
 
         function parseGvizDate(dateStr) {
@@ -2060,7 +2060,7 @@
                 { label: '사용자', value: formatNumber(totalUsers) },
                 { label: '신규사용자', value: formatNumber(totalNewUsers) },
                 { label: '참여세션', value: formatNumber(totalEngaged) },
-                { label: '참여율', value: formatPercent((totalEngaged / (totalSessions || 1)) * 100) }
+                { label: '참여율', value: formatPercent(totalEngaged / (totalSessions || 1)) }
             ];
 
             kpis.forEach(kpi => {
@@ -2141,7 +2141,7 @@
 
             Object.values(byChannel).forEach(row => {
                 const tr = document.createElement('tr');
-                const engagementRate = (row.참여세션 / (row.세션수 || 1)) * 100;
+                const engagementRate = row.참여세션 / (row.세션수 || 1);
                 const avgTime = (row.평균참여시간 / row.count).toFixed(2);
 
                 tr.innerHTML = `
@@ -2573,11 +2573,11 @@
 
             const contactLeads = dealsData.length;
             const downloadLeads = leadsData.length;
-            const conversionRate = (totalConversions / (totalSessions || 1)) * 100;
-            const contactRate = (contactEvents / (totalSessions || 1)) * 100;
-            const downloadRate = (downloadEvents / (totalSessions || 1)) * 100;
-            const contactDealRate = (contactLeads / (contactEvents || 1)) * 100;
-            const downloadLeadRate = (downloadLeads / (downloadEvents || 1)) * 100;
+            const conversionRate = totalConversions / (totalSessions || 1);
+            const contactRate = contactEvents / (totalSessions || 1);
+            const downloadRate = downloadEvents / (totalSessions || 1);
+            const contactDealRate = contactLeads / (contactEvents || 1);
+            const downloadLeadRate = downloadLeads / (downloadEvents || 1);
 
             const kpis = [
                 { label: 'GA4 세션', value: formatNumber(totalSessions) },
@@ -2628,7 +2628,9 @@
 
         function renderUnifiedFunnelViz(sessions, events, contact, download, deals, leads, contactRate, downloadRate, dealRate, leadRate) {
             const container = document.getElementById('unified-funnel');
-            const eventRate = (events / (sessions || 1)) * 100;
+            const eventRate = (events / (sessions || 1));
+            // Rates are 0~1 decimals; multiply by 100 for display
+            const cr = contactRate * 100, dr = downloadRate * 100, dlr = dealRate * 100, ldr = leadRate * 100, er = eventRate * 100;
 
             container.innerHTML = `
                 <div style="text-align: center; font-family: inherit;">
@@ -2638,30 +2640,30 @@
                     <div style="font-size: 20px; margin-bottom: 12px;">↓</div>
                     <div style="background: #9b59b6; color: white; padding: 20px; border-radius: 8px; margin-bottom: 12px; font-weight: bold;">
                         전환이벤트 합계: ${formatNumber(events)}<br>
-                        <span style="font-size: 12px; opacity: 0.9;">전환율 ${eventRate.toFixed(1)}%</span>
+                        <span style="font-size: 12px; opacity: 0.9;">전환율 ${er.toFixed(1)}%</span>
                     </div>
                     <div style="font-size: 20px; margin-bottom: 12px;">↓     ↓</div>
                     <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 12px;">
                         <div style="flex: 1; max-width: 250px;">
                             <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 8px; margin-bottom: 8px; font-weight: bold;">
                                 경로 A: 상담문의<br>
-                                <span style="font-size: 13px;">${formatNumber(contact)} (${contactRate.toFixed(1)}%)</span>
+                                <span style="font-size: 13px;">${formatNumber(contact)} (${cr.toFixed(1)}%)</span>
                             </div>
                             <div style="font-size: 14px; margin-bottom: 8px;">↓</div>
                             <div style="background: #c0392b; color: white; padding: 12px; border-radius: 8px; font-weight: bold;">
                                 딜(상담문의): ${formatNumber(deals)}<br>
-                                <span style="font-size: 12px;">전환율 ${dealRate.toFixed(1)}%</span>
+                                <span style="font-size: 12px;">전환율 ${dlr.toFixed(1)}%</span>
                             </div>
                         </div>
                         <div style="flex: 1; max-width: 250px;">
                             <div style="background: #f39c12; color: white; padding: 15px; border-radius: 8px; margin-bottom: 8px; font-weight: bold;">
                                 경로 B: 소개서 다운<br>
-                                <span style="font-size: 13px;">${formatNumber(download)} (${downloadRate.toFixed(1)}%)</span>
+                                <span style="font-size: 13px;">${formatNumber(download)} (${dr.toFixed(1)}%)</span>
                             </div>
                             <div style="font-size: 14px; margin-bottom: 8px;">↓</div>
                             <div style="background: #d68910; color: white; padding: 12px; border-radius: 8px; font-weight: bold;">
                                 리드(소개서): ${formatNumber(leads)}<br>
-                                <span style="font-size: 12px;">전환율 ${leadRate.toFixed(1)}%</span>
+                                <span style="font-size: 12px;">전환율 ${ldr.toFixed(1)}%</span>
                             </div>
                         </div>
                     </div>
@@ -2796,7 +2798,7 @@
             tbody.innerHTML = '';
 
             Object.entries(byChannel).forEach(([channel, vals]) => {
-                const engageRate = (vals.engaged / (vals.sessions || 1)) * 100;
+                const engageRate = vals.engaged / (vals.sessions || 1);
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${channel}</td>
