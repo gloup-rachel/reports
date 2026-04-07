@@ -1,0 +1,1917 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESPACE 퍼포먼스 대시보드 - 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/pretendard@3.3.1/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1a1a2e;
+            --primary-darker: #16213e;
+            --accent-blue: #3498db;
+            --accent-green: #27ae60;
+            --accent-red: #e74c3c;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --bg-light: #f5f7fa;
+            --border-color: #ddd;
+            --success-bg: #d4edda;
+            --error-bg: #f8d7da;
+            --warning-bg: #fff3cd;
+            --info-bg: #d1ecf1;
+        }
+
+        body {
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-darker) 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .admin-badge {
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: Pretendard, -apple-system, sans-serif;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-success {
+            background-color: var(--accent-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #229954;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5d6d7b;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .section-header:hover {
+            background-color: #f0f1f3;
+        }
+
+        .section-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+
+        .section-toggle {
+            font-size: 20px;
+            color: var(--text-secondary);
+            transition: transform 0.3s ease;
+        }
+
+        .section.collapsed .section-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 20px;
+            max-height: 10000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .section.collapsed .section-content {
+            max-height: 0;
+            padding: 0 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: Pretendard, -apple-system, sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group.required label::after {
+            content: " *";
+            color: var(--accent-red);
+        }
+
+        input.invalid {
+            border-color: var(--accent-red);
+            background-color: rgba(231, 76, 60, 0.05);
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            background-color: white;
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .subsection {
+            background-color: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .subsection-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        th {
+            background-color: #f0f1f3;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            color: white;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background-color: var(--accent-green);
+        }
+
+        .toast.error {
+            background-color: var(--accent-red);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-dark);
+        }
+
+        .modal-text {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .divider {
+            border-top: 1px solid var(--border-color);
+            margin: 20px 0;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: var(--text-secondary);
+            padding: 10px;
+            background-color: #f0f1f3;
+            border-radius: 4px;
+            margin-top: 12px;
+        }
+
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-with-calc {
+            position: relative;
+        }
+
+        .calc-label {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: white;
+            padding: 0 4px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 4px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .tag.active {
+            background-color: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority-badge.p1 {
+            background-color: #ffe0e0;
+            color: #c0392b;
+        }
+
+        .priority-badge.p2 {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .priority-badge.p3 {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.pending {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .status-badge.progress {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.complete {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .header-buttons {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div>
+                <div class="logo">RESPACE <span class="admin-badge">ADMIN</span></div>
+                <div class="header-subtitle">퍼포먼스 대시보드 관리</div>
+            </div>
+        </div>
+        <div class="header-buttons">
+            <button class="btn-primary" onclick="saveData()">💾 저장</button>
+            <button class="btn-primary" onclick="previewDashboard()">👁️ 미리보기</button>
+            <button class="btn-secondary" onclick="exportData()">⬇️ 내보내기</button>
+            <button class="btn-secondary" onclick="openImportDialog()">⬆️ 가져오기</button>
+            <button class="btn-danger" onclick="resetData()">🔄 초기화</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- General Settings Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>⚙️ 일반 설정</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>데이터 추적 상태</label>
+                        <div class="toggle-group">
+                            <button type="button" class="toggle-btn active" data-value="live" onclick="setTrackingStatus(this)">🟢 실시간</button>
+                            <button type="button" class="toggle-btn" data-value="partial" onclick="setTrackingStatus(this)">🟡 부분</button>
+                            <button type="button" class="toggle-btn" data-value="offline" onclick="setTrackingStatus(this)">🔴 오프라인</button>
+                        </div>
+                        <input type="hidden" id="trackingStatus" value="live">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>데이터 수집 시작일</label>
+                        <input type="date" id="periodStart" value="2026-04-01">
+                    </div>
+                    <div class="form-group">
+                        <label>데이터 수집 종료일</label>
+                        <input type="date" id="periodEnd" value="2026-04-07">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>마지막 업데이트</label>
+                        <input type="datetime-local" id="lastUpdate">
+                    </div>
+                    <div class="form-group">
+                        <label>뷰 모드</label>
+                        <div class="toggle-group">
+                            <button type="button" class="toggle-btn active" data-value="daily" onclick="setViewMode(this)">일자별</button>
+                            <button type="button" class="toggle-btn" data-value="weekly" onclick="setViewMode(this)">주차별</button>
+                        </div>
+                        <input type="hidden" id="viewMode" value="daily">
+                    </div>
+                </div>
+
+                <div class="last-updated" id="lastUpdateDisplay">마지막 저장: 아직 저장되지 않음</div>
+            </div>
+        </div>
+
+        <!-- Search Ads Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>🔍 검색광고 데이터</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <!-- Naver Section -->
+                <div class="subsection">
+                    <div class="subsection-title">네이버 검색광고</div>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 16px;">통합 데이터</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>노출수</label>
+                            <input type="number" class="naver-summary" data-field="impressions" min="0" onchange="autoCalc('.naver-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>클릭수</label>
+                            <input type="number" class="naver-summary" data-field="clicks" min="0" onchange="autoCalc('.naver-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>CTR (%)</label>
+                            <input type="number" class="naver-summary" data-field="ctr" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                        </div>
+                        <div class="form-group">
+                            <label>비용 (₩)</label>
+                            <input type="number" class="naver-summary" data-field="cost" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>전환수</label>
+                            <input type="number" class="naver-summary" data-field="conversions" min="0" onchange="autoCalc('.naver-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>CPA (₩)</label>
+                            <input type="number" class="naver-summary" data-field="cpa" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                        </div>
+                    </div>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 16px;">일별/주별 데이터</div>
+                    <div id="naverDaily" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addDailyRow('naverDaily', 'naver')">+ 행 추가</button>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 20px;">캠페인별 데이터</div>
+                    <div id="naverCampaigns" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addCampaignRow('naverCampaigns', 'naver')">+ 캠페인 추가</button>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 20px;">키워드별 데이터</div>
+                    <div id="naverKeywords" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addKeywordRow('naverKeywords', 'naver')">+ 키워드 추가</button>
+                </div>
+
+                <!-- Google Section -->
+                <div class="subsection" style="margin-top: 24px;">
+                    <div class="subsection-title">구글 검색광고</div>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 16px;">통합 데이터</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>노출수</label>
+                            <input type="number" class="google-summary" data-field="impressions" min="0" onchange="autoCalc('.google-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>클릭수</label>
+                            <input type="number" class="google-summary" data-field="clicks" min="0" onchange="autoCalc('.google-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>CTR (%)</label>
+                            <input type="number" class="google-summary" data-field="ctr" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                        </div>
+                        <div class="form-group">
+                            <label>비용 (₩)</label>
+                            <input type="number" class="google-summary" data-field="cost" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>전환수</label>
+                            <input type="number" class="google-summary" data-field="conversions" min="0" onchange="autoCalc('.google-summary')">
+                        </div>
+                        <div class="form-group">
+                            <label>CPA (₩)</label>
+                            <input type="number" class="google-summary" data-field="cpa" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                        </div>
+                    </div>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 16px;">일별/주별 데이터</div>
+                    <div id="googleDaily" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addDailyRow('googleDaily', 'google')">+ 행 추가</button>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 20px;">캠페인별 데이터</div>
+                    <div id="googleCampaigns" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addCampaignRow('googleCampaigns', 'google')">+ 캠페인 추가</button>
+
+                    <div class="subsection-title" style="font-size: 12px; border: none; margin-top: 20px;">키워드별 데이터</div>
+                    <div id="googleKeywords" class="data-table"></div>
+                    <button class="btn-secondary btn-small" onclick="addKeywordRow('googleKeywords', 'google')">+ 키워드 추가</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meta Ads Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>📱 Meta 광고 데이터</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="subsection-title" style="margin-bottom: 16px;">통합 데이터</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>비용 (₩)</label>
+                        <input type="number" class="meta-summary" data-field="spend" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>노출수</label>
+                        <input type="number" class="meta-summary" data-field="impressions" min="0" onchange="autoCalc('.meta-summary')">
+                    </div>
+                    <div class="form-group">
+                        <label>도달</label>
+                        <input type="number" class="meta-summary" data-field="reach" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>클릭수</label>
+                        <input type="number" class="meta-summary" data-field="clicks" min="0" onchange="autoCalc('.meta-summary')">
+                    </div>
+                    <div class="form-group">
+                        <label>CTR (%)</label>
+                        <input type="number" class="meta-summary" data-field="ctr" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                    </div>
+                    <div class="form-group">
+                        <label>전환수</label>
+                        <input type="number" class="meta-summary" data-field="conversions" min="0" onchange="autoCalc('.meta-summary')">
+                    </div>
+                    <div class="form-group">
+                        <label>CPA (₩)</label>
+                        <input type="number" class="meta-summary" data-field="cpa" min="0" step="0.01" readonly style="background-color: #f0f1f3;">
+                    </div>
+                    <div class="form-group">
+                        <label>ROAS</label>
+                        <input type="number" class="meta-summary" data-field="roas" min="0" step="0.01">
+                    </div>
+                </div>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">일별/주별 데이터</div>
+                <div id="metaDaily" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addMetaDailyRow('metaDaily')">+ 행 추가</button>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">캠페인/광고그룹별</div>
+                <div id="metaCampaigns" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addMetaCampaignRow('metaCampaigns')">+ 캠페인 추가</button>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">소재별</div>
+                <div id="metaCreatives" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addMetaCreativeRow('metaCreatives')">+ 소재 추가</button>
+            </div>
+        </div>
+
+        <!-- GA4 Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>📊 GA4 데이터</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div class="subsection-title" style="margin-bottom: 16px;">트래픽 데이터</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>세션수</label>
+                        <input type="number" class="ga4-traffic" data-field="sessions" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>사용자수</label>
+                        <input type="number" class="ga4-traffic" data-field="users" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>신규 사용자</label>
+                        <input type="number" class="ga4-traffic" data-field="newUsers" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>페이지뷰</label>
+                        <input type="number" class="ga4-traffic" data-field="pageviews" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>이탈률 (%)</label>
+                        <input type="number" class="ga4-traffic" data-field="bounceRate" min="0" max="100" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>평균 세션 시간 (초)</label>
+                        <input type="number" class="ga4-traffic" data-field="avgSessionDuration" min="0" step="0.1">
+                    </div>
+                </div>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">일별/주별 데이터</div>
+                <div id="ga4Daily" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addGA4DailyRow('ga4Daily')">+ 행 추가</button>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">채널별 데이터</div>
+                <div id="ga4Channels" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addGA4ChannelRow('ga4Channels')">+ 채널 추가</button>
+
+                <div class="subsection-title" style="margin-top: 20px; margin-bottom: 12px;">전환 액션</div>
+                <div id="ga4Conversions" class="data-table"></div>
+                <button class="btn-secondary btn-small" onclick="addGA4ConversionRow('ga4Conversions')">+ 액션 추가</button>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div class="section">
+            <div class="section-header" onclick="toggleSection(this)">
+                <h2>💡 주간 인사이트 & 액션</h2>
+                <span class="section-toggle">▼</span>
+            </div>
+            <div class="section-content">
+                <div id="insightsContainer"></div>
+                <button class="btn-primary" onclick="addInsightCard()">+ 인사이트 카드 추가</button>
+
+                <div class="divider"></div>
+
+                <div class="subsection-title" style="margin-bottom: 16px;">실행 항목</div>
+                <div id="actionItemsContainer"></div>
+                <button class="btn-primary" onclick="addActionItem()">+ 액션 항목 추가</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">확인</div>
+            <div class="modal-text" id="confirmText">계속하시겠습니까?</div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeModal()">취소</button>
+                <button class="btn-primary" id="confirmBtn" onclick="closeModal()">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import File Input -->
+    <input type="file" id="importFile" style="display: none;" accept=".json" onchange="handleImport(event)">
+
+    <script>
+        // ==================== Data Structure ====================
+        let appData = {
+            settings: {
+                trackingStatus: 'live',
+                periodStart: '2026-04-01',
+                periodEnd: '2026-04-07',
+                lastUpdate: new Date().toISOString(),
+                viewMode: 'daily'
+            },
+            searchAds: {
+                naver: {
+                    summary: { impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 },
+                    daily: [],
+                    campaigns: [],
+                    keywords: []
+                },
+                google: {
+                    summary: { impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 },
+                    daily: [],
+                    campaigns: [],
+                    keywords: []
+                }
+            },
+            meta: {
+                summary: { spend: 0, impressions: 0, reach: 0, clicks: 0, ctr: 0, conversions: 0, cpa: 0, roas: 0 },
+                daily: [],
+                campaigns: [],
+                creatives: []
+            },
+            ga4: {
+                traffic: {
+                    summary: { sessions: 0, users: 0, newUsers: 0, pageviews: 0, bounceRate: 0, avgSessionDuration: 0 },
+                    daily: [],
+                    channels: []
+                },
+                conversions: []
+            },
+            insights: [],
+            actionItems: []
+        };
+
+        // ==================== Initialization ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            populateAllForms();
+            updateLastUpdateDisplay();
+        });
+
+        // ==================== localStorage Functions ====================
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('respace_dashboard_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appData = { ...appData, ...parsed };
+                } catch (e) {
+                    console.error('Error loading data:', e);
+                    showToast('데이터 로드에 실패했습니다.', 'error');
+                }
+            }
+        }
+
+        function saveData() {
+            gatherFormData();
+            localStorage.setItem('respace_dashboard_data', JSON.stringify(appData));
+            appData.settings.lastUpdate = new Date().toISOString();
+            updateLastUpdateDisplay();
+            showToast('데이터가 저장되었습니다.', 'success');
+        }
+
+        // ==================== Form Population ====================
+        function populateAllForms() {
+            // Settings
+            document.getElementById('trackingStatus').value = appData.settings.trackingStatus;
+            document.getElementById('periodStart').value = appData.settings.periodStart;
+            document.getElementById('periodEnd').value = appData.settings.periodEnd;
+            document.getElementById('viewMode').value = appData.settings.viewMode;
+            updateTrackingButtons();
+            updateViewModeButtons();
+
+            // Set lastUpdate to now if not set
+            if (!document.getElementById('lastUpdate').value) {
+                const now = new Date().toISOString().slice(0, 16);
+                document.getElementById('lastUpdate').value = now;
+            }
+
+            // Search Ads
+            populateSearchAdsForm();
+
+            // Meta
+            populateMetaForm();
+
+            // GA4
+            populateGA4Form();
+
+            // Insights & Actions
+            renderInsights();
+            renderActionItems();
+        }
+
+        function populateSearchAdsForm() {
+            // Naver Summary
+            Object.entries(appData.searchAds.naver.summary).forEach(([key, value]) => {
+                const input = document.querySelector(`.naver-summary[data-field="${key}"]`);
+                if (input) input.value = value;
+            });
+
+            // Google Summary
+            Object.entries(appData.searchAds.google.summary).forEach(([key, value]) => {
+                const input = document.querySelector(`.google-summary[data-field="${key}"]`);
+                if (input) input.value = value;
+            });
+
+            // Daily rows
+            renderSearchAdsDailyRows('naver');
+            renderSearchAdsDailyRows('google');
+
+            // Campaign rows
+            renderSearchAdsCampaignRows('naver');
+            renderSearchAdsCampaignRows('google');
+
+            // Keyword rows
+            renderSearchAdsKeywordRows('naver');
+            renderSearchAdsKeywordRows('google');
+        }
+
+        function renderSearchAdsDailyRows(platform) {
+            const container = document.getElementById(`${platform}Daily`);
+            const rows = appData.searchAds[platform].daily;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>날짜/주차</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>비용 (₩)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.label || ''}" onchange="updateSearchAdsDailyRow('${platform}', ${idx}, 'label', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateSearchAdsDailyRow('${platform}', ${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateSearchAdsDailyRow('${platform}', ${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.cost}" onchange="updateSearchAdsDailyRow('${platform}', ${idx}, 'cost', this.value)"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateSearchAdsDailyRow('${platform}', ${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeSearchAdsDailyRow('${platform}', ${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderSearchAdsCampaignRows(platform) {
+            const container = document.getElementById(`${platform}Campaigns`);
+            const rows = appData.searchAds[platform].campaigns;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>캠페인명</th>
+                        <th>광고그룹</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>비용 (₩)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.campaignName || ''}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'campaignName', this.value)"></td>
+                    <td><input type="text" value="${row.adGroup || ''}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'adGroup', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.cost}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'cost', this.value)"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateSearchAdsCampaignRow('${platform}', ${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeSearchAdsCampaignRow('${platform}', ${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderSearchAdsKeywordRows(platform) {
+            const container = document.getElementById(`${platform}Keywords`);
+            const rows = appData.searchAds[platform].keywords;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>키워드</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>평균 CPC (₩)</th>
+                        <th>비용 (₩)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.keyword || ''}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'keyword', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.avgCPC}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'avgCPC', this.value)"></td>
+                    <td><input type="number" value="${row.cost}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'cost', this.value)"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateSearchAdsKeywordRow('${platform}', ${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeSearchAdsKeywordRow('${platform}', ${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function populateMetaForm() {
+            // Summary
+            Object.entries(appData.meta.summary).forEach(([key, value]) => {
+                const input = document.querySelector(`.meta-summary[data-field="${key}"]`);
+                if (input) input.value = value;
+            });
+
+            // Daily rows
+            renderMetaDailyRows();
+
+            // Campaign rows
+            renderMetaCampaignRows();
+
+            // Creative rows
+            renderMetaCreativeRows();
+        }
+
+        function renderMetaDailyRows() {
+            const container = document.getElementById('metaDaily');
+            const rows = appData.meta.daily;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>날짜/주차</th>
+                        <th>비용 (₩)</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>ROAS</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.label || ''}" onchange="updateMetaDailyRow(${idx}, 'label', this.value)"></td>
+                    <td><input type="number" value="${row.spend}" onchange="updateMetaDailyRow(${idx}, 'spend', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateMetaDailyRow(${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateMetaDailyRow(${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateMetaDailyRow(${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.roas}" onchange="updateMetaDailyRow(${idx}, 'roas', this.value)"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeMetaDailyRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderMetaCampaignRows() {
+            const container = document.getElementById('metaCampaigns');
+            const rows = appData.meta.campaigns;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>캠페인명</th>
+                        <th>광고그룹명</th>
+                        <th>비용 (₩)</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>ROAS</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.campaignName || ''}" onchange="updateMetaCampaignRow(${idx}, 'campaignName', this.value)"></td>
+                    <td><input type="text" value="${row.adSetName || ''}" onchange="updateMetaCampaignRow(${idx}, 'adSetName', this.value)"></td>
+                    <td><input type="number" value="${row.spend}" onchange="updateMetaCampaignRow(${idx}, 'spend', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateMetaCampaignRow(${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateMetaCampaignRow(${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateMetaCampaignRow(${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.roas}" onchange="updateMetaCampaignRow(${idx}, 'roas', this.value)"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeMetaCampaignRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderMetaCreativeRows() {
+            const container = document.getElementById('metaCreatives');
+            const rows = appData.meta.creatives;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>소재명</th>
+                        <th>형식</th>
+                        <th>비용 (₩)</th>
+                        <th>노출수</th>
+                        <th>클릭수</th>
+                        <th>CTR (%)</th>
+                        <th>전환수</th>
+                        <th>CPA (₩)</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.creativeName || ''}" onchange="updateMetaCreativeRow(${idx}, 'creativeName', this.value)"></td>
+                    <td><select onchange="updateMetaCreativeRow(${idx}, 'format', this.value)">
+                        <option value="image" ${row.format === 'image' ? 'selected' : ''}>이미지</option>
+                        <option value="video" ${row.format === 'video' ? 'selected' : ''}>동영상</option>
+                        <option value="carousel" ${row.format === 'carousel' ? 'selected' : ''}>캐러셀</option>
+                    </select></td>
+                    <td><input type="number" value="${row.spend}" onchange="updateMetaCreativeRow(${idx}, 'spend', this.value)"></td>
+                    <td><input type="number" value="${row.impressions}" onchange="updateMetaCreativeRow(${idx}, 'impressions', this.value)"></td>
+                    <td><input type="number" value="${row.clicks}" onchange="updateMetaCreativeRow(${idx}, 'clicks', this.value)"></td>
+                    <td><input type="number" value="${row.ctr}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateMetaCreativeRow(${idx}, 'conversions', this.value)"></td>
+                    <td><input type="number" value="${row.cpa}" readonly style="background-color: #f0f1f3;"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeMetaCreativeRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function populateGA4Form() {
+            // Traffic Summary
+            Object.entries(appData.ga4.traffic.summary).forEach(([key, value]) => {
+                const input = document.querySelector(`.ga4-traffic[data-field="${key}"]`);
+                if (input) input.value = value;
+            });
+
+            // Daily rows
+            renderGA4DailyRows();
+
+            // Channel rows
+            renderGA4ChannelRows();
+
+            // Conversion rows
+            renderGA4ConversionRows();
+        }
+
+        function renderGA4DailyRows() {
+            const container = document.getElementById('ga4Daily');
+            const rows = appData.ga4.traffic.daily;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>날짜/주차</th>
+                        <th>세션수</th>
+                        <th>사용자수</th>
+                        <th>신규 사용자</th>
+                        <th>페이지뷰</th>
+                        <th>이탈률 (%)</th>
+                        <th>평균 세션 시간 (초)</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.label || ''}" onchange="updateGA4DailyRow(${idx}, 'label', this.value)"></td>
+                    <td><input type="number" value="${row.sessions}" onchange="updateGA4DailyRow(${idx}, 'sessions', this.value)"></td>
+                    <td><input type="number" value="${row.users}" onchange="updateGA4DailyRow(${idx}, 'users', this.value)"></td>
+                    <td><input type="number" value="${row.newUsers}" onchange="updateGA4DailyRow(${idx}, 'newUsers', this.value)"></td>
+                    <td><input type="number" value="${row.pageviews}" onchange="updateGA4DailyRow(${idx}, 'pageviews', this.value)"></td>
+                    <td><input type="number" value="${row.bounceRate}" onchange="updateGA4DailyRow(${idx}, 'bounceRate', this.value)"></td>
+                    <td><input type="number" value="${row.avgSessionDuration}" onchange="updateGA4DailyRow(${idx}, 'avgSessionDuration', this.value)"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeGA4DailyRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderGA4ChannelRows() {
+            const container = document.getElementById('ga4Channels');
+            const rows = appData.ga4.traffic.channels;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>채널 그룹</th>
+                        <th>세션수</th>
+                        <th>사용자수</th>
+                        <th>전환수</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.channelGroup || ''}" onchange="updateGA4ChannelRow(${idx}, 'channelGroup', this.value)"></td>
+                    <td><input type="number" value="${row.sessions}" onchange="updateGA4ChannelRow(${idx}, 'sessions', this.value)"></td>
+                    <td><input type="number" value="${row.users}" onchange="updateGA4ChannelRow(${idx}, 'users', this.value)"></td>
+                    <td><input type="number" value="${row.conversions}" onchange="updateGA4ChannelRow(${idx}, 'conversions', this.value)"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeGA4ChannelRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderGA4ConversionRows() {
+            const container = document.getElementById('ga4Conversions');
+            const rows = appData.ga4.conversions;
+
+            if (rows.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 12px;">아직 데이터가 없습니다.</p>';
+                return;
+            }
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>이벤트명</th>
+                        <th>완료수</th>
+                        <th>전환율 (%)</th>
+                        <th>출처/매체</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            rows.forEach((row, idx) => {
+                html += `<tr>
+                    <td><input type="text" value="${row.eventName || ''}" onchange="updateGA4ConversionRow(${idx}, 'eventName', this.value)"></td>
+                    <td><input type="number" value="${row.completions}" onchange="updateGA4ConversionRow(${idx}, 'completions', this.value)"></td>
+                    <td><input type="number" value="${row.conversionRate}" onchange="updateGA4ConversionRow(${idx}, 'conversionRate', this.value)"></td>
+                    <td><input type="text" value="${row.sourceMedium || ''}" onchange="updateGA4ConversionRow(${idx}, 'sourceMedium', this.value)"></td>
+                    <td><button class="btn-danger btn-small" onclick="removeGA4ConversionRow(${idx})">삭제</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ==================== Add Row Functions ====================
+        function addDailyRow(containerId, platform) {
+            const newRow = { label: '', impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 };
+            appData.searchAds[platform].daily.push(newRow);
+            renderSearchAdsDailyRows(platform);
+        }
+
+        function addCampaignRow(containerId, platform) {
+            const newRow = { campaignName: '', adGroup: '', impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 };
+            appData.searchAds[platform].campaigns.push(newRow);
+            renderSearchAdsCampaignRows(platform);
+        }
+
+        function addKeywordRow(containerId, platform) {
+            const newRow = { keyword: '', impressions: 0, clicks: 0, ctr: 0, avgCPC: 0, cost: 0, conversions: 0, cpa: 0 };
+            appData.searchAds[platform].keywords.push(newRow);
+            renderSearchAdsKeywordRows(platform);
+        }
+
+        function addMetaDailyRow() {
+            const newRow = { label: '', spend: 0, impressions: 0, reach: 0, clicks: 0, ctr: 0, conversions: 0, cpa: 0, roas: 0 };
+            appData.meta.daily.push(newRow);
+            renderMetaDailyRows();
+        }
+
+        function addMetaCampaignRow() {
+            const newRow = { campaignName: '', adSetName: '', spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, cpa: 0, roas: 0 };
+            appData.meta.campaigns.push(newRow);
+            renderMetaCampaignRows();
+        }
+
+        function addMetaCreativeRow() {
+            const newRow = { creativeName: '', format: 'image', spend: 0, impressions: 0, clicks: 0, ctr: 0, conversions: 0, cpa: 0 };
+            appData.meta.creatives.push(newRow);
+            renderMetaCreativeRows();
+        }
+
+        function addGA4DailyRow() {
+            const newRow = { label: '', sessions: 0, users: 0, newUsers: 0, pageviews: 0, bounceRate: 0, avgSessionDuration: 0 };
+            appData.ga4.traffic.daily.push(newRow);
+            renderGA4DailyRows();
+        }
+
+        function addGA4ChannelRow() {
+            const newRow = { channelGroup: '', sessions: 0, users: 0, conversions: 0 };
+            appData.ga4.traffic.channels.push(newRow);
+            renderGA4ChannelRows();
+        }
+
+        function addGA4ConversionRow() {
+            const newRow = { eventName: '', completions: 0, conversionRate: 0, sourceMedium: '' };
+            appData.ga4.conversions.push(newRow);
+            renderGA4ConversionRows();
+        }
+
+        // ==================== Update Row Functions ====================
+        function updateSearchAdsDailyRow(platform, idx, field, value) {
+            appData.searchAds[platform].daily[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.searchAds[platform].daily[idx]);
+            renderSearchAdsDailyRows(platform);
+        }
+
+        function updateSearchAdsCampaignRow(platform, idx, field, value) {
+            appData.searchAds[platform].campaigns[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.searchAds[platform].campaigns[idx]);
+            renderSearchAdsCampaignRows(platform);
+        }
+
+        function updateSearchAdsKeywordRow(platform, idx, field, value) {
+            appData.searchAds[platform].keywords[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.searchAds[platform].keywords[idx]);
+            renderSearchAdsKeywordRows(platform);
+        }
+
+        function removeSearchAdsDailyRow(platform, idx) {
+            appData.searchAds[platform].daily.splice(idx, 1);
+            renderSearchAdsDailyRows(platform);
+        }
+
+        function removeSearchAdsCampaignRow(platform, idx) {
+            appData.searchAds[platform].campaigns.splice(idx, 1);
+            renderSearchAdsCampaignRows(platform);
+        }
+
+        function removeSearchAdsKeywordRow(platform, idx) {
+            appData.searchAds[platform].keywords.splice(idx, 1);
+            renderSearchAdsKeywordRows(platform);
+        }
+
+        function updateMetaDailyRow(idx, field, value) {
+            appData.meta.daily[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.meta.daily[idx]);
+            renderMetaDailyRows();
+        }
+
+        function removeMetaDailyRow(idx) {
+            appData.meta.daily.splice(idx, 1);
+            renderMetaDailyRows();
+        }
+
+        function updateMetaCampaignRow(idx, field, value) {
+            appData.meta.campaigns[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.meta.campaigns[idx]);
+            renderMetaCampaignRows();
+        }
+
+        function removeMetaCampaignRow(idx) {
+            appData.meta.campaigns.splice(idx, 1);
+            renderMetaCampaignRows();
+        }
+
+        function updateMetaCreativeRow(idx, field, value) {
+            appData.meta.creatives[idx][field] = isNaN(value) ? value : parseFloat(value);
+            autoCalcRow(appData.meta.creatives[idx]);
+            renderMetaCreativeRows();
+        }
+
+        function removeMetaCreativeRow(idx) {
+            appData.meta.creatives.splice(idx, 1);
+            renderMetaCreativeRows();
+        }
+
+        function updateGA4DailyRow(idx, field, value) {
+            appData.ga4.traffic.daily[idx][field] = isNaN(value) ? value : parseFloat(value);
+            renderGA4DailyRows();
+        }
+
+        function removeGA4DailyRow(idx) {
+            appData.ga4.traffic.daily.splice(idx, 1);
+            renderGA4DailyRows();
+        }
+
+        function updateGA4ChannelRow(idx, field, value) {
+            appData.ga4.traffic.channels[idx][field] = isNaN(value) ? value : parseFloat(value);
+            renderGA4ChannelRows();
+        }
+
+        function removeGA4ChannelRow(idx) {
+            appData.ga4.traffic.channels.splice(idx, 1);
+            renderGA4ChannelRows();
+        }
+
+        function updateGA4ConversionRow(idx, field, value) {
+            appData.ga4.conversions[idx][field] = isNaN(value) ? value : parseFloat(value);
+            renderGA4ConversionRows();
+        }
+
+        function removeGA4ConversionRow(idx) {
+            appData.ga4.conversions.splice(idx, 1);
+            renderGA4ConversionRows();
+        }
+
+        // ==================== Auto Calculation ====================
+        function autoCalcRow(row) {
+            if (row.impressions !== undefined && row.clicks !== undefined) {
+                row.ctr = row.impressions > 0 ? parseFloat(((row.clicks / row.impressions) * 100).toFixed(2)) : 0;
+            }
+            if (row.cost !== undefined && row.conversions !== undefined) {
+                row.cpa = row.conversions > 0 ? parseFloat((row.cost / row.conversions).toFixed(2)) : 0;
+            }
+        }
+
+        function autoCalc(selector) {
+            const inputs = document.querySelectorAll(selector);
+            const summaryObj = {};
+
+            inputs.forEach(input => {
+                const field = input.dataset.field;
+                summaryObj[field] = parseFloat(input.value) || 0;
+            });
+
+            autoCalcRow(summaryObj);
+
+            inputs.forEach(input => {
+                const field = input.dataset.field;
+                if (field === 'ctr' || field === 'cpa') {
+                    input.value = summaryObj[field];
+                }
+            });
+        }
+
+        // ==================== Insights & Actions ====================
+        function renderInsights() {
+            const container = document.getElementById('insightsContainer');
+
+            if (appData.insights.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">아직 인사이트가 없습니다.</p>';
+                return;
+            }
+
+            let html = '';
+            appData.insights.forEach((insight, idx) => {
+                const priorityColor = insight.priority === 'P1' ? 'p1' : insight.priority === 'P2' ? 'p2' : 'p3';
+                html += `
+                    <div class="subsection" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="flex: 1;">
+                                <label>주차</label>
+                                <select onchange="updateInsight(${idx}, 'week', this.value)">
+                                    <option value="1" ${insight.week === 1 ? 'selected' : ''}>1주차</option>
+                                    <option value="2" ${insight.week === 2 ? 'selected' : ''}>2주차</option>
+                                    <option value="3" ${insight.week === 3 ? 'selected' : ''}>3주차</option>
+                                    <option value="4" ${insight.week === 4 ? 'selected' : ''}>4주차</option>
+                                    <option value="5" ${insight.week === 5 ? 'selected' : ''}>5주차</option>
+                                </select>
+                            </div>
+                            <button class="btn-danger btn-small" onclick="removeInsight(${idx})" style="margin-left: 10px;">삭제</button>
+                        </div>
+                        <div class="form-group">
+                            <label>제목</label>
+                            <input type="text" value="${insight.title || ''}" onchange="updateInsight(${idx}, 'title', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>내용</label>
+                            <textarea onchange="updateInsight(${idx}, 'content', this.value)">${insight.content || ''}</textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>우선순위</label>
+                                <select onchange="updateInsight(${idx}, 'priority', this.value)">
+                                    <option value="P1" ${insight.priority === 'P1' ? 'selected' : ''}>P1 긴급</option>
+                                    <option value="P2" ${insight.priority === 'P2' ? 'selected' : ''}>P2 중요</option>
+                                    <option value="P3" ${insight.priority === 'P3' ? 'selected' : ''}>P3 일반</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>카테고리</label>
+                                <div class="tag-group">
+                                    ${['검색광고', 'Meta', 'GA4', '전체'].map(cat => `
+                                        <button type="button" class="tag ${insight.category === cat ? 'active' : ''}" onclick="updateInsight(${idx}, 'category', '${cat}'); renderInsights();">${cat}</button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function addInsightCard() {
+            const newInsight = {
+                week: 1,
+                title: '',
+                content: '',
+                priority: 'P3',
+                category: '전체'
+            };
+            appData.insights.push(newInsight);
+            renderInsights();
+        }
+
+        function updateInsight(idx, field, value) {
+            appData.insights[idx][field] = field === 'week' ? parseInt(value) : value;
+        }
+
+        function removeInsight(idx) {
+            appData.insights.splice(idx, 1);
+            renderInsights();
+        }
+
+        function renderActionItems() {
+            const container = document.getElementById('actionItemsContainer');
+
+            if (appData.actionItems.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">아직 액션 항목이 없습니다.</p>';
+                return;
+            }
+
+            let html = '';
+            appData.actionItems.forEach((action, idx) => {
+                const statusClass = action.status === '대기' ? 'pending' : action.status === '진행중' ? 'progress' : 'complete';
+                html += `
+                    <div class="subsection" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h4 style="margin: 0; font-size: 14px;">액션 항목</h4>
+                            <button class="btn-danger btn-small" onclick="removeActionItem(${idx})">삭제</button>
+                        </div>
+                        <div class="form-group">
+                            <label>설명</label>
+                            <input type="text" value="${action.description || ''}" onchange="updateActionItem(${idx}, 'description', this.value)">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>담당자</label>
+                                <input type="text" value="${action.assignee || ''}" onchange="updateActionItem(${idx}, 'assignee', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>마감일</label>
+                                <input type="date" value="${action.dueDate || ''}" onchange="updateActionItem(${idx}, 'dueDate', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>상태</label>
+                                <select onchange="updateActionItem(${idx}, 'status', this.value)">
+                                    <option value="대기" ${action.status === '대기' ? 'selected' : ''}>대기</option>
+                                    <option value="진행중" ${action.status === '진행중' ? 'selected' : ''}>진행중</option>
+                                    <option value="완료" ${action.status === '완료' ? 'selected' : ''}>완료</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function addActionItem() {
+            const newAction = {
+                description: '',
+                assignee: '',
+                dueDate: '',
+                status: '대기'
+            };
+            appData.actionItems.push(newAction);
+            renderActionItems();
+        }
+
+        function updateActionItem(idx, field, value) {
+            appData.actionItems[idx][field] = value;
+        }
+
+        function removeActionItem(idx) {
+            appData.actionItems.splice(idx, 1);
+            renderActionItems();
+        }
+
+        // ==================== UI Functions ====================
+        function toggleSection(header) {
+            header.parentElement.classList.toggle('collapsed');
+        }
+
+        function setTrackingStatus(btn) {
+            document.querySelectorAll('.toggle-btn').forEach(b => {
+                if (b.parentElement.parentElement.querySelector('#trackingStatus')) {
+                    b.classList.remove('active');
+                }
+            });
+            btn.classList.add('active');
+            document.getElementById('trackingStatus').value = btn.dataset.value;
+            appData.settings.trackingStatus = btn.dataset.value;
+        }
+
+        function setViewMode(btn) {
+            btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('viewMode').value = btn.dataset.value;
+            appData.settings.viewMode = btn.dataset.value;
+        }
+
+        function updateTrackingButtons() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.value === appData.settings.trackingStatus &&
+                    btn.parentElement.parentElement.querySelector('#trackingStatus')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updateViewModeButtons() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                if (btn.dataset.value === appData.settings.viewMode &&
+                    btn.parentElement.parentElement.querySelector('#viewMode')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function updateLastUpdateDisplay() {
+            const now = new Date();
+            const formatted = now.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdateDisplay').textContent = `마지막 저장: ${formatted}`;
+        }
+
+        // ==================== Data Import/Export ====================
+        function exportData() {
+            gatherFormData();
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `respace_dashboard_${new Date().getTime()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showToast('데이터가 다운로드되었습니다.', 'success');
+        }
+
+        function openImportDialog() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    appData = { ...appData, ...imported };
+                    localStorage.setItem('respace_dashboard_data', JSON.stringify(appData));
+                    populateAllForms();
+                    showToast('데이터가 가져와졌습니다.', 'success');
+                } catch (err) {
+                    showToast('JSON 파일 형식이 올바르지 않습니다.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function gatherFormData() {
+            appData.settings.trackingStatus = document.getElementById('trackingStatus').value;
+            appData.settings.periodStart = document.getElementById('periodStart').value;
+            appData.settings.periodEnd = document.getElementById('periodEnd').value;
+            appData.settings.viewMode = document.getElementById('viewMode').value;
+
+            const lastUpdateInput = document.getElementById('lastUpdate').value;
+            if (lastUpdateInput) {
+                appData.settings.lastUpdate = new Date(lastUpdateInput).toISOString();
+            }
+
+            // Search Ads Summary
+            ['impressions', 'clicks', 'ctr', 'cost', 'conversions', 'cpa'].forEach(field => {
+                const naverInput = document.querySelector(`.naver-summary[data-field="${field}"]`);
+                const googleInput = document.querySelector(`.google-summary[data-field="${field}"]`);
+                if (naverInput) appData.searchAds.naver.summary[field] = parseFloat(naverInput.value) || 0;
+                if (googleInput) appData.searchAds.google.summary[field] = parseFloat(googleInput.value) || 0;
+            });
+
+            // Meta Summary
+            ['spend', 'impressions', 'reach', 'clicks', 'ctr', 'conversions', 'cpa', 'roas'].forEach(field => {
+                const input = document.querySelector(`.meta-summary[data-field="${field}"]`);
+                if (input) appData.meta.summary[field] = parseFloat(input.value) || 0;
+            });
+
+            // GA4 Traffic Summary
+            ['sessions', 'users', 'newUsers', 'pageviews', 'bounceRate', 'avgSessionDuration'].forEach(field => {
+                const input = document.querySelector(`.ga4-traffic[data-field="${field}"]`);
+                if (input) appData.ga4.traffic.summary[field] = parseFloat(input.value) || 0;
+            });
+        }
+
+        function resetData() {
+            showConfirmDialog('정말로 모든 데이터를 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.', function() {
+                appData = {
+                    settings: {
+                        trackingStatus: 'live',
+                        periodStart: '2026-04-01',
+                        periodEnd: '2026-04-07',
+                        lastUpdate: new Date().toISOString(),
+                        viewMode: 'daily'
+                    },
+                    searchAds: {
+                        naver: { summary: { impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 }, daily: [], campaigns: [], keywords: [] },
+                        google: { summary: { impressions: 0, clicks: 0, ctr: 0, cost: 0, conversions: 0, cpa: 0 }, daily: [], campaigns: [], keywords: [] }
+                    },
+                    meta: { summary: { spend: 0, impressions: 0, reach: 0, clicks: 0, ctr: 0, conversions: 0, cpa: 0, roas: 0 }, daily: [], campaigns: [], creatives: [] },
+                    ga4: { traffic: { summary: { sessions: 0, users: 0, newUsers: 0, pageviews: 0, bounceRate: 0, avgSessionDuration: 0 }, daily: [], channels: [] }, conversions: [] },
+                    insights: [],
+                    actionItems: []
+                };
+                localStorage.removeItem('respace_dashboard_data');
+                populateAllForms();
+                updateLastUpdateDisplay();
+                showToast('모든 데이터가 초기화되었습니다.', 'success');
+            });
+        }
+
+        function previewDashboard() {
+            saveData();
+            window.open('respace_dashboard_v2.html', '_blank');
+        }
+
+        // ==================== Modal & Toast ====================
+        function showConfirmDialog(message, onConfirm) {
+            document.getElementById('confirmText').textContent = message;
+            document.getElementById('confirmBtn').onclick = function() {
+                closeModal();
+                onConfirm();
+            };
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
