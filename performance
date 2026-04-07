@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리스페이스 퍼포먼스 대시보드</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+<style>
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-card: #1e2130;
+  --bg-card-hover: #252840;
+  --border: #2a2d3e;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0b0;
+  --text-muted: #6b7280;
+  --accent-blue: #4f8cff;
+  --accent-green: #34d399;
+  --accent-yellow: #fbbf24;
+  --accent-red: #f87171;
+  --accent-purple: #a78bfa;
+  --accent-orange: #fb923c;
+  --naver-green: #03c75a;
+  --google-blue: #4285f4;
+  --meta-blue: #0668e1;
+  --ga4-orange: #e37400;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+a { color: var(--accent-blue); text-decoration: none; }
+
+/* Header */
+.header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.logo span { color: var(--accent-blue); }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.status-badge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); background: var(--bg-card); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.live { background: var(--accent-green); animation: pulse 2s infinite; }
+.status-dot.stale { background: var(--accent-yellow); }
+.status-dot.error { background: var(--accent-red); }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.view-toggle { display: flex; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
+.view-toggle button { padding: 6px 16px; font-size: 13px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+.view-toggle button.active { background: var(--accent-blue); color: #fff; }
+.admin-link { font-size: 13px; color: var(--text-secondary); padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); transition: all 0.2s; }
+.admin-link:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+/* Meta Bar */
+.meta-bar { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 10px 32px; display: flex; align-items: center; gap: 24px; font-size: 12px; color: var(--text-muted); }
+.meta-bar .label { color: var(--text-secondary); font-weight: 600; }
+
+/* Tab Navigation */
+.tab-nav { background: var(--bg-secondary); padding: 0 32px; display: flex; gap: 0; border-bottom: 2px solid var(--border); }
+.tab-btn { padding: 14px 24px; font-size: 14px; font-weight: 600; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+.tab-btn .tab-icon { font-size: 16px; }
+
+/* Main Content */
+.main { padding: 24px 32px; max-width: 1440px; margin: 0 auto; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Sub-tabs */
+.sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.sub-tab { padding: 8px 16px; font-size: 13px; border: 1px solid var(--border); border-radius: 20px; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+.sub-tab:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+.sub-tab.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+
+/* KPI Cards */
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: all 0.2s; }
+.kpi-card:hover { border-color: var(--accent-blue); transform: translateY(-1px); }
+.kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.kpi-sub { font-size: 12px; color: var(--text-secondary); }
+.kpi-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.kpi-badge.good { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+.kpi-badge.warn { background: rgba(251,191,36,0.15); color: var(--accent-yellow); }
+.kpi-badge.bad { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+
+/* Charts */
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.chart-grid.full { grid-template-columns: 1fr; }
+.chart-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.chart-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.chart-title .dot { width: 10px; height: 10px; border-radius: 50%; }
+.chart-wrap { position: relative; height: 280px; }
+
+/* Tables */
+.data-table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+.data-table-header { padding: 16px 20px; font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 10px 16px; text-align: left; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+.data-table th:hover { color: var(--text-primary); }
+.data-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table tr:hover td { background: var(--bg-card-hover); }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Insight Panel */
+.insight-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 24px; }
+.insight-panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.insight-item { padding: 10px 14px; margin-bottom: 8px; background: var(--bg-secondary); border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue); font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+.insight-item.warn { border-left-color: var(--accent-yellow); }
+.insight-item.good { border-left-color: var(--accent-green); }
+.insight-item.bad { border-left-color: var(--accent-red); }
+
+/* Loading */
+.loading { text-align: center; padding: 60px 20px; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent-blue); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text-secondary); }
+
+/* Error */
+.error-box { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); border-radius: var(--radius); padding: 20px; text-align: center; color: var(--accent-red); }
+
+/* Empty */
+.empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3d4e; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .header { padding: 12px 16px; }
+  .main { padding: 16px; }
+  .tab-nav { padding: 0 16px; overflow-x: auto; }
+  .meta-bar { padding: 8px 16px; flex-wrap: wrap; }
+}
+@media (max-width: 640px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .header { flex-wrap: wrap; gap: 8px; }
+}
+
+/* Print */
+@media print {
+  body { background: #fff; color: #000; }
+  .header, .tab-nav { position: static; }
+  .kpi-card, .chart-box, .data-table-wrap, .insight-panel { break-inside: avoid; border-color: #ddd; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">RESPACE 퍼포먼스 대시보드</div>
+  </div>
+  <div class="header-right">
+    <div class="status-badge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">연결 중...</span>
+    </div>
+    <div class="view-toggle">
+      <button class="active" data-view="daily" onclick="setView('daily')">일자별</button>
+      <button data-view="weekly" onclick="setView('weekly')">주차별</button>
+    </div>
+    <a class="admin-link" href="respace-admin.html">⚙ 어드민</a>
+  </div>
+</header>
+
+<!-- Meta Bar -->
+<div class="meta-bar">
+  <span><span class="label">데이터 수집 기간:</span> <span id="dateRange">-</span></span>
+  <span><span class="label">마지막 업데이트:</span> <span id="lastUpdated">-</span></span>
+  <span><span class="label">데이터 소스:</span> Google Sheets (실시간 CSV)</span>
+</div>
+
+<!-- Tab Navigation -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="search" onclick="switchTab('search')">
+    <span class="tab-icon">🔍</span> 검색광고 인사이트
+  </button>
+  <button class="tab-btn" data-tab="meta" onclick="switchTab('meta')">
+    <span class="tab-icon">📱</span> Meta 광고 인사이트
+  </button>
+  <button class="tab-btn" data-tab="ga4" onclick="switchTab('ga4')">
+    <span class="tab-icon">📊</span> GA4 웹사이트 인사이트
+  </button>
+</nav>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- ===== 검색광고 탭 ===== -->
+  <div class="tab-content active" id="tab-search">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('search','naver-total')">네이버 통합</button>
+      <button class="sub-tab" onclick="switchSubTab('search','naver-campaign')">네이버 캠페인별</button>
+      <button class="sub-tab" onclick="switchSubTab('search','naver-keyword')">네이버 키워드별</button>
+      <button class="sub-tab" onclick="switchSubTab('search','google-total')">구글 통합</button>
+      <button class="sub-tab" onclick="switchSubTab('search','google-campaign')">구글 캠페인별</button>
+      <button class="sub-tab" onclick="switchSubTab('search','google-keyword')">구글 키워드별</button>
+    </div>
+    <div id="search-content">
+      <div class="loading"><div class="spinner"></div><div class="loading-text">검색광고 데이터를 불러오는 중...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== Meta 광고 탭 ===== -->
+  <div class="tab-content" id="tab-meta">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('meta','meta-total')">Meta 통합</button>
+      <button class="sub-tab" onclick="switchSubTab('meta','meta-campaign')">캠페인별</button>
+      <button class="sub-tab" onclick="switchSubTab('meta','meta-adset')">광고그룹(세트)별</button>
+      <button class="sub-tab" onclick="switchSubTab('meta','meta-creative')">소재별</button>
+    </div>
+    <div id="meta-content">
+      <div class="loading"><div class="spinner"></div><div class="loading-text">Meta 광고 데이터를 불러오는 중...</div></div>
+    </div>
+  </div>
+
+  <!-- ===== GA4 탭 ===== -->
+  <div class="tab-content" id="tab-ga4">
+    <div class="sub-tabs">
+      <button class="sub-tab active" onclick="switchSubTab('ga4','ga4-traffic')">GA4 트래픽</button>
+      <button class="sub-tab" onclick="switchSubTab('ga4','ga4-conversion')">전환 액션</button>
+    </div>
+    <div id="ga4-content">
+      <div class="loading"><div class="spinner"></div><div class="loading-text">GA4 데이터를 불러오는 중...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================================================
+// CONFIGURATION
+// =====================================================
+const SPREADSHEET_ID = '1_J-qPpFpz5CjYv33a9pxZNBhyEgHfZtgK1upS-oZKbU';
+const SHEETS = {
+  naver: '네이버 검색광고',
+  google: '구글 검색광고',
+  meta: 'Meta 광고',
+  ga4Traffic: 'GA4 트래픽',
+  ga4Conversion: 'GA4 전환이벤트',
+  leads: '리캐치_리드',
+  deals: '리캐치_딜'
+};
+
+const BENCHMARKS = {
+  google: { ctr: { good: 10, avg: 5 }, cpc: { good: 1000, avg: 1500 } },
+  naver: { ctr: { good: 1.0, avg: 0.5 }, cpc: { good: 4000, avg: 5000 } },
+  meta: { ctr: { good: 2.0, avg: 1.5 }, cpc: { good: 700, avg: 1000 } },
+  conversion: { sessionRate: { good: 30, avg: 20 }, contactToDeal: { good: 15, avg: 7 }, downloadToLead: { good: 10, avg: 5 } }
+};
+
+const COLORS = {
+  naver: '#03c75a', google: '#4285f4', meta: '#0668e1',
+  blue: '#4f8cff', green: '#34d399', yellow: '#fbbf24',
+  red: '#f87171', purple: '#a78bfa', orange: '#fb923c',
+  cyan: '#22d3ee', pink: '#f472b6'
+};
+const CHART_PALETTE = ['#4f8cff','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#22d3ee','#f472b6','#818cf8','#a3e635'];
+
+// =====================================================
+// STATE
+// =====================================================
+let rawData = {};
+let currentView = 'daily'; // daily | weekly
+let currentTab = 'search';
+let currentSubTab = { search: 'naver-total', meta: 'meta-total', ga4: 'ga4-traffic' };
+let charts = {};
+let adminSettings = {};
+
+// =====================================================
+// CSV PARSER
+// =====================================================
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length === 0) return [];
+  const headers = parseCsvLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = parseCsvLine(line);
+    const obj = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  });
+}
+
+function parseCsvLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i+1] === '"') { current += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { current += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { result.push(current); current = ''; }
+      else { current += ch; }
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function toNum(v) {
+  if (!v) return 0;
+  return parseFloat(String(v).replace(/[₩,%\s]/g, '').replace(/,/g, '')) || 0;
+}
+
+function fmt(n, type) {
+  if (type === 'currency') return '₩' + Math.round(n).toLocaleString();
+  if (type === 'percent') return n.toFixed(2) + '%';
+  if (type === 'int') return Math.round(n).toLocaleString();
+  return n.toLocaleString();
+}
+
+function badge(val, goodThreshold, badThreshold, inverse) {
+  if (inverse) { // lower is better (e.g. CPC)
+    if (val <= goodThreshold) return 'good';
+    if (val >= badThreshold) return 'bad';
+    return 'warn';
+  }
+  if (val >= goodThreshold) return 'good';
+  if (val <= badThreshold) return 'bad';
+  return 'warn';
+}
+
+// =====================================================
+// DATA FETCHING
+// =====================================================
+function sheetUrl(sheetName) {
+  return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+}
+
+async function fetchSheet(name) {
+  try {
+    const res = await fetch(sheetUrl(SHEETS[name]));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    return parseCSV(text);
+  } catch(e) {
+    console.warn(`Sheet ${name} fetch failed:`, e);
+    return null;
+  }
+}
+
+async function fetchAllData() {
+  updateStatus('loading', '데이터 로딩 중...');
+  const keys = Object.keys(SHEETS);
+  const results = await Promise.allSettled(keys.map(k => fetchSheet(k)));
+
+  let successCount = 0;
+  keys.forEach((k, i) => {
+    if (results[i].status === 'fulfilled' && results[i].value) {
+      rawData[k] = results[i].value;
+      successCount++;
+    }
+  });
+
+  if (successCount === 0) {
+    updateStatus('error', '데이터 로드 실패');
+    showError();
+    return;
+  }
+
+  // Determine date range
+  computeDateRange();
+  updateStatus('live', `${successCount}/${keys.length} 시트 연결`);
+  document.getElementById('lastUpdated').textContent = new Date().toLocaleString('ko-KR');
+
+  // Load admin settings
+  loadAdminSettings();
+
+  // Render current tab
+  renderAll();
+}
+
+function computeDateRange() {
+  let minDate = null, maxDate = null;
+  const dateFields = ['날짜', '일자', '일별', 'Date', '폼 제출 일자'];
+  for (const key of Object.keys(rawData)) {
+    const data = rawData[key];
+    if (!data || data.length === 0) continue;
+    const dateCol = Object.keys(data[0]).find(h => dateFields.some(f => h.includes(f)));
+    if (!dateCol) continue;
+    data.forEach(row => {
+      const d = parseDate(row[dateCol]);
+      if (d) {
+        if (!minDate || d < minDate) minDate = d;
+        if (!maxDate || d > maxDate) maxDate = d;
+      }
+    });
+  }
+  if (minDate && maxDate) {
+    document.getElementById('dateRange').textContent =
+      `${minDate.toLocaleDateString('ko-KR')} ~ ${maxDate.toLocaleDateString('ko-KR')}`;
+  }
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  const s = String(v).trim();
+  // Try various formats
+  const d = new Date(s);
+  if (!isNaN(d)) return d;
+  // Try YYYY.MM.DD or YYYY-MM-DD
+  const m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if (m) return new Date(m[1], m[2]-1, m[3]);
+  return null;
+}
+
+function updateStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot ' + (state === 'loading' ? '' : state);
+  txt.textContent = text;
+}
+
+function showError() {
+  ['search-content','meta-content','ga4-content'].forEach(id => {
+    document.getElementById(id).innerHTML = `
+      <div class="error-box">
+        <p style="font-size:16px;margin-bottom:8px;">데이터를 불러올 수 없습니다</p>
+        <p style="font-size:13px;color:var(--text-secondary)">Google Sheets 접근 권한을 확인하거나, 시트가 "링크가 있는 모든 사용자"에게 공유되어 있는지 확인해주세요.</p>
+      </div>`;
+  });
+}
+
+// =====================================================
+// ADMIN SETTINGS INTEGRATION
+// =====================================================
+function loadAdminSettings() {
+  try {
+    const s = localStorage.getItem('respace_admin_settings');
+    if (s) {
+      adminSettings = JSON.parse(s);
+      // Apply saved view mode from admin
+      if (adminSettings.view) {
+        currentView = adminSettings.view;
+        document.querySelectorAll('.view-toggle button').forEach(b => {
+          b.classList.toggle('active', b.dataset.view === adminSettings.view);
+        });
+      }
+    }
+  } catch(e) { adminSettings = {}; }
+}
+
+// =====================================================
+// VIEW & TAB SWITCHING
+// =====================================================
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+  renderAll();
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.toggle('active', el.id === 'tab-' + tab));
+  renderAll();
+}
+
+function switchSubTab(tab, sub) {
+  currentSubTab[tab] = sub;
+  const parent = document.getElementById('tab-' + tab);
+  parent.querySelectorAll('.sub-tab').forEach((b, i) => {
+    const subs = getSubTabIds(tab);
+    b.classList.toggle('active', subs[i] === sub);
+  });
+  renderAll();
+}
+
+function getSubTabIds(tab) {
+  if (tab === 'search') return ['naver-total','naver-campaign','naver-keyword','google-total','google-campaign','google-keyword'];
+  if (tab === 'meta') return ['meta-total','meta-campaign','meta-adset','meta-creative'];
+  if (tab === 'ga4') return ['ga4-traffic','ga4-conversion'];
+  return [];
+}
+
+// =====================================================
+// RENDER ENGINE
+// =====================================================
+function renderAll() {
+  // Destroy old charts
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts = {};
+
+  if (currentTab === 'search') renderSearch();
+  else if (currentTab === 'meta') renderMeta();
+  else if (currentTab === 'ga4') renderGA4();
+}
+
+// =====================================================
+// AGGREGATION HELPERS
+// =====================================================
+function getDateCol(data) {
+  if (!data || data.length === 0) return null;
+  const fields = ['날짜', '일자', '일별', 'Date', '폼 제출 일자'];
+  return Object.keys(data[0]).find(h => fields.some(f => h.includes(f))) || null;
+}
+
+function getWeekLabel(dateStr) {
+  const d = parseDate(dateStr);
+  if (!d) return 'Unknown';
+  const month = d.getMonth() + 1;
+  const dayOfMonth = d.getDate();
+  const weekNum = Math.ceil(dayOfMonth / 7);
+  return `${month}월 ${weekNum}주차`;
+}
+
+function aggregateByGroup(data, groupCol, metrics) {
+  const groups = {};
+  data.forEach(row => {
+    const key = row[groupCol] || '(미분류)';
+    if (!groups[key]) groups[key] = { _count: 0 };
+    groups[key]._count++;
+    metrics.forEach(m => {
+      if (!groups[key][m.col]) groups[key][m.col] = 0;
+      groups[key][m.col] += toNum(row[m.col]);
+    });
+  });
+  return groups;
+}
+
+function aggregateTimeSeries(data, dateCol, metricCols) {
+  const isWeekly = currentView === 'weekly';
+  const grouped = {};
+  data.forEach(row => {
+    const key = isWeekly ? getWeekLabel(row[dateCol]) : row[dateCol];
+    if (!grouped[key]) {
+      grouped[key] = { label: key, _count: 0 };
+      metricCols.forEach(m => { grouped[key][m] = 0; });
+    }
+    grouped[key]._count++;
+    metricCols.forEach(m => { grouped[key][m] += toNum(row[m]); });
+  });
+  const entries = Object.values(grouped);
+  if (!isWeekly) {
+    entries.sort((a, b) => {
+      const da = parseDate(a.label), db = parseDate(b.label);
+      return (da || 0) - (db || 0);
+    });
+  }
+  return entries;
+}
+
+function findColumns(data, keywords) {
+  if (!data || data.length === 0) return {};
+  const headers = Object.keys(data[0]);
+  const result = {};
+  keywords.forEach(kw => {
+    const found = headers.find(h => h.includes(kw));
+    if (found) result[kw] = found;
+  });
+  return result;
+}
+
+// =====================================================
+// RENDER: 검색광고
+// =====================================================
+function renderSearch() {
+  const sub = currentSubTab.search;
+  const isNaver = sub.startsWith('naver');
+  const dataKey = isNaver ? 'naver' : 'google';
+  const data = rawData[dataKey];
+  const container = document.getElementById('search-content');
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty">데이터가 없습니다. Google Sheets를 확인해주세요.</div>';
+    return;
+  }
+
+  const cols = findColumns(data, ['날짜','일자','노출수','클릭수','비용','전환수','CTR','CPC','캠페인','광고그룹','키워드']);
+  const dateCol = cols['날짜'] || cols['일자'] || getDateCol(data);
+  const impCol = cols['노출수'];
+  const clickCol = cols['클릭수'];
+  const costCol = cols['비용'];
+  const convCol = cols['전환수'];
+  const campaignCol = cols['캠페인'];
+  const adGroupCol = cols['광고그룹'];
+  const keywordCol = cols['키워드'];
+
+  // Calculate totals
+  let totalImp = 0, totalClick = 0, totalCost = 0, totalConv = 0;
+  data.forEach(row => {
+    totalImp += toNum(row[impCol]);
+    totalClick += toNum(row[clickCol]);
+    totalCost += toNum(row[costCol]);
+    totalConv += toNum(row[convCol]);
+  });
+  const avgCTR = totalImp > 0 ? (totalClick / totalImp * 100) : 0;
+  const avgCPC = totalClick > 0 ? (totalCost / totalClick) : 0;
+  const bm = isNaver ? BENCHMARKS.naver : BENCHMARKS.google;
+  const platformLabel = isNaver ? '네이버' : '구글';
+  const platformColor = isNaver ? COLORS.naver : COLORS.google;
+
+  // Admin insights
+  const insightKey = isNaver ? 'insight_naver' : 'insight_google';
+  const adminInsight = adminSettings[insightKey] || '';
+  const kpiTargets = adminSettings.kpi || {};
+
+  if (sub.endsWith('-total')) {
+    // KPI + Time series chart + Insight
+    let html = `
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">총 노출수</div>
+        <div class="kpi-value">${fmt(totalImp, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 클릭수</div>
+        <div class="kpi-value">${fmt(totalClick, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">평균 CTR</div>
+        <div class="kpi-value" style="color:${platformColor}">${fmt(avgCTR, 'percent')}</div>
+        <div class="kpi-sub"><span class="kpi-badge ${badge(avgCTR, bm.ctr.good, bm.ctr.avg/2, false)}">${avgCTR >= bm.ctr.good ? '우수' : avgCTR >= bm.ctr.avg ? '양호' : '개선필요'}</span> 벤치마크: ${bm.ctr.good}%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">평균 CPC</div>
+        <div class="kpi-value">${fmt(avgCPC, 'currency')}</div>
+        <div class="kpi-sub"><span class="kpi-badge ${badge(avgCPC, bm.cpc.good, bm.cpc.avg, true)}">${avgCPC <= bm.cpc.good ? '우수' : avgCPC <= bm.cpc.avg ? '양호' : '개선필요'}</span> 벤치마크: ${fmt(bm.cpc.good, 'currency')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 전환수</div>
+        <div class="kpi-value" style="color:var(--accent-green)">${fmt(totalConv, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 광고비</div>
+        <div class="kpi-value">${fmt(totalCost, 'currency')}</div>
+      </div>
+    </div>`;
+
+    // Charts
+    if (dateCol) {
+      const metricNames = [impCol, clickCol, costCol].filter(Boolean);
+      const ts = aggregateTimeSeries(data, dateCol, metricNames);
+      html += `
+      <div class="chart-grid">
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:${platformColor}"></span>${platformLabel} 클릭수 추이</div>
+          <div class="chart-wrap"><canvas id="search-click-chart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:var(--accent-yellow)"></span>${platformLabel} 광고비 추이</div>
+          <div class="chart-wrap"><canvas id="search-cost-chart"></canvas></div>
+        </div>
+      </div>`;
+
+      html += renderInsightPanel(insightKey, `${platformLabel} 검색광고 인사이트`);
+
+      container.innerHTML = html;
+
+      // Render charts
+      const labels = ts.map(r => r.label);
+      charts['search-click'] = createChart('search-click-chart', 'line', labels, [{
+        label: '클릭수', data: ts.map(r => r[clickCol] || 0), borderColor: platformColor, backgroundColor: platformColor + '20', fill: true
+      }]);
+      charts['search-cost'] = createChart('search-cost-chart', 'bar', labels, [{
+        label: '광고비', data: ts.map(r => r[costCol] || 0), backgroundColor: COLORS.yellow + '80', borderColor: COLORS.yellow, borderWidth: 1
+      }]);
+    } else {
+      html += renderInsightPanel(insightKey, `${platformLabel} 검색광고 인사이트`);
+      container.innerHTML = html;
+    }
+
+  } else if (sub.endsWith('-campaign')) {
+    renderGroupTable(container, data, campaignCol || '캠페인', [impCol, clickCol, costCol, convCol], platformLabel + ' 캠페인별 성과', platformColor, insightKey);
+  } else if (sub.endsWith('-keyword')) {
+    renderGroupTable(container, data, keywordCol || '키워드', [impCol, clickCol, costCol, convCol], platformLabel + ' 키워드별 성과', platformColor, insightKey);
+  }
+}
+
+// =====================================================
+// RENDER: Meta 광고
+// =====================================================
+function renderMeta() {
+  const sub = currentSubTab.meta;
+  const data = rawData.meta;
+  const container = document.getElementById('meta-content');
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty">Meta 광고 데이터가 없습니다.</div>';
+    return;
+  }
+
+  const cols = findColumns(data, ['날짜','일자','노출수','클릭수','비용','전환수','CTR','CPC','캠페인','광고세트','광고그룹','소재','크리에이티브']);
+  const dateCol = cols['날짜'] || cols['일자'] || getDateCol(data);
+  const impCol = cols['노출수'];
+  const clickCol = cols['클릭수'];
+  const costCol = cols['비용'];
+  const convCol = cols['전환수'];
+  const campaignCol = cols['캠페인'];
+  const adSetCol = cols['광고세트'] || cols['광고그룹'];
+  const creativeCol = cols['소재'] || cols['크리에이티브'];
+
+  let totalImp = 0, totalClick = 0, totalCost = 0, totalConv = 0;
+  data.forEach(row => {
+    totalImp += toNum(row[impCol]);
+    totalClick += toNum(row[clickCol]);
+    totalCost += toNum(row[costCol]);
+    totalConv += toNum(row[convCol]);
+  });
+  const avgCTR = totalImp > 0 ? (totalClick / totalImp * 100) : 0;
+  const avgCPC = totalClick > 0 ? (totalCost / totalClick) : 0;
+  const bm = BENCHMARKS.meta;
+
+  if (sub === 'meta-total') {
+    let html = `
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">총 노출수</div>
+        <div class="kpi-value">${fmt(totalImp, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 클릭수</div>
+        <div class="kpi-value">${fmt(totalClick, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">평균 CTR</div>
+        <div class="kpi-value" style="color:${COLORS.meta}">${fmt(avgCTR, 'percent')}</div>
+        <div class="kpi-sub"><span class="kpi-badge ${badge(avgCTR, bm.ctr.good, bm.ctr.avg/2, false)}">${avgCTR >= bm.ctr.good ? '우수' : avgCTR >= bm.ctr.avg ? '양호' : '개선필요'}</span> 벤치마크: ${bm.ctr.good}%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">평균 CPC</div>
+        <div class="kpi-value">${fmt(avgCPC, 'currency')}</div>
+        <div class="kpi-sub"><span class="kpi-badge ${badge(avgCPC, bm.cpc.good, bm.cpc.avg, true)}">${avgCPC <= bm.cpc.good ? '우수' : avgCPC <= bm.cpc.avg ? '양호' : '개선필요'}</span> 벤치마크: ${fmt(bm.cpc.good, 'currency')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 전환수</div>
+        <div class="kpi-value" style="color:var(--accent-green)">${fmt(totalConv, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 광고비</div>
+        <div class="kpi-value">${fmt(totalCost, 'currency')}</div>
+      </div>
+    </div>`;
+
+    if (dateCol) {
+      const metricNames = [clickCol, costCol].filter(Boolean);
+      const ts = aggregateTimeSeries(data, dateCol, metricNames);
+      html += `
+      <div class="chart-grid">
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:${COLORS.meta}"></span>Meta 클릭수 추이</div>
+          <div class="chart-wrap"><canvas id="meta-click-chart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:var(--accent-purple)"></span>Meta 광고비 추이</div>
+          <div class="chart-wrap"><canvas id="meta-cost-chart"></canvas></div>
+        </div>
+      </div>`;
+
+      // Persona breakdown if adset data available
+      if (adSetCol) {
+        const groups = aggregateByGroup(data, adSetCol, [
+          { col: impCol }, { col: clickCol }, { col: costCol }, { col: convCol }
+        ].filter(m => m.col));
+        const gKeys = Object.keys(groups).slice(0, 8);
+        html += `
+        <div class="chart-grid">
+          <div class="chart-box">
+            <div class="chart-title"><span class="dot" style="background:var(--accent-orange)"></span>광고세트별 전환수</div>
+            <div class="chart-wrap"><canvas id="meta-persona-chart"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title"><span class="dot" style="background:var(--accent-cyan)"></span>광고세트별 CPC</div>
+            <div class="chart-wrap"><canvas id="meta-cpc-chart"></canvas></div>
+          </div>
+        </div>`;
+      }
+
+      html += renderInsightPanel('insight_meta', 'Meta 광고 인사이트');
+      container.innerHTML = html;
+
+      const labels = ts.map(r => r.label);
+      charts['meta-click'] = createChart('meta-click-chart', 'line', labels, [{
+        label: '클릭수', data: ts.map(r => r[clickCol] || 0), borderColor: COLORS.meta, backgroundColor: COLORS.meta + '20', fill: true
+      }]);
+      charts['meta-cost'] = createChart('meta-cost-chart', 'bar', labels, [{
+        label: '광고비', data: ts.map(r => r[costCol] || 0), backgroundColor: COLORS.purple + '60', borderColor: COLORS.purple, borderWidth: 1
+      }]);
+
+      if (adSetCol) {
+        const groups = aggregateByGroup(data, adSetCol, [
+          { col: impCol }, { col: clickCol }, { col: costCol }, { col: convCol }
+        ].filter(m => m.col));
+        const gKeys = Object.keys(groups).slice(0, 8);
+        if (convCol) {
+          charts['meta-persona'] = createChart('meta-persona-chart', 'bar', gKeys, [{
+            label: '전환수', data: gKeys.map(k => groups[k][convCol] || 0),
+            backgroundColor: CHART_PALETTE.slice(0, gKeys.length).map(c => c + '80'),
+            borderColor: CHART_PALETTE.slice(0, gKeys.length), borderWidth: 1
+          }]);
+        }
+        if (clickCol && costCol) {
+          charts['meta-cpc'] = createChart('meta-cpc-chart', 'bar', gKeys, [{
+            label: 'CPC (원)',
+            data: gKeys.map(k => groups[k][clickCol] ? Math.round(groups[k][costCol] / groups[k][clickCol]) : 0),
+            backgroundColor: CHART_PALETTE.slice(0, gKeys.length).map(c => c + '60'),
+            borderColor: CHART_PALETTE.slice(0, gKeys.length), borderWidth: 1
+          }]);
+        }
+      }
+    } else {
+      html += renderInsightPanel('insight_meta', 'Meta 광고 인사이트');
+      container.innerHTML = html;
+    }
+
+  } else if (sub === 'meta-campaign') {
+    renderGroupTable(container, data, campaignCol || '캠페인', [impCol, clickCol, costCol, convCol], 'Meta 캠페인별 성과', COLORS.meta, 'insight_meta');
+  } else if (sub === 'meta-adset') {
+    renderGroupTable(container, data, adSetCol || '광고세트', [impCol, clickCol, costCol, convCol], 'Meta 광고세트별 성과', COLORS.meta, 'insight_meta');
+  } else if (sub === 'meta-creative') {
+    renderGroupTable(container, data, creativeCol || '소재', [impCol, clickCol, costCol, convCol], 'Meta 소재별 성과', COLORS.meta, 'insight_meta');
+  }
+}
+
+// =====================================================
+// RENDER: GA4
+// =====================================================
+function renderGA4() {
+  const sub = currentSubTab.ga4;
+  const container = document.getElementById('ga4-content');
+
+  if (sub === 'ga4-traffic') {
+    const data = rawData.ga4Traffic;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty">GA4 트래픽 데이터가 없습니다.</div>';
+      return;
+    }
+
+    const cols = findColumns(data, ['날짜','일자','세션수','세션','사용자','참여율','소스','매체','채널']);
+    const dateCol = cols['날짜'] || cols['일자'] || getDateCol(data);
+    const sessionCol = cols['세션수'] || cols['세션'];
+    const userCol = cols['사용자'];
+    const engCol = cols['참여율'];
+    const sourceCol = cols['소스'];
+    const mediumCol = cols['매체'];
+    const channelCol = cols['채널'];
+
+    let totalSessions = 0, totalUsers = 0, totalEngRate = 0, engCount = 0;
+    data.forEach(row => {
+      totalSessions += toNum(row[sessionCol]);
+      if (userCol) totalUsers += toNum(row[userCol]);
+      if (engCol) { const e = toNum(row[engCol]); if (e > 0) { totalEngRate += e; engCount++; } }
+    });
+    const avgEng = engCount > 0 ? totalEngRate / engCount : 0;
+
+    // Channel breakdown
+    const channelKey = sourceCol || channelCol;
+    let channelData = {};
+    if (channelKey) {
+      data.forEach(row => {
+        const ch = row[channelKey] || '(unknown)';
+        if (!channelData[ch]) channelData[ch] = { sessions: 0, count: 0, engSum: 0 };
+        channelData[ch].sessions += toNum(row[sessionCol]);
+        channelData[ch].count++;
+        if (engCol) channelData[ch].engSum += toNum(row[engCol]);
+      });
+    }
+    const channelKeys = Object.keys(channelData).sort((a,b) => channelData[b].sessions - channelData[a].sessions).slice(0, 10);
+
+    let html = `
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">총 세션수</div>
+        <div class="kpi-value" style="color:${COLORS.orange}">${fmt(totalSessions, 'int')}</div>
+      </div>
+      ${userCol ? `<div class="kpi-card"><div class="kpi-label">총 사용자수</div><div class="kpi-value">${fmt(totalUsers, 'int')}</div></div>` : ''}
+      <div class="kpi-card">
+        <div class="kpi-label">평균 참여율</div>
+        <div class="kpi-value">${avgEng > 1 ? fmt(avgEng, 'percent') : fmt(avgEng * 100, 'percent')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">채널 수</div>
+        <div class="kpi-value">${channelKeys.length}</div>
+      </div>
+    </div>`;
+
+    if (dateCol) {
+      const ts = aggregateTimeSeries(data, dateCol, [sessionCol].filter(Boolean));
+      html += `
+      <div class="chart-grid">
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:${COLORS.orange}"></span>세션수 추이</div>
+          <div class="chart-wrap"><canvas id="ga4-session-chart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span class="dot" style="background:var(--accent-purple)"></span>채널별 세션 비중</div>
+          <div class="chart-wrap"><canvas id="ga4-channel-chart"></canvas></div>
+        </div>
+      </div>`;
+    }
+
+    // Channel table
+    if (channelKeys.length > 0) {
+      html += `
+      <div class="data-table-wrap">
+        <div class="data-table-header">채널별 트래픽 상세</div>
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>채널 (소스)</th>
+            <th class="num">세션수</th>
+            <th class="num">비중</th>
+            <th class="num">평균 참여율</th>
+          </tr></thead>
+          <tbody>
+          ${channelKeys.map(k => {
+            const ch = channelData[k];
+            const pct = totalSessions > 0 ? (ch.sessions / totalSessions * 100) : 0;
+            const eng = ch.count > 0 ? ch.engSum / ch.count : 0;
+            return `<tr>
+              <td>${k}</td>
+              <td class="num">${fmt(ch.sessions, 'int')}</td>
+              <td class="num">${fmt(pct, 'percent')}</td>
+              <td class="num">${eng > 1 ? fmt(eng, 'percent') : fmt(eng * 100, 'percent')}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+        </div>
+      </div>`;
+    }
+
+    html += renderInsightPanel('insight_ga4', 'GA4 트래픽 인사이트');
+    container.innerHTML = html;
+
+    if (dateCol) {
+      const ts = aggregateTimeSeries(data, dateCol, [sessionCol].filter(Boolean));
+      const labels = ts.map(r => r.label);
+      charts['ga4-session'] = createChart('ga4-session-chart', 'line', labels, [{
+        label: '세션수', data: ts.map(r => r[sessionCol] || 0), borderColor: COLORS.orange, backgroundColor: COLORS.orange + '20', fill: true
+      }]);
+
+      if (channelKeys.length > 0) {
+        charts['ga4-channel'] = createChart('ga4-channel-chart', 'doughnut', channelKeys, [{
+          data: channelKeys.map(k => channelData[k].sessions),
+          backgroundColor: CHART_PALETTE.slice(0, channelKeys.length),
+          borderWidth: 0
+        }], { cutout: '55%' });
+      }
+    }
+
+  } else if (sub === 'ga4-conversion') {
+    const data = rawData.ga4Conversion;
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="empty">GA4 전환이벤트 데이터가 없습니다.</div>';
+      return;
+    }
+
+    const cols = findColumns(data, ['날짜','일자','이벤트','이벤트 이름','이벤트명','이벤트 횟수','횟수','전환수','사용자']);
+    const dateCol = cols['날짜'] || cols['일자'] || getDateCol(data);
+    const eventNameCol = cols['이벤트 이름'] || cols['이벤트명'] || cols['이벤트'];
+    const eventCountCol = cols['이벤트 횟수'] || cols['횟수'] || cols['전환수'];
+    const userEventCol = cols['사용자'];
+
+    let totalEvents = 0;
+    const eventBreakdown = {};
+    data.forEach(row => {
+      const cnt = toNum(row[eventCountCol]);
+      totalEvents += cnt;
+      const evName = row[eventNameCol] || '(unknown)';
+      if (!eventBreakdown[evName]) eventBreakdown[evName] = 0;
+      eventBreakdown[evName] += cnt;
+    });
+    const eventKeys = Object.keys(eventBreakdown).sort((a,b) => eventBreakdown[b] - eventBreakdown[a]);
+
+    // Lead/Deal data
+    const leadsData = rawData.leads;
+    const dealsData = rawData.deals;
+    let totalLeads = leadsData ? leadsData.length : 0;
+    let totalDeals = dealsData ? dealsData.length : 0;
+
+    const contactEvents = eventBreakdown['click_contact'] || 0;
+    const downloadEvents = eventBreakdown['click_download_intro'] || eventBreakdown['click_download'] || 0;
+    const contactToDeal = contactEvents > 0 ? (totalDeals / contactEvents * 100) : 0;
+    const downloadToLead = downloadEvents > 0 ? (totalLeads / downloadEvents * 100) : 0;
+
+    let html = `
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">총 전환이벤트</div>
+        <div class="kpi-value" style="color:var(--accent-green)">${fmt(totalEvents, 'int')}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">상담문의 (click_contact)</div>
+        <div class="kpi-value">${fmt(contactEvents, 'int')}</div>
+        <div class="kpi-sub">→ 딜 ${totalDeals}건 (${fmt(contactToDeal, 'percent')})</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">소개서 다운 (click_download)</div>
+        <div class="kpi-value">${fmt(downloadEvents, 'int')}</div>
+        <div class="kpi-sub">→ 리드 ${totalLeads}건 (${fmt(downloadToLead, 'percent')})</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">총 리드+딜</div>
+        <div class="kpi-value" style="color:var(--accent-purple)">${fmt(totalLeads + totalDeals, 'int')}</div>
+      </div>
+    </div>`;
+
+    // Event breakdown chart + time series
+    html += `
+    <div class="chart-grid">
+      <div class="chart-box">
+        <div class="chart-title"><span class="dot" style="background:var(--accent-green)"></span>전환이벤트 유형별 비중</div>
+        <div class="chart-wrap"><canvas id="conv-event-chart"></canvas></div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title"><span class="dot" style="background:var(--accent-blue)"></span>Y형 전환 퍼널</div>
+        <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;">
+          <div style="text-align:center;font-size:13px;line-height:2.2;">
+            <div style="font-size:18px;font-weight:700;color:var(--accent-blue)">세션 ${fmt(rawData.ga4Traffic ? rawData.ga4Traffic.reduce((s,r) => s + toNum(r[Object.keys(r).find(h=>h.includes('세션'))]), 0) : 0, 'int')}</div>
+            <div style="color:var(--text-muted)">↓</div>
+            <div style="font-size:16px;font-weight:600;color:var(--accent-green)">전환이벤트 ${fmt(totalEvents, 'int')}</div>
+            <div style="display:flex;gap:40px;justify-content:center;margin-top:8px;">
+              <div>
+                <div style="color:var(--accent-orange)">↙ 상담문의</div>
+                <div style="font-weight:700">${fmt(contactEvents,'int')} → 딜 ${totalDeals}</div>
+                <div style="color:var(--text-muted);font-size:11px">${fmt(contactToDeal,'percent')}</div>
+              </div>
+              <div>
+                <div style="color:var(--accent-purple)">↘ 소개서</div>
+                <div style="font-weight:700">${fmt(downloadEvents,'int')} → 리드 ${totalLeads}</div>
+                <div style="color:var(--text-muted);font-size:11px">${fmt(downloadToLead,'percent')}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+    // Event table
+    html += `
+    <div class="data-table-wrap">
+      <div class="data-table-header">전환이벤트 상세</div>
+      <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>이벤트명</th><th class="num">횟수</th><th class="num">비중</th></tr></thead>
+        <tbody>
+        ${eventKeys.map(k => `<tr>
+          <td>${k}</td>
+          <td class="num">${fmt(eventBreakdown[k], 'int')}</td>
+          <td class="num">${totalEvents > 0 ? fmt(eventBreakdown[k] / totalEvents * 100, 'percent') : '-'}</td>
+        </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>`;
+
+    html += renderInsightPanel('insight_ga4_conv', 'GA4 전환 인사이트');
+    container.innerHTML = html;
+
+    if (eventKeys.length > 0) {
+      charts['conv-event'] = createChart('conv-event-chart', 'doughnut', eventKeys.slice(0, 8), [{
+        data: eventKeys.slice(0, 8).map(k => eventBreakdown[k]),
+        backgroundColor: CHART_PALETTE.slice(0, 8),
+        borderWidth: 0
+      }], { cutout: '55%' });
+    }
+  }
+}
+
+// =====================================================
+// SHARED RENDERERS
+// =====================================================
+function renderGroupTable(container, data, groupCol, metricCols, title, color, insightKey) {
+  if (!groupCol) {
+    container.innerHTML = '<div class="empty">해당 컬럼 데이터가 없습니다.</div>';
+    return;
+  }
+
+  const validCols = metricCols.filter(Boolean);
+  const groups = {};
+  data.forEach(row => {
+    const key = row[groupCol] || '(미분류)';
+    if (!groups[key]) { groups[key] = {}; validCols.forEach(c => groups[key][c] = 0); }
+    validCols.forEach(c => { groups[key][c] += toNum(row[c]); });
+  });
+
+  const keys = Object.keys(groups).sort((a, b) => {
+    const ca = validCols[1]; // sort by clicks
+    return (groups[b][ca] || 0) - (groups[a][ca] || 0);
+  });
+
+  const impCol = validCols[0];
+  const clickCol = validCols[1];
+  const costCol = validCols[2];
+  const convCol = validCols[3];
+
+  // Chart
+  let html = `
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-title"><span class="dot" style="background:${color}"></span>${title} — 클릭수</div>
+      <div class="chart-wrap"><canvas id="group-chart"></canvas></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title"><span class="dot" style="background:var(--accent-yellow)"></span>${title} — CPC</div>
+      <div class="chart-wrap"><canvas id="group-cpc-chart"></canvas></div>
+    </div>
+  </div>`;
+
+  // Table
+  html += `
+  <div class="data-table-wrap">
+    <div class="data-table-header">${title}</div>
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr>
+        <th>${groupCol}</th>
+        ${impCol ? '<th class="num">노출수</th>' : ''}
+        ${clickCol ? '<th class="num">클릭수</th>' : ''}
+        ${costCol ? '<th class="num">광고비</th>' : ''}
+        ${clickCol && impCol ? '<th class="num">CTR</th>' : ''}
+        ${clickCol && costCol ? '<th class="num">CPC</th>' : ''}
+        ${convCol ? '<th class="num">전환수</th>' : ''}
+      </tr></thead>
+      <tbody>
+      ${keys.map(k => {
+        const g = groups[k];
+        const ctr = g[impCol] > 0 ? (g[clickCol] / g[impCol] * 100) : 0;
+        const cpc = g[clickCol] > 0 ? (g[costCol] / g[clickCol]) : 0;
+        return `<tr>
+          <td>${k}</td>
+          ${impCol ? `<td class="num">${fmt(g[impCol], 'int')}</td>` : ''}
+          ${clickCol ? `<td class="num">${fmt(g[clickCol], 'int')}</td>` : ''}
+          ${costCol ? `<td class="num">${fmt(g[costCol], 'currency')}</td>` : ''}
+          ${clickCol && impCol ? `<td class="num">${fmt(ctr, 'percent')}</td>` : ''}
+          ${clickCol && costCol ? `<td class="num">${fmt(cpc, 'currency')}</td>` : ''}
+          ${convCol ? `<td class="num">${fmt(g[convCol], 'int')}</td>` : ''}
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+
+  html += renderInsightPanel(insightKey, '인사이트');
+  container.innerHTML = html;
+
+  // Charts
+  const topKeys = keys.slice(0, 10);
+  charts['group'] = createChart('group-chart', 'bar', topKeys, [{
+    label: '클릭수',
+    data: topKeys.map(k => groups[k][clickCol] || 0),
+    backgroundColor: CHART_PALETTE.slice(0, topKeys.length).map(c => c + '80'),
+    borderColor: CHART_PALETTE.slice(0, topKeys.length),
+    borderWidth: 1
+  }]);
+
+  if (clickCol && costCol) {
+    charts['group-cpc'] = createChart('group-cpc-chart', 'bar', topKeys, [{
+      label: 'CPC (원)',
+      data: topKeys.map(k => groups[k][clickCol] ? Math.round(groups[k][costCol] / groups[k][clickCol]) : 0),
+      backgroundColor: CHART_PALETTE.slice(0, topKeys.length).map(c => c + '60'),
+      borderColor: CHART_PALETTE.slice(0, topKeys.length),
+      borderWidth: 1
+    }]);
+  }
+}
+
+function renderInsightPanel(key, title) {
+  const insight = adminSettings[key] || '';
+  if (!insight) {
+    return `<div class="insight-panel">
+      <h3>💡 ${title}</h3>
+      <div class="insight-item" style="border-left-color:var(--text-muted)">어드민 페이지에서 인사이트를 입력하면 여기에 표시됩니다.</div>
+    </div>`;
+  }
+  const lines = insight.split('\n').filter(l => l.trim());
+  return `<div class="insight-panel">
+    <h3>💡 ${title}</h3>
+    ${lines.map(l => `<div class="insight-item">${l}</div>`).join('')}
+  </div>`;
+}
+
+// =====================================================
+// CHART.JS WRAPPER
+// =====================================================
+function createChart(canvasId, type, labels, datasets, extraOpts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d');
+
+  const isDoughnut = type === 'doughnut';
+  const opts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: isDoughnut ? 'nearest' : 'index', intersect: false },
+    plugins: {
+      legend: {
+        display: isDoughnut || datasets.length > 1,
+        position: isDoughnut ? 'right' : 'top',
+        labels: { color: '#9aa0b0', usePointStyle: true, padding: 12, font: { size: 11 } }
+      },
+      tooltip: {
+        backgroundColor: '#1e2130',
+        titleColor: '#e8eaed',
+        bodyColor: '#9aa0b0',
+        borderColor: '#2a2d3e',
+        borderWidth: 1,
+        padding: 10,
+        callbacks: {
+          label: function(ctx) {
+            let val = ctx.parsed.y !== undefined ? ctx.parsed.y : ctx.parsed;
+            if (typeof val === 'number') val = val.toLocaleString();
+            return `${ctx.dataset.label || ''}: ${val}`;
+          }
+        }
+      }
+    },
+    scales: isDoughnut ? {} : {
+      x: {
+        grid: { color: '#1a1d2720' },
+        ticks: { color: '#6b7280', font: { size: 11 }, maxRotation: 45 }
+      },
+      y: {
+        grid: { color: '#2a2d3e40' },
+        ticks: { color: '#6b7280', font: { size: 11 }, callback: v => v >= 1000 ? (v/1000).toFixed(0) + 'K' : v }
+      }
+    },
+    ...extraOpts
+  };
+
+  if (isDoughnut && extraOpts.cutout) {
+    opts.cutout = extraOpts.cutout;
+    delete opts.scales;
+  }
+
+  datasets.forEach(ds => {
+    if (type === 'line' && !ds.pointRadius) ds.pointRadius = 2;
+    if (type === 'line' && !ds.tension) ds.tension = 0.3;
+  });
+
+  return new Chart(ctx, { type, data: { labels, datasets }, options: opts });
+}
+
+// =====================================================
+// INIT
+// =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+  fetchAllData();
+  // Auto-refresh every 5 minutes
+  setInterval(fetchAllData, 300000);
+});
+</script>
+</body>
+</html>
