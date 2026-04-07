@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리스페이스 대시보드 — 어드민</title>
+<style>
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-card: #1e2130;
+  --bg-card-hover: #252840;
+  --bg-input: #13151d;
+  --border: #2a2d3e;
+  --border-focus: #4f8cff;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0b0;
+  --text-muted: #6b7280;
+  --accent-blue: #4f8cff;
+  --accent-green: #34d399;
+  --accent-yellow: #fbbf24;
+  --accent-red: #f87171;
+  --accent-purple: #a78bfa;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+
+/* Header */
+.header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+.logo span { color: var(--accent-blue); }
+.badge { background: var(--accent-purple); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.btn { padding: 8px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+.btn-primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; font-weight: 600; }
+.btn-primary:hover { background: #3d7ae8; }
+.btn-success { background: var(--accent-green); border-color: var(--accent-green); color: #000; font-weight: 600; }
+.btn-danger { background: transparent; border-color: var(--accent-red); color: var(--accent-red); }
+.btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+/* Toast */
+.toast { position: fixed; top: 20px; right: 20px; background: var(--bg-card); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; z-index: 1000; transform: translateX(120%); transition: transform 0.3s ease; }
+.toast.show { transform: translateX(0); }
+.toast.error { border-color: var(--accent-red); color: var(--accent-red); }
+
+/* Layout */
+.main { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+/* View Toggle */
+.view-section { margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+.view-toggle { display: flex; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
+.view-toggle button { padding: 8px 20px; font-size: 13px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; }
+.view-toggle button.active { background: var(--accent-blue); color: #fff; }
+.view-label { font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+
+/* Section */
+.section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+.section-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.section-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.section-title .icon { font-size: 18px; }
+.section-badge { font-size: 11px; color: var(--text-muted); background: var(--bg-secondary); padding: 3px 10px; border-radius: 10px; }
+.section-body { padding: 20px; }
+
+/* Tabs */
+.admin-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg-secondary); }
+.admin-tab { padding: 12px 20px; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+.admin-tab:hover { color: var(--text-primary); }
+.admin-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+.admin-tab-content { display: none; }
+.admin-tab-content.active { display: block; }
+
+/* Form Elements */
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.form-hint { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+textarea { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); padding: 12px; font-size: 13px; font-family: inherit; line-height: 1.6; resize: vertical; transition: border-color 0.2s; }
+textarea:focus { outline: none; border-color: var(--border-focus); }
+input[type="number"], input[type="text"] { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); padding: 10px 12px; font-size: 13px; font-family: inherit; transition: border-color 0.2s; }
+input:focus { outline: none; border-color: var(--border-focus); }
+
+/* KPI Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.kpi-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+.kpi-item-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-row-inputs { display: flex; gap: 8px; align-items: center; }
+.kpi-row-inputs input { flex: 1; }
+.kpi-row-inputs .unit { font-size: 12px; color: var(--text-muted); white-space: nowrap; min-width: 30px; }
+
+/* Insight Entry */
+.insight-entry { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 12px; }
+.insight-entry-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.insight-entry-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.insight-dot { width: 8px; height: 8px; border-radius: 50%; }
+.insight-type { display: flex; gap: 4px; }
+.insight-type button { padding: 3px 10px; font-size: 11px; border: 1px solid var(--border); border-radius: 12px; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+.insight-type button.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(79,140,255,0.1); }
+
+/* Last saved */
+.last-saved { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+.last-saved .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-green); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .main { padding: 16px; }
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">RESPACE 어드민</div>
+    <div class="badge">ADMIN</div>
+  </div>
+  <div class="header-right">
+    <div class="last-saved" id="lastSaved">
+      <span class="dot"></span> 마지막 저장: -
+    </div>
+    <a class="btn" href="respace-dashboard.html">← 대시보드로 이동</a>
+    <button class="btn btn-primary" onclick="saveAll()">💾 전체 저장</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- View Toggle -->
+  <div class="view-section">
+    <span class="view-label">대시보드 표시 모드:</span>
+    <div class="view-toggle">
+      <button class="active" data-view="daily" onclick="setAdminView('daily')">일자별</button>
+      <button data-view="weekly" onclick="setAdminView('weekly')">주차별</button>
+    </div>
+    <span style="font-size:12px;color:var(--text-muted)">— 대시보드에 반영됩니다</span>
+  </div>
+
+  <!-- Admin Tabs -->
+  <div class="section" style="padding:0;border:none;background:transparent;">
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('insights')">💡 인사이트 편집</button>
+      <button class="admin-tab" onclick="switchAdminTab('kpi')">🎯 KPI 목표값</button>
+      <button class="admin-tab" onclick="switchAdminTab('settings')">⚙ 설정</button>
+    </div>
+  </div>
+
+  <!-- ===== 인사이트 편집 탭 ===== -->
+  <div class="admin-tab-content active" id="tab-insights">
+
+    <!-- 네이버 검색광고 인사이트 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🟢</span> 네이버 검색광고 인사이트</div>
+        <div class="section-badge">검색광고 탭 → 네이버 통합</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">인사이트 내용</label>
+          <div class="form-hint">한 줄에 하나씩 입력하면 대시보드에 개별 인사이트 카드로 표시됩니다.</div>
+          <textarea id="insight_naver" rows="5" placeholder="예: 네이버 SA CTR 0.89%로 업종 평균(1.0%) 대비 소폭 하회 — 키워드 리프레시 검토 필요&#10;CPC ₩4,305로 벤치마크(₩4,000) 대비 7.6% 초과 — 입찰가 최적화 필요"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 구글 검색광고 인사이트 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🔵</span> 구글 검색광고 인사이트</div>
+        <div class="section-badge">검색광고 탭 → 구글 통합</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">인사이트 내용</label>
+          <textarea id="insight_google" rows="5" placeholder="예: Google SA CTR 11.94%로 업종 우수 기준(10%) 초과 — 니치 키워드 전략 유효&#10;CPC ₩632로 벤치마크(₩1,000) 대비 37% 절감 — 예산 확대 추천"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meta 광고 인사이트 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🟣</span> Meta 광고 인사이트</div>
+        <div class="section-badge">Meta 광고 탭</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">인사이트 내용</label>
+          <textarea id="insight_meta" rows="5" placeholder="예: Core A(국내 엔터프라이즈) CTR 2.18%로 전체 최고 — 확대 투자 1순위&#10;Core B(글로벌) CPC ₩823으로 평균 대비 18% 높음 — 크리에이티브 리프레시 검토"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- GA4 트래픽 인사이트 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🟠</span> GA4 트래픽 인사이트</div>
+        <div class="section-badge">GA4 탭 → 트래픽</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">인사이트 내용</label>
+          <textarea id="insight_ga4" rows="5" placeholder="예: Instagram 채널 세션 1,330건으로 1위이나 참여율 28.9%로 최저 — 트래픽 품질 이슈&#10;google/cpc 참여율 64.2%로 전체 최고 — 예산 확대 시 고품질 트래픽 확보 가능"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- GA4 전환 인사이트 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">✅</span> GA4 전환 인사이트</div>
+        <div class="section-badge">GA4 탭 → 전환 액션</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">인사이트 내용</label>
+          <textarea id="insight_ga4_conv" rows="5" placeholder="예: 세션→전환이벤트 전환율 32.09%로 벤치마크(15-25%) 대비 우수&#10;click_contact→딜 전환율 7.4%로 양호 기준(7%) 충족 — 상담 퍼널 안정적"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== KPI 목표값 탭 ===== -->
+  <div class="admin-tab-content" id="tab-kpi">
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🎯</span> 검색광고 KPI 목표값</div>
+      </div>
+      <div class="section-body">
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-item-label">네이버 목표 CTR</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_naver_ctr" step="0.01" placeholder="1.0">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">네이버 목표 CPC</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_naver_cpc" step="100" placeholder="4000">
+              <span class="unit">원</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">네이버 월 전환수 목표</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_naver_conv" step="1" placeholder="50">
+              <span class="unit">건</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">구글 목표 CTR</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_google_ctr" step="0.01" placeholder="10.0">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">구글 목표 CPC</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_google_cpc" step="100" placeholder="1000">
+              <span class="unit">원</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">구글 월 전환수 목표</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_google_conv" step="1" placeholder="300">
+              <span class="unit">건</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">📱</span> Meta 광고 KPI 목표값</div>
+      </div>
+      <div class="section-body">
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-item-label">Meta 목표 CTR</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_meta_ctr" step="0.01" placeholder="2.0">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">Meta 목표 CPC</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_meta_cpc" step="100" placeholder="700">
+              <span class="unit">원</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">Meta 월 전환수 목표</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_meta_conv" step="1" placeholder="200">
+              <span class="unit">건</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">Meta 월 광고비 한도</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_meta_budget" step="10000" placeholder="600000">
+              <span class="unit">원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">📊</span> GA4 / 전환 KPI 목표값</div>
+      </div>
+      <div class="section-body">
+        <div class="kpi-grid">
+          <div class="kpi-item">
+            <div class="kpi-item-label">월 목표 세션수</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_ga4_sessions" step="100" placeholder="7000">
+              <span class="unit">건</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">목표 참여율</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_ga4_engagement" step="1" placeholder="50">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">월 목표 리드수</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_leads_target" step="1" placeholder="50">
+              <span class="unit">건</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">월 목표 딜수</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_deals_target" step="1" placeholder="70">
+              <span class="unit">건</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">세션→전환 목표 전환율</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_session_conv_rate" step="1" placeholder="30">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-item-label">총 광고비 월 예산</div>
+            <div class="kpi-row-inputs">
+              <input type="number" id="kpi_total_budget" step="100000" placeholder="3500000">
+              <span class="unit">원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 설정 탭 ===== -->
+  <div class="admin-tab-content" id="tab-settings">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🔗</span> 데이터 소스 설정</div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label class="form-label">Google Sheets ID</label>
+          <input type="text" id="settings_sheet_id" placeholder="1_J-qPpFpz5CjYv33a9pxZNBhyEgHfZtgK1upS-oZKbU">
+        </div>
+        <div class="form-group">
+          <label class="form-label">자동 새로고침 간격</label>
+          <div class="kpi-row-inputs" style="max-width:200px">
+            <input type="number" id="settings_refresh" value="5" min="1" max="60">
+            <span class="unit">분</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="icon">🗄️</span> 데이터 관리</div>
+      </div>
+      <div class="section-body">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn" onclick="exportSettings()">📥 설정 내보내기 (JSON)</button>
+          <button class="btn" onclick="document.getElementById('importFile').click()">📤 설정 가져오기</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSettings(event)">
+          <button class="btn btn-danger" onclick="resetAll()">🗑 전체 초기화</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================================================
+// STATE
+// =====================================================
+const STORAGE_KEY = 'respace_admin_settings';
+
+const INSIGHT_KEYS = ['insight_naver', 'insight_google', 'insight_meta', 'insight_ga4', 'insight_ga4_conv'];
+const KPI_KEYS = [
+  'kpi_naver_ctr', 'kpi_naver_cpc', 'kpi_naver_conv',
+  'kpi_google_ctr', 'kpi_google_cpc', 'kpi_google_conv',
+  'kpi_meta_ctr', 'kpi_meta_cpc', 'kpi_meta_conv', 'kpi_meta_budget',
+  'kpi_ga4_sessions', 'kpi_ga4_engagement', 'kpi_leads_target', 'kpi_deals_target',
+  'kpi_session_conv_rate', 'kpi_total_budget'
+];
+const SETTINGS_KEYS = ['settings_sheet_id', 'settings_refresh'];
+
+// =====================================================
+// INIT
+// =====================================================
+document.addEventListener('DOMContentLoaded', loadAll);
+
+function loadAll() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const data = JSON.parse(saved);
+
+    // Load insights
+    INSIGHT_KEYS.forEach(key => {
+      const el = document.getElementById(key);
+      if (el && data[key]) el.value = data[key];
+    });
+
+    // Load KPI values
+    KPI_KEYS.forEach(key => {
+      const el = document.getElementById(key);
+      if (el && data.kpi && data.kpi[key] !== undefined) el.value = data.kpi[key];
+    });
+
+    // Load settings
+    SETTINGS_KEYS.forEach(key => {
+      const el = document.getElementById(key);
+      if (el && data[key]) el.value = data[key];
+    });
+
+    // Load view
+    if (data.view) {
+      document.querySelectorAll('.view-toggle button').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === data.view);
+      });
+    }
+
+    // Last saved time
+    if (data._savedAt) {
+      document.getElementById('lastSaved').innerHTML =
+        `<span class="dot"></span> 마지막 저장: ${new Date(data._savedAt).toLocaleString('ko-KR')}`;
+    }
+  } catch(e) {
+    console.warn('Failed to load settings:', e);
+  }
+}
+
+// =====================================================
+// SAVE
+// =====================================================
+function saveAll() {
+  const data = {};
+
+  // Save insights
+  INSIGHT_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el) data[key] = el.value;
+  });
+
+  // Save KPI values
+  data.kpi = {};
+  KPI_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el && el.value) data.kpi[key] = parseFloat(el.value);
+  });
+
+  // Save settings
+  SETTINGS_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el) data[key] = el.value;
+  });
+
+  // Save view mode
+  const activeView = document.querySelector('.view-toggle button.active');
+  data.view = activeView ? activeView.dataset.view : 'daily';
+
+  // Timestamp
+  data._savedAt = new Date().toISOString();
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Update last saved display
+  document.getElementById('lastSaved').innerHTML =
+    `<span class="dot"></span> 마지막 저장: ${new Date().toLocaleString('ko-KR')}`;
+
+  showToast('설정이 저장되었습니다. 대시보드에 즉시 반영됩니다.');
+}
+
+// =====================================================
+// TAB / VIEW SWITCHING
+// =====================================================
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach((b, i) => {
+    const tabs = ['insights', 'kpi', 'settings'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.admin-tab-content').forEach(el => {
+    el.classList.toggle('active', el.id === 'tab-' + tab);
+  });
+}
+
+function setAdminView(view) {
+  document.querySelectorAll('.view-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === view);
+  });
+}
+
+// =====================================================
+// EXPORT / IMPORT / RESET
+// =====================================================
+function exportSettings() {
+  const data = localStorage.getItem(STORAGE_KEY);
+  if (!data) { showToast('저장된 설정이 없습니다.', true); return; }
+
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `respace-admin-settings-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('설정 파일이 다운로드됩니다.');
+}
+
+function importSettings(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      loadAll();
+      showToast('설정이 성공적으로 가져와졌습니다.');
+    } catch(err) {
+      showToast('JSON 파일 형식이 올바르지 않습니다.', true);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function resetAll() {
+  if (!confirm('모든 인사이트와 KPI 설정을 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+
+  INSIGHT_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.value = '';
+  });
+  KPI_KEYS.forEach(key => {
+    const el = document.getElementById(key);
+    if (el) el.value = '';
+  });
+
+  showToast('모든 설정이 초기화되었습니다.');
+}
+
+// =====================================================
+// TOAST
+// =====================================================
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+// =====================================================
+// AUTO-SAVE (debounced)
+// =====================================================
+let autoSaveTimer;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(saveAll, 2000);
+}
+
+// Attach auto-save to all inputs
+document.querySelectorAll('textarea, input').forEach(el => {
+  el.addEventListener('input', scheduleAutoSave);
+});
+</script>
+</body>
+</html>
