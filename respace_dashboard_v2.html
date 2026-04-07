@@ -1224,11 +1224,28 @@
 
         function parseGvizDate(dateStr) {
             if (!dateStr) return null;
-            const match = dateStr.match(/Date\((\d+),(\d+),(\d+)\)/);
-            if (match) {
-                return new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+            // Handle gviz Date format: Date(year,month,day) or Date(year,month,day,h,m,s)
+            const gvizMatch = dateStr.match(/Date\((\d+),(\d+),(\d+)/);
+            if (gvizMatch) {
+                return new Date(parseInt(gvizMatch[1]), parseInt(gvizMatch[2]), parseInt(gvizMatch[3]));
             }
-            return null;
+            // Handle plain date string: "2026-03-01" or "2026-03-01T..."
+            const plainMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (plainMatch) {
+                return new Date(parseInt(plainMatch[1]), parseInt(plainMatch[2]) - 1, parseInt(plainMatch[3]));
+            }
+            // Fallback: try direct parse
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function getDateKey(dateStr) {
+            const d = parseGvizDate(dateStr);
+            if (!d) return dateStr || '';
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
         }
 
         function isDateInRange(date, startDate, endDate) {
@@ -1375,36 +1392,28 @@
 
         function filterLeadsData(data, startDate, endDate) {
             return data.filter(row => {
-                const dateStr = row['생성일'];
-                if (!dateStr) return false;
-                const date = new Date(dateStr);
+                const date = parseGvizDate(row['생성일']);
                 return isDateInRange(date, startDate, endDate);
             });
         }
 
         function filterDealsData(data, startDate, endDate) {
             return data.filter(row => {
-                const dateStr = row['폼 제출 일자'];
-                if (!dateStr) return false;
-                const date = new Date(dateStr);
+                const date = parseGvizDate(row['폼 제출 일자']);
                 return isDateInRange(date, startDate, endDate);
             });
         }
 
         function filterGA4TrafficData(data, startDate, endDate) {
             return data.filter(row => {
-                const dateStr = row['날짜'];
-                if (!dateStr) return false;
-                const date = new Date(dateStr);
+                const date = parseGvizDate(row['날짜']);
                 return isDateInRange(date, startDate, endDate);
             });
         }
 
         function filterGA4ConversionData(data, startDate, endDate) {
             return data.filter(row => {
-                const dateStr = row['날짜'];
-                if (!dateStr) return false;
-                const date = new Date(dateStr);
+                const date = parseGvizDate(row['날짜']);
                 return isDateInRange(date, startDate, endDate);
             });
         }
@@ -1514,7 +1523,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['날짜'];
+                const dateStr = getDateKey(row['날짜']);
                 if (!byDate[dateStr]) {
                     byDate[dateStr] = { 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, rows: [] };
                 }
@@ -1551,7 +1560,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['날짜'];
+                const dateStr = getDateKey(row['날짜']);
                 if (!byDate[dateStr]) {
                     byDate[dateStr] = { 클릭: 0, 전환수: 0 };
                 }
@@ -1719,7 +1728,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['날짜'];
+                const dateStr = getDateKey(row['날짜']);
                 if (!byDate[dateStr]) {
                     byDate[dateStr] = { 클릭: 0, 전환수: 0 };
                 }
@@ -1773,7 +1782,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['날짜'];
+                const dateStr = getDateKey(row['날짜']);
                 if (!byDate[dateStr]) {
                     byDate[dateStr] = { 노출: 0, 도달: 0, 클릭: 0, 비용: 0, 전환수: 0, 노출빈도: 0, count: 0 };
                 }
@@ -1923,7 +1932,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['날짜'];
+                const dateStr = getDateKey(row['날짜']);
                 if (!byDate[dateStr]) {
                     byDate[dateStr] = 0;
                 }
@@ -2153,7 +2162,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['생성일'];
+                const dateStr = getDateKey(row['생성일']);
                 if (dateStr) {
                     byDate[dateStr] = (byDate[dateStr] || 0) + 1;
                 }
@@ -2189,7 +2198,7 @@
             data.slice(0, 100).forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${row['생성일']}</td>
+                    <td>${getDateKey(row['생성일'])}</td>
                     <td>${row['회사명'] || '-'}</td>
                     <td>${row['성명'] || '-'}</td>
                     <td>${row['유입경로'] || '-'}</td>
@@ -2225,7 +2234,7 @@
 
             const byDate = {};
             data.forEach(row => {
-                const dateStr = row['폼 제출 일자'];
+                const dateStr = getDateKey(row['폼 제출 일자']);
                 if (dateStr) {
                     byDate[dateStr] = (byDate[dateStr] || 0) + 1;
                 }
@@ -2261,7 +2270,7 @@
                 tr.innerHTML = `
                     <td>${row['회사'] || '-'}</td>
                     <td>${row['폼/리드라우트 제목'] || '-'}</td>
-                    <td>${row['폼 제출 일자'] || '-'}</td>
+                    <td>${getDateKey(row['폼 제출 일자']) || '-'}</td>
                     <td>${row['담당자 성함'] || '-'}</td>
                     <td>${row['담당자 연락처'] || '-'}</td>
                 `;
