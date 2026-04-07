@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리스페이스 3월 월간 퍼포먼스 리포트</title>
+    <title>리스페이스 월간 퍼포먼스 리포트</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <style>
         * {
@@ -44,6 +44,12 @@
         .header p {
             font-size: 1em;
             opacity: 0.9;
+        }
+
+        .header-meta {
+            font-size: 0.9em;
+            margin-top: 12px;
+            opacity: 0.85;
         }
 
         /* KPI Cards */
@@ -101,6 +107,21 @@
             color: #bbb;
         }
 
+        .kpi-change {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .kpi-change.up {
+            color: #27ae60;
+        }
+
+        .kpi-change.down {
+            color: #e74c3c;
+        }
+
         /* Section Titles */
         .section {
             background: white;
@@ -143,53 +164,100 @@
             border-left-color: #e74c3c;
         }
 
-        /* Funnel */
+        /* Funnel — Y-shape branching */
         .funnel-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-around;
             margin: 30px 0;
-            flex-wrap: wrap;
-            gap: 20px;
+            gap: 0;
+        }
+
+        .funnel-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
         }
 
         .funnel-step {
             text-align: center;
-            flex: 1;
             min-width: 150px;
         }
 
         .funnel-box {
             background: white;
             border: 2px solid #4C72B0;
-            border-radius: 6px;
+            border-radius: 8px;
             padding: 15px 20px;
-            margin-bottom: 10px;
             font-weight: 600;
         }
+        .funnel-box.start { border-color: #3498db; background: #f0f7ff; }
+        .funnel-box.path-a { border-color: #e74c3c; background: #fef5f5; }
+        .funnel-box.path-b { border-color: #f39c12; background: #fefbf0; }
 
         .funnel-value {
             font-size: 1.8em;
-            color: #e74c3c;
-            margin-bottom: 5px;
+            color: #1a1a2e;
+            margin-bottom: 4px;
         }
 
         .funnel-label {
-            font-size: 0.9em;
+            font-size: 0.88em;
             color: #666;
         }
 
         .funnel-rate {
-            font-size: 0.85em;
+            font-size: 0.82em;
             color: #999;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
-        .funnel-arrow {
-            font-size: 2em;
+        .funnel-arrow-down {
+            font-size: 1.6em;
             color: #bbb;
-            margin: 0 10px;
+            margin: 8px 0;
         }
+
+        .funnel-arrow-inline {
+            font-size: 1.6em;
+            color: #bbb;
+        }
+
+        .funnel-branch {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin-top: 0;
+            position: relative;
+        }
+        .funnel-branch::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: calc(50% - 100px);
+            width: 200px;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .funnel-branch-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 180px;
+        }
+
+        .funnel-path-label {
+            font-size: 0.78em;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 12px;
+            color: white;
+        }
+        .funnel-path-label.a { background: #e74c3c; }
+        .funnel-path-label.b { background: #f39c12; }
 
         /* Charts */
         .chart-container {
@@ -316,6 +384,73 @@
             margin-top: 40px;
         }
 
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #1a1a2e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 1em;
+            color: #666;
+        }
+
+        /* Data Source Badge */
+        .data-source-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .data-source-badge.live {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .data-source-badge.fallback {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Color Scheme */
+        .color-naver { color: #4C72B0; }
+        .color-google { color: #55A868; }
+        .color-meta { color: #2D7BF6; }
+        .color-ga4 { color: #DD8452; }
+
         /* Print Styles */
         @media print {
             body { background: white; }
@@ -328,25 +463,26 @@
         @media (max-width: 768px) {
             .header h1 { font-size: 1.6em; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .funnel-container { flex-direction: column; }
-            .funnel-arrow { transform: rotate(90deg); margin: 5px 0; }
+            .funnel-branch { flex-direction: column; gap: 20px; align-items: center; }
+            .funnel-branch::before { display: none; }
             .chart-container { height: 300px; }
             .insight-cards { grid-template-columns: 1fr; }
         }
-
-        /* Color Scheme */
-        .color-naver { color: #4C72B0; }
-        .color-google { color: #55A868; }
-        .color-meta { color: #2D7BF6; }
-        .color-ga4 { color: #DD8452; }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Google Sheets에서 데이터를 불러오는 중...</div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1 id="header-title">리스페이스 3월 월간 퍼포먼스 리포트</h1>
-            <p id="header-subtitle">2026년 3월 1일 ~ 3월 31일 | B2B 리드 수집 중심 분석</p>
+            <h1 id="header-title">리스페이스 월간 퍼포먼스 리포트</h1>
+            <p id="header-subtitle">데이터 로딩 중...</p>
+            <div class="header-meta" id="header-meta"></div>
         </div>
 
         <!-- Section 1: KPI Cards -->
@@ -354,44 +490,39 @@
             <div class="kpi-grid" id="kpi-container"></div>
         </div>
 
-        <!-- Section 2: Lead/Deal Collection (HERO) -->
+        <!-- Section 2: Lead/Deal Funnel -->
         <div class="section hero">
             <h2>🎯 리드/딜 수집 성과 및 채널 기여도</h2>
             <div class="annotation">※ GA4 전환이벤트(click_contact, click_download_intro)를 리드/딜 발생의 선행 지표로 활용</div>
 
-            <!-- Funnel -->
             <h3>수집 퍼널</h3>
             <div class="funnel-container" id="funnel-container"></div>
 
-            <!-- Contact Contribution Chart -->
             <h3>상담문의(click_contact) 채널별 기여도</h3>
-            <div class="annotation">※ 919건 합계, 채널 그룹별 비중</div>
+            <div class="annotation">※ 채널 그룹별 비중</div>
             <div class="chart-container">
                 <canvas id="contactChannelChart"></canvas>
             </div>
 
-            <!-- Download Contribution Chart -->
             <h3>소개서 다운로드(click_download_intro) 채널별 기여도</h3>
-            <div class="annotation">※ 851건 합계, 채널 그룹별 비중</div>
+            <div class="annotation">※ 채널 그룹별 비중</div>
             <div class="chart-container">
                 <canvas id="downloadChannelChart"></canvas>
             </div>
 
-            <!-- Lead & Deal Weekly Trend -->
             <h3>리드/딜 수집 및 전환이벤트 주간 추이</h3>
             <div class="annotation">※ 주차별 click_contact, click_download_intro 발생 추이와 리드/딜 수집 현황</div>
             <div class="chart-container tall">
                 <canvas id="leadDealTrendChart"></canvas>
             </div>
 
-            <!-- Key Insight -->
             <div class="insight-box" id="lead-deal-insights"></div>
         </div>
 
         <!-- Section 3: Weekly Trends -->
         <div class="section">
-            <h2>📊 주간 트렌드 (5주)</h2>
-            <div class="annotation">※ 1~4주차: 각 7일, 5주차: 2일(3/30~31). 5주차는 기간이 짧아 절대 수치 비교 시 유의</div>
+            <h2>📊 주간 트렌드</h2>
+            <div class="annotation">※ 주차별 광고비 투입, 전환이벤트, GA4 세션 현황</div>
 
             <h3>주간 광고비 투입</h3>
             <div class="annotation">※ 채널별 주간 누적 광고비</div>
@@ -468,11 +599,12 @@
         <!-- Section 7: Meta Ad Performance -->
         <div class="section">
             <h2>🎯 Meta 광고 타겟 페르소나별 성과</h2>
-            <div class="annotation">※ 3/12~3/31 집행 기간 기준, Core A/B/C + Strategic B 4개 광고세트</div>
+            <div class="annotation">※ Core A/B/C + Strategic B 광고세트 성과 분석</div>
 
-            <h3>CTR vs 전환율</h3>
-            <div class="chart-container">
-                <canvas id="metaPerformanceChart"></canvas>
+            <h3>CTR · CPC · 전환수 비교</h3>
+            <div class="annotation">※ 막대: 전환수 · CPC (좌축) / 선: CTR% (우축)</div>
+            <div class="chart-container tall">
+                <canvas id="metaComboChart"></canvas>
             </div>
 
             <h3>Meta 광고세트 상세 성과</h3>
@@ -483,14 +615,12 @@
 
         <!-- Section 8: Insights & Action Items -->
         <div class="section">
-            <h2>💡 핵심 인사이트 및 4월 액션 아이템</h2>
+            <h2>💡 핵심 인사이트 및 액션 아이템</h2>
 
             <h3>핵심 인사이트</h3>
-
             <div class="insight-cards" id="insights-container"></div>
 
-            <h3>4월 액션 아이템 (우선순위별)</h3>
-
+            <h3>액션 아이템 (우선순위별)</h3>
             <div class="action-items" id="action-items-container"></div>
         </div>
 
@@ -500,172 +630,47 @@
 
     <script>
         // ╔══════════════════════════════════════════════════════════════════╗
-        // ║  ✏️ 편집 영역 - 아래 CONFIG 내용만 수정하면 됩니다              ║
+        // ║  ✏️ 편집 영역 - 아래 SETTINGS 내용만 수정하면 됩니다          ║
         // ╚══════════════════════════════════════════════════════════════════╝
 
-        const CONFIG = {
-            // ── 📋 기본 정보 ──
+        const SETTINGS = {
+            spreadsheetId: '1_J-qPpFpz5CjYv33a9pxZNBhyEgHfZtgK1upS-oZKbU',
             reportTitle: "리스페이스 3월 월간 퍼포먼스 리포트",
             reportSubtitle: "2026년 3월 1일 ~ 3월 31일 | B2B 리드 수집 중심 분석",
             reportPeriod: "2026년 3월 1일 ~ 3월 31일",
             reportDate: "2026년 4월 2일",
             dataSources: "네이버 광고주센터, 구글 애즈, Meta 광고관리자, Google Analytics 4, 리캐치",
-
-            // ── 📊 KPI 카드 (상단 요약) ──
-            kpi: [
-                { class: "lead", label: "리드(소개서 다운)", value: 41, unit: "건", subtext: "Recatch 기준" },
-                { class: "deal", label: "딜(상담문의)", value: 68, unit: "건", subtext: "Recatch 기준" },
-                { class: "event", label: "전환이벤트 합계", value: 2130, unit: "건", subtext: "GA4 기준" },
-                { class: "session", label: "GA4 세션수", value: 6637, unit: "", subtext: "신규 4,151명" },
-                { class: "budget", label: "총 광고비", value: "₩3.2M", unit: "", subtext: "네이버+구글+Meta" },
-                { class: "impression", label: "총 노출", value: 109416, unit: "", subtext: "전 매체" },
-                { class: "click", label: "총 클릭", value: 2240, unit: "", subtext: "CTR 2.05%" },
-                { class: "ctr", label: "평균 CTR", value: "2.05%", unit: "", subtext: "채널 평균" }
+            sheets: {
+                naverAd: '네이버 검색광고',
+                googleAd: '구글 검색광고',
+                metaAd: 'Meta 광고',
+                ga4Traffic: 'GA4 트래픽',
+                ga4Conversion: 'GA4 전환이벤트',
+                recatchLead: '리캐치_리드',
+                recatchDeal: '리캐치_딜'
+            },
+            targetMonth: '2026-03',
+            weeks: [
+                { label: 'W1\n(3/1-8)', start: '2026-03-01', end: '2026-03-08' },
+                { label: 'W2\n(3/9-15)', start: '2026-03-09', end: '2026-03-15' },
+                { label: 'W3\n(3/16-22)', start: '2026-03-16', end: '2026-03-22' },
+                { label: 'W4\n(3/23-29)', start: '2026-03-23', end: '2026-03-29' },
+                { label: 'W5\n(3/30-31)', start: '2026-03-30', end: '2026-03-31' }
             ],
-
-            // ── 🎯 리드/딜 퍼널 ──
-            funnel: {
-                sessions: { value: 6637, label: "GA4 세션" },
-                events: { value: 2130, label: "전환이벤트", rate: "32.1%" },
-                leads: { value: 41, label: "리드", rate: "1.9%" },
-                deals: { value: 68, label: "딜", rate: "165.9%" }
-            },
-
-            // ── 📈 채널별 전환 기여 ──
-            contactChannel: {
-                total: 919,
-                labels: ['네이버 검색광고', 'Direct', '기타', '구글 CPC', '구글 오가닉', '네이버 오가닉', 'Meta DA'],
-                data: [190, 178, 178, 162, 97, 84, 30]
-            },
-            downloadChannel: {
-                total: 851,
-                labels: ['기타', 'Direct', '구글 오가닉', '구글 CPC', 'Meta DA', '네이버 검색광고', '네이버 오가닉'],
-                data: [252, 158, 122, 121, 80, 73, 45]
-            },
-
-            // ── 📅 주간 데이터 (5주) ──
-            weeklyLabels: ['W1\n(3/1-8)', 'W2\n(3/9-15)', 'W3\n(3/16-22)', 'W4\n(3/23-29)', 'W5\n(3/30-31)'],
-            weeklySpend: {
-                naver: [357181, 493878, 524436, 452166, 208514],
-                google: [27571, 153757, 314372, 73087, 31239],
-                meta: [0, 144919, 183539, 167344, 74245]
-            },
-            weeklyConversion: {
-                contact: [295, 322, 427, 459, 416],
-                download: [267, 267, 433, 458, 426],
-                project: [116, 152, 114, 117, 99]
-            },
-            weeklySessions: [801, 2004, 1719, 1468, 645],
-            weeklyLeadDeal: {
-                contact: [295, 322, 427, 459, 416],
-                download: [267, 267, 433, 458, 426],
-                leads: [4, 17, 15, 4, 1],
-                deals: [13, 18, 20, 7, 10]
-            },
-
-            // ── 🔍 매체별 광고 성과 ──
-            adPerformance: [
-                { name: "네이버 검색광고", colorClass: "color-naver", impressions: 53364, clicks: 473, ctr: "0.89%", spend: 2036175, cpc: 4305, conversions: "0 (측정불가)" },
-                { name: "구글 검색광고", colorClass: "color-google", impressions: 7951, clicks: 949, ctr: "11.94%", spend: 600026, cpc: 632, conversions: "312" },
-                { name: "Meta 광고", colorClass: "color-meta", impressions: 48101, clicks: 818, ctr: "1.70%", spend: 570047, cpc: 697, conversions: "218" }
-            ],
-
-            // ── 📈 GA4 트래픽 소스 ──
-            ga4Traffic: {
-                doughnutLabels: ['Meta DA', 'Direct', '구글 CPC', '구글 오가닉', 'Referral', '네이버 검색광고', '네이버 오가닉'],
-                doughnutData: [1281, 1229, 1078, 1031, 827, 674, 517],
-                engagementLabels: ['Referral', '네이버 검색광고', '구글 CPC', '구글 오가닉', 'Direct', '네이버 오가닉', 'Meta DA'],
-                engagementRates: [68.1, 67.9, 64.0, 57.5, 50.1, 63.1, 27.6],
-                trafficTable: [
-                    { name: "Meta(Instagram) DA", colorClass: "color-meta", sessions: 1281, users: 1261, engaged: 354, rate: "27.6%" },
-                    { name: "직접 유입(Direct)", colorClass: "", sessions: 1229, users: 1060, engaged: 616, rate: "50.1%" },
-                    { name: "구글 검색광고(CPC)", colorClass: "color-google", sessions: 1078, users: 857, engaged: 690, rate: "64.0%" },
-                    { name: "구글 오가닉", colorClass: "color-google", sessions: 1031, users: 816, engaged: 593, rate: "57.5%" },
-                    { name: "기타(Referral 등)", colorClass: "", sessions: 827, users: 640, engaged: 563, rate: "68.1%" },
-                    { name: "네이버 검색광고", colorClass: "color-naver", sessions: 674, users: 502, engaged: 458, rate: "67.9%" },
-                    { name: "네이버 오가닉", colorClass: "color-naver", sessions: 517, users: 353, engaged: 326, rate: "63.1%" }
-                ]
-            },
-
-            // ── 📅 일별 전환이벤트 ──
-            dailyConversion: {
-                days: Array.from({length: 31}, (_, i) => i + 1),
-                contact: [26, 37, 30, 29, 0, 3, 2, 16, 47, 47, 30, 23, 5, 3, 49, 33, 46, 48, 30, 3, 3, 34, 50, 52, 79, 39, 0, 5, 52, 98, null],
-                download: [53, 4, 10, 9, 0, 2, 5, 67, 13, 15, 9, 12, 12, 33, 68, 48, 37, 21, 6, 9, 47, 54, 38, 81, 20, 0, 7, 77, 94, null, null],
-                project: [28, 5, 3, 20, 3, 1, 4, 31, 21, 26, 6, 15, 11, 30, 7, 13, 4, 9, 1, 2, 9, 6, 24, 21, 4, 0, 2, 13, 41, null, null]
-            },
-
-            // ── 🎯 Meta 타겟별 성과 ──
-            metaTargets: [
-                { name: "Core A (엔터프라이즈)", impressions: 10875, clicks: 218, ctr: "2.00%", spend: 150858, cpc: 692, conversions: 53, convRate: "24.3%" },
-                { name: "Core B (글로벌)", impressions: 13687, clicks: 170, ctr: "1.24%", spend: 153033, cpc: 900, conversions: 71, convRate: "41.8%" },
-                { name: "Core C (엔터/IP)", impressions: 11364, clicks: 147, ctr: "1.29%", spend: 156595, cpc: 1065, conversions: 43, convRate: "29.3%" },
-                { name: "Strategic B (공공기관)", impressions: 12175, clicks: 283, ctr: "2.32%", spend: 109561, cpc: 387, conversions: 51, convRate: "18.0%" }
-            ],
-
-            // ── 💡 핵심 인사이트 (직접 수정 가능) ──
             insights: [
-                {
-                    priority: 1,
-                    title: "1. 리드 수집 채널: '검색 의도'와 '브랜드 인지' 두 축의 차별화",
-                    body: "상담문의(click_contact) 919건 중 네이버+구글 검색광고가 352건(38.3%)으로 가장 큰 비중. 검색 의도를 가진 유저가 직접 상담으로 이어지는 경로가 가장 효과적. 반면 소개서 다운로드(click_download_intro) 851건은 Referral(29.6%)과 Direct(18.6%)가 주도하여, 브랜드 인지도가 높은 유저가 자료를 먼저 수집하는 패턴. 리드 파이프라인은 '검색광고 → 상담' + '브랜드 인지 → 소개서 다운' 두 트랙으로 운영 필요."
-                },
-                {
-                    priority: 1,
-                    title: "2. 네이버 검색광고: 상담문의 기여 1위(20.7%)이나 비용 효율 의문",
-                    body: "월 광고비 ₩2,036,175 투자 중 네이버 검색광고의 click_contact 기여는 190건(20.7%)으로 1위. 그러나 CPC ₩4,305로 구글(₩632)의 6.8배, CTR 0.89%로 구글(11.94%)의 1/13 수준. 구글 검색광고는 162건(17.6%) 기여하면서도 비용은 네이버의 29.5% 수준. 네이버의 역할은 인정하되, 예산 배분 최적화 검토 필요."
-                },
-                {
-                    priority: 2,
-                    title: "3. Meta DA: 인지도 확산에 강점, 리드 전환에는 약세",
-                    body: "Meta는 세션 1,281건(19.3%)으로 유입량 1위이나, click_contact 기여는 30건(3.3%)으로 최하위. 반면 click_project_view 기여는 61건(16.9%)으로 2위. Meta는 '리스페이스가 뭘 하는 회사인지 보여주는' 인지 확산 역할은 하지만, 직접적인 상담/소개서 전환까지는 약함. Meta 광고의 KPI를 리드 전환이 아닌 '인지도 확산 + 리타겟팅 풀 확보'로 재설정 검토."
-                },
-                {
-                    priority: 2,
-                    title: "4. Meta Core B(글로벌) 타겟: 전환율 41.8%로 최고, 그러나 CPC도 ₩900",
-                    body: "4개 타겟 중 Core B가 전환수 71건(전체 218건의 32.6%), 전환율 41.8%로 최고 성과. 다만 CPC ₩900으로 Strategic B(₩387)의 2.3배. Strategic B(공공기관)는 CTR 2.32%로 최고, CPC ₩387로 최저이면서 전환수 51건으로 견실. 타겟별 역할 분리(Core B: 전환 중심, Strategic B: 효율 중심)가 효과적."
-                },
-                {
-                    priority: 3,
-                    title: "5. 3월 말 전환 급증: 3/31 click_contact 98건(월 최고치)",
-                    body: "click_contact가 3/26(79건), 3/31(98건)으로 월말에 급증. click_download_intro도 3/26(81건), 3/31(94건)으로 동일 패턴. 이는 B2B 특성상 월말 의사결정 집중 + 해당 기간 캠페인 크리에이티브 효과가 겹친 것으로 추정. 4월에도 월말 집중 예산 배분 전략 유효."
-                },
-                {
-                    priority: 3,
-                    title: "6. 주중/주말 B2B 패턴 & 네이버 전환 추적",
-                    body: "토·일 세션이 평일 대비 급감하는 명확한 B2B 패턴. 광고비를 주중(월~금)에 집중 배분하는 것이 효율적. 또한 네이버 검색광고의 전환이 0건으로 기록되어 있으나, GA4 click_contact 기여 190건으로 확인 시 실제 전환은 발생 중. 네이버 전환 스크립트 오류 해결이 정확한 ROAS 측정을 위한 최우선 과제."
-                }
+                { priority: 1, title: "1. 리드 수집 채널: '검색 의도'와 '브랜드 인지' 두 축의 차별화", body: "상담문의(click_contact) 919건 중 네이버+구글 검색광고가 352건(38.3%)으로 가장 큰 비중. 검색 의도를 가진 유저가 직접 상담으로 이어지는 경로가 가장 효과적. 반면 소개서 다운로드(click_download_intro) 851건은 Referral(29.6%)과 Direct(18.6%)가 주도하여, 브랜드 인지도가 높은 유저가 자료를 먼저 수집하는 패턴. 리드 파이프라인은 '검색광고 → 상담' + '브랜드 인지 → 소개서 다운' 두 트랙으로 운영 필요." },
+                { priority: 1, title: "2. 네이버 검색광고: 상담문의 기여 1위(20.7%)이나 비용 효율 의문", body: "월 광고비 ₩2,036,175 투자 중 네이버 검색광고의 click_contact 기여는 190건(20.7%)으로 1위. 그러나 CPC ₩4,305로 구글(₩632)의 6.8배, CTR 0.89%로 구글(11.94%)의 1/13 수준." },
+                { priority: 2, title: "3. Meta DA: 인지도 확산에 강점, 리드 전환에는 약세", body: "Meta는 세션 1,281건(19.3%)으로 유입량 1위이나, click_contact 기여는 30건(3.3%)으로 최하위." },
+                { priority: 2, title: "4. Meta Core B(글로벌) 타겟: 전환율 41.8%로 최고, 그러나 CPC도 ₩900", body: "4개 타겟 중 Core B가 전환수 71건(전체 218건의 32.6%), 전환율 41.8%로 최고 성과." },
+                { priority: 3, title: "5. 3월 말 전환 급증: 3/31 click_contact 98건(월 최고치)", body: "click_contact가 3/26(79건), 3/31(98건)으로 월말에 급증." }
             ],
-
-            // ── ✅ 액션 아이템 (직접 수정 가능) ──
             actionItems: [
-                {
-                    priority: 1,
-                    text: "[최우선] 네이버 전환 스크립트 오류 해결 — GA4에서 190건 click_contact 확인되나 네이버 자체 전환 0건. 전환 추적 정상화로 정확한 ROAS 측정 필수."
-                },
-                {
-                    priority: 1,
-                    text: "[최우선] 구글 검색광고 예산 확대 검토 — CTR 11.94%, CPC ₩632, click_contact 162건으로 비용 대비 리드 기여 최고 효율. 네이버에서 일부 예산 재배분 검토."
-                },
-                {
-                    priority: 2,
-                    text: "[높음] Meta 광고 KPI 재설정 — 리드 직접 전환보다 인지도 확산 + 리타겟팅 풀 확보로 역할 재정의. Core B 전환 중심, Strategic B 효율 중심으로 타겟별 전략 차별화."
-                },
-                {
-                    priority: 2,
-                    text: "[높음] 월말 집중 예산 배분 전략 — 3/26, 3/31 전환 급증 패턴 활용, 4월 말(4/26~30)에도 예산 집중 배분."
-                },
-                {
-                    priority: 2,
-                    text: "[중간] 주중 집중 광고 운영 — 주말 세션 70-80% 급감, 광고 예산을 월~금에 집중. 토일 광고비 감축 검토."
-                },
-                {
-                    priority: 2,
-                    text: "[중간] Referral 유입 경로 상세 분석 — 소개서 다운로드의 29.6%가 Referral, click_project_view의 29.2%도 Referral. flow.team, saramin, jobkorea 등 주요 Referral 소스 파악 및 활용 전략 수립."
-                }
+                { priority: 1, text: "[최우선]4월 네이버 전환 데이터 기반 실제 성과 분석 — 전환 추적 정상화(4/6 완료) 이후 2~3주 데이터가 쌓이면 네이버의 실제 전환율·전환당 비용을 구글과 비교 분석" },
+                { priority: 1, text: "[최우선] 구글 검색광고 예산 확대 검토 — CTR 11.94%, CPC ₩632, click_contact 162건으로 비용 대비 리드 기여 최고 효율." },
+                { priority: 2, text: "[높음] Meta 광고 타겟별 조정 — Core C(엔터/IP)는 광고 이미지·카피를 새로 교체, Core B(글로벌)는 예산을 늘려 전환 볼륨 확대" },
+                { priority: 2, text: "[높음] 월말 집중 예산 배분 전략 — 3/26, 3/31 전환 급증 패턴 활용." },
+                { priority: 2, text: "[중간] 상담신청·소개서 다운로드 폼 간소화 — 입력 항목 줄이기, 진행 단계 표시 추가 등으로 폼 완성률 높이기" }
             ],
-
-            // ── 💬 리드/딜 인사이트 박스 (Hero 섹션 하단) ──
             leadDealInsights: [
                 "상담문의(click_contact) 기여 Top 3: 네이버 검색광고(20.7%) > Direct(19.4%) > 구글 CPC(17.6%)",
                 "소개서 다운로드(click_download_intro) 기여 Top 3: Referral(29.6%) > Direct(18.6%) > 구글 오가닉(14.3%)",
@@ -673,485 +678,1153 @@
                 "→ 소개서 다운로드는 Referral·Direct 등 브랜드 인지 기반 채널이 48.2% 기여",
                 "→ Meta DA는 프로젝트 보기(16.9%)에서 상대적 강점, 상담/소개서에는 약세(3.3%/9.4%)"
             ]
-        };
-
-        // ═══════════════════════════════════════════════════════════════════
-        // 이 아래부터는 자동 생성 로직 (일반적으로 수정 불필요)
-        // ═══════════════════════════════════════════════════════════════════
-
-        Chart.defaults.font.family = "'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-        Chart.defaults.color = '#666';
-
-        const colors = {
-            naver: '#4C72B0', google: '#55A868', meta: '#2D7BF6', ga4: '#DD8452',
-            direct: '#7B68EE', referral: '#FF6B6B', organic: '#4ECDC4',
-            contact: '#e74c3c', download: '#27ae60', project: '#f39c12'
-        };
-
-        function formatNumber(num) {
-            return new Intl.NumberFormat('ko-KR').format(num);
         }
 
-        // 헤더 업데이트
-        document.getElementById('header-title').textContent = CONFIG.reportTitle;
-        document.getElementById('header-subtitle').textContent = CONFIG.reportSubtitle;
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  📊 FALLBACK_CONFIG - 라이브 로드 실패 시 대체 데이터          ║
+        // ╚══════════════════════════════════════════════════════════════════╝
 
-        // KPI 카드 생성
-        const kpiContainer = document.getElementById('kpi-container');
-        CONFIG.kpi.forEach(item => {
-            const card = document.createElement('div');
-            card.className = `kpi-card ${item.class}`;
-            card.innerHTML = `
-                <div class="kpi-label">${item.label}</div>
-                <div class="kpi-value">${typeof item.value === 'number' ? formatNumber(item.value) : item.value}<span style="font-size: 0.5em;">${item.unit}</span></div>
-                <div class="kpi-subtext">${item.subtext}</div>
-            `;
-            kpiContainer.appendChild(card);
-        });
-
-        // 펀넬 생성
-        const funnelContainer = document.getElementById('funnel-container');
-        funnelContainer.innerHTML = `
-            <div class="funnel-step">
-                <div class="funnel-box">
-                    <div class="funnel-value">${formatNumber(CONFIG.funnel.sessions.value)}</div>
-                    <div class="funnel-label">${CONFIG.funnel.sessions.label}</div>
-                </div>
-            </div>
-            <div class="funnel-arrow">→</div>
-            <div class="funnel-step">
-                <div class="funnel-box">
-                    <div class="funnel-value">${formatNumber(CONFIG.funnel.events.value)}</div>
-                    <div class="funnel-label">${CONFIG.funnel.events.label}</div>
-                </div>
-                <div class="funnel-rate">전환율: ${CONFIG.funnel.events.rate}</div>
-            </div>
-            <div class="funnel-arrow">→</div>
-            <div class="funnel-step">
-                <div class="funnel-box">
-                    <div class="funnel-value">${formatNumber(CONFIG.funnel.leads.value)}</div>
-                    <div class="funnel-label">${CONFIG.funnel.leads.label}</div>
-                </div>
-                <div class="funnel-rate">리드율: ${CONFIG.funnel.leads.rate}</div>
-            </div>
-            <div class="funnel-arrow">→</div>
-            <div class="funnel-step">
-                <div class="funnel-box">
-                    <div class="funnel-value">${formatNumber(CONFIG.funnel.deals.value)}</div>
-                    <div class="funnel-label">${CONFIG.funnel.deals.label}</div>
-                </div>
-                <div class="funnel-rate">딜율: ${CONFIG.funnel.deals.rate}</div>
-            </div>
-        `;
-
-        // 리드/딜 인사이트 박스
-        const insightBox = document.getElementById('lead-deal-insights');
-        insightBox.innerHTML = CONFIG.leadDealInsights.map(text => {
-            const colonIndex = text.indexOf(':');
-            if (colonIndex > -1) {
-                return `<p><strong>${text.substring(0, colonIndex + 1)}</strong> ${text.substring(colonIndex + 1)}</p>`;
-            } else {
-                return `<p>${text}</p>`;
-            }
-        }).join('');
-
-        // Contact Channel Chart
-        const contactCtx = document.getElementById('contactChannelChart').getContext('2d');
-        new Chart(contactCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.contactChannel.labels,
-                datasets: [{
-                    label: 'click_contact (건)',
-                    data: CONFIG.contactChannel.data,
-                    backgroundColor: [colors.naver, colors.direct, colors.referral, colors.google, colors.organic, colors.naver, colors.meta],
-                    borderRadius: 4, barPercentage: 0.8
-                }]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(context) {
-                        const pct = ((context.parsed.x / CONFIG.contactChannel.total) * 100).toFixed(1);
-                        return context.parsed.x + '건 (' + pct + '%)';
-                    }}}
+        const FALLBACK_CONFIG = {
+            kpi: [
+                { class: 'lead', label: '리드(소개서 다운)', value: 0, unit: '건', subtext: 'Recatch 기준' },
+                { class: 'deal', label: '딜(상담문의)', value: 0, unit: '건', subtext: 'Recatch 기준' },
+                { class: 'event', label: '전환이벤트 합계', value: 0, unit: '건', subtext: 'GA4 기준' },
+                { class: 'session', label: 'GA4 세션수', value: 0, unit: '', subtext: '신규 방문자' },
+                { class: 'budget', label: '총 광고비', value: '₩0M', unit: '', subtext: '네이버+구글+Meta' },
+                { class: 'impression', label: '총 노출', value: 0, unit: '', subtext: '전 매체' },
+                { class: 'click', label: '총 클릭', value: 0, unit: '', subtext: 'CTR 0%' },
+                { class: 'ctr', label: '평균 CTR', value: '0%', unit: '', subtext: '채널 평균' }
+            ],
+            funnel: {
+                sessions: { value: 0, label: 'GA4 세션' },
+                events: { value: 0, label: '전환이벤트 합계', rate: '0%' },
+                pathA: {
+                    event: { value: 0, label: 'click_contact', rate: '0%' },
+                    result: { value: 0, label: '딜(상담문의)', rate: '0%' }
                 },
-                scales: {
-                    x: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}
+                pathB: {
+                    event: { value: 0, label: 'click_download_intro', rate: '0%' },
+                    result: { value: 0, label: '리드(소개서)', rate: '0%' }
+                }
+            },
+            contactChannel: { total: 0, labels: [], data: [] },
+            downloadChannel: { total: 0, labels: [], data: [] },
+            weeklyLabels: SETTINGS.weeks.map(w => w.label),
+            weeklySpend: { naver: new Array(5).fill(0), google: new Array(5).fill(0), meta: new Array(5).fill(0) },
+            weeklyConversion: { contact: new Array(5).fill(0), download: new Array(5).fill(0), project: new Array(5).fill(0) },
+            weeklySessions: new Array(5).fill(0),
+            weeklyLeadDeal: { contact: new Array(5).fill(0), download: new Array(5).fill(0), leads: new Array(5).fill(0), deals: new Array(5).fill(0) },
+            adPerformance: [],
+            ga4Traffic: { doughnutLabels: [], doughnutData: [], engagementLabels: [], engagementRates: [], trafficTable: [] },
+            dailyConversion: { days: [], contact: [], download: [], project: [] },
+            metaTargets: [],
+            dataSource: 'fallback'
+        };
+
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  🔧 DataLoader - Google Sheets CSV API를 통한 데이터 로드      ║
+        // ╚══════════════════════════════════════════════════════════════════╝
+
+        class DataLoader {
+            constructor(spreadsheetId) {
+                this.spreadsheetId = spreadsheetId;
+                this.baseUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq`;
+            }
+
+            async loadSheet(sheetName) {
+                try {
+                    const query = encodeURIComponent(`SELECT * WHERE 1=1 LIMIT 10000`);
+                    const url = `${this.baseUrl}?sheet=${encodeURIComponent(sheetName)}&tq=${query}&tqx=out:csv`;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const csv = await response.text();
+                    return this.parseCSV(csv);
+                } catch (e) {
+                    console.error(`Failed to load ${sheetName}:`, e);
+                    return [];
                 }
             }
-        });
 
-        // Download Channel Chart
-        const downloadCtx = document.getElementById('downloadChannelChart').getContext('2d');
-        new Chart(downloadCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.downloadChannel.labels,
-                datasets: [{
-                    label: 'click_download_intro (건)',
-                    data: CONFIG.downloadChannel.data,
-                    backgroundColor: [colors.referral, colors.direct, colors.organic, colors.google, colors.meta, colors.naver, colors.naver],
-                    borderRadius: 4, barPercentage: 0.8
-                }]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(context) {
-                        const pct = ((context.parsed.x / CONFIG.downloadChannel.total) * 100).toFixed(1);
-                        return context.parsed.x + '건 (' + pct + '%)';
-                    }}}
-                },
-                scales: {
-                    x: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}
-                }
+            parseCSV(csv) {
+                const lines = csv.trim().split('\n');
+                if (lines.length < 2) return [];
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                return lines.slice(1).map(line => {
+                    const values = this.parseCSVLine(line);
+                    const obj = {};
+                    headers.forEach((h, i) => { obj[h] = values[i] || ''; });
+                    return obj;
+                });
             }
-        });
 
-        // Lead & Deal Trend Chart
-        const leadDealCtx = document.getElementById('leadDealTrendChart').getContext('2d');
-        new Chart(leadDealCtx, {
-            type: 'line',
-            data: {
-                labels: ['W1', 'W2', 'W3', 'W4', 'W5'],
-                datasets: [
-                    {
-                        label: 'click_contact (상담문의)',
-                        data: CONFIG.weeklyLeadDeal.contact,
-                        borderColor: colors.contact, backgroundColor: 'rgba(231, 76, 60, 0.05)',
-                        borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBackgroundColor: colors.contact, yAxisID: 'y'
-                    },
-                    {
-                        label: 'click_download_intro (소개서)',
-                        data: CONFIG.weeklyLeadDeal.download,
-                        borderColor: colors.download, backgroundColor: 'rgba(39, 174, 96, 0.05)',
-                        borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBackgroundColor: colors.download, yAxisID: 'y'
-                    },
-                    {
-                        label: '리드(Recatch)',
-                        data: CONFIG.weeklyLeadDeal.leads,
-                        borderColor: '#ff6b6b', backgroundColor: 'rgba(255, 107, 107, 0.05)',
-                        borderWidth: 2.5, borderDash: [5, 5], tension: 0.3, pointRadius: 4, pointBackgroundColor: '#ff6b6b', yAxisID: 'y1'
-                    },
-                    {
-                        label: '딜(Recatch)',
-                        data: CONFIG.weeklyLeadDeal.deals,
-                        borderColor: '#22b8cf', backgroundColor: 'rgba(34, 184, 207, 0.05)',
-                        borderWidth: 2.5, borderDash: [5, 5], tension: 0.3, pointRadius: 4, pointBackgroundColor: '#22b8cf', yAxisID: 'y1'
+            parseCSVLine(line) {
+                const result = [];
+                let current = '';
+                let insideQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        insideQuotes = !insideQuotes;
+                    } else if (char === ',' && !insideQuotes) {
+                        result.push(current.trim().replace(/^"|"$/g, ''));
+                        current = '';
+                    } else {
+                        current += char;
                     }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { position: 'top', labels: { padding: 15, usePointStyle: true }}},
-                scales: {
-                    y: { type: 'linear', display: true, position: 'left', title: { display: true, text: '전환이벤트 (건)'}},
-                    y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: '리드/딜 (건)'}, grid: { drawOnChartArea: false}}
                 }
+                result.push(current.trim().replace(/^"|"$/g, ''));
+                return result;
             }
-        });
+        }
 
-        // Weekly Spend Chart
-        const weeklySpendCtx = document.getElementById('weeklySpendChart').getContext('2d');
-        new Chart(weeklySpendCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.weeklyLabels,
-                datasets: [
-                    { label: '네이버', data: CONFIG.weeklySpend.naver, backgroundColor: colors.naver, stack: 'Stack 0'},
-                    { label: '구글', data: CONFIG.weeklySpend.google, backgroundColor: colors.google, stack: 'Stack 0'},
-                    { label: 'Meta', data: CONFIG.weeklySpend.meta, backgroundColor: colors.meta, stack: 'Stack 0'}
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top'},
-                    tooltip: { callbacks: {
-                        label: function(context) { return context.dataset.label + ': ₩' + formatNumber(context.parsed.y); },
-                        footer: function(context) {
-                            let sum = 0;
-                            context.forEach(function(item) { sum += item.parsed.y; });
-                            return '합계: ₩' + formatNumber(sum);
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  🔄 RAW 데이터 집계 엔진 - Google Sheets RAW → CONFIG 변환     ║
+        // ╚══════════════════════════════════════════════════════════════════╝
+
+        function pn(val) {
+            if (val == null || val === '' || val === '-') return 0;
+            return Number(String(val).replace(/[₩,%\s,]/g, '')) || 0;
+        }
+
+        function inMonth(dateStr, month) {
+            return dateStr && dateStr.startsWith(month);
+        }
+
+        function getWeekIndex(dateStr) {
+            for (let i = 0; i < SETTINGS.weeks.length; i++) {
+                if (dateStr >= SETTINGS.weeks[i].start && dateStr <= SETTINGS.weeks[i].end) return i;
+            }
+            return -1;
+        }
+
+        function classifyChannel(source, medium, campaign) {
+            const s = (source || '').toLowerCase();
+            const m = (medium || '').toLowerCase();
+            const c = (campaign || '').toLowerCase();
+            if (s === 'instagram' && m === 'da') return 'Meta DA';
+            if (s === 'instagram' && m === 'social') return 'Meta DA';
+            if (m === 'da') return 'Meta DA';
+            if (s === 'naver' && m === 'cpc') return '네이버 검색광고';
+            if (s === 'naver' && m === 'sa_pc') return '네이버 검색광고';
+            if (s === 'naver' && m === 'organic') return '네이버 오가닉';
+            if (s === 'google' && m === 'cpc') return '구글 CPC';
+            if (s === 'google' && m === 'organic') return '구글 오가닉';
+            if (s === '(direct)' || (s === '(none)' && m === '(none)')) return 'Direct';
+            if (m === 'referral') return 'Referral';
+            if (m === 'organic') return s.includes('naver') ? '네이버 오가닉' : '구글 오가닉';
+            return '기타';
+        }
+
+        function channelColorClass(ch) {
+            if (ch.includes('네이버')) return 'color-naver';
+            if (ch.includes('구글')) return 'color-google';
+            if (ch.includes('Meta')) return 'color-meta';
+            return '';
+        }
+
+        function transformSheetData(raw) {
+            const config = JSON.parse(JSON.stringify(FALLBACK_CONFIG));
+            const M = SETTINGS.targetMonth;
+            let liveCount = 0;
+
+            // ── 1. 광고 매체 집계 ──
+            const adAgg = {
+                '네이버 검색광고': { impressions: 0, clicks: 0, spend: 0, conversions: 0, colorClass: 'color-naver' },
+                '구글 검색광고': { impressions: 0, clicks: 0, spend: 0, conversions: 0, colorClass: 'color-google' },
+                'Meta 광고': { impressions: 0, clicks: 0, spend: 0, conversions: 0, colorClass: 'color-meta' }
+            };
+            const weeklySpend = { naver: new Array(SETTINGS.weeks.length).fill(0), google: new Array(SETTINGS.weeks.length).fill(0), meta: new Array(SETTINGS.weeks.length).fill(0) };
+            const metaTargetAgg = {};
+
+            // 각 매체 데이터 처리
+            [
+                { rows: raw.naverAd, medium: '네이버 검색광고', spendKey: 'naver' },
+                { rows: raw.googleAd, medium: '구글 검색광고', spendKey: 'google' },
+                { rows: raw.metaAd, medium: 'Meta 광고', spendKey: 'meta' }
+            ].forEach(({ rows, medium, spendKey }) => {
+                if (!rows || !rows.length) return;
+                liveCount++;
+
+                rows.forEach(row => {
+                    const v = Object.values(row);
+                    const date = v[0] || '';
+                    if (!inMonth(date, M)) return;
+
+                    let impressions, clicks, spend, conversions, targetName;
+
+                    // Meta 광고 컬럼 구조: 날짜(0), 캠페인(1), 캠페인유형(2), 광고세트(3), 광고명(4), 노출(5), 도달(6), 클릭(7), 비용(8), 전환수(9)
+                    // FIX BUG 2: Meta의 클릭(7), 비용(8), 전환수(9) - NOT 6,7,8
+                    if (medium === 'Meta 광고') {
+                        impressions = pn(v[5]);
+                        clicks = pn(v[7]);
+                        spend = pn(v[8]);
+                        conversions = pn(v[9]);
+                        targetName = v[3] || ''; // FIX BUG 3: 광고세트 (v[3]) - NOT 캠페인유형(v[2])
+                    } else {
+                        // 네이버, 구글: 날짜(0), 캠페인(1), 광고그룹(2), 키워드(3), 매치타입(4), 노출(5), 클릭(6), 비용(7), 전환수(8)
+                        impressions = pn(v[5]);
+                        clicks = pn(v[6]);
+                        spend = pn(v[7]);
+                        conversions = pn(v[8]);
+                        targetName = v[2] || v[1] || '';
+                    }
+
+                    adAgg[medium].impressions += impressions;
+                    adAgg[medium].clicks += clicks;
+                    adAgg[medium].spend += spend;
+                    adAgg[medium].conversions += conversions;
+
+                    const wi = getWeekIndex(date);
+                    if (wi >= 0) weeklySpend[spendKey][wi] += spend;
+
+                    // Meta 타겟 집계
+                    if (medium === 'Meta 광고' && targetName) {
+                        if (!metaTargetAgg[targetName]) {
+                            metaTargetAgg[targetName] = { impressions: 0, clicks: 0, spend: 0, conversions: 0 };
                         }
-                    }}
-                },
-                scales: {
-                    x: { stacked: true},
-                    y: { stacked: true, ticks: { callback: function(value) { return '₩' + formatNumber(value); }}}
-                }
+                        metaTargetAgg[targetName].impressions += impressions;
+                        metaTargetAgg[targetName].clicks += clicks;
+                        metaTargetAgg[targetName].spend += spend;
+                        metaTargetAgg[targetName].conversions += conversions;
+                    }
+                });
+            });
+
+            // Ad Performance 결과
+            const adLive = liveCount > 0;
+            if (adLive) {
+                config.adPerformance = Object.entries(adAgg).map(([name, d]) => ({
+                    name, colorClass: d.colorClass,
+                    impressions: d.impressions, clicks: d.clicks,
+                    ctr: d.impressions > 0 ? (d.clicks / d.impressions * 100).toFixed(2) + '%' : '0%',
+                    spend: d.spend,
+                    cpc: d.clicks > 0 ? Math.round(d.spend / d.clicks) : 0,
+                    conversions: name === '네이버 검색광고' ? '0 (측정불가)' : String(d.conversions)
+                }));
+                config.weeklySpend = weeklySpend;
             }
-        });
 
-        // Weekly Conversion Events Chart
-        const weeklyConvCtx = document.getElementById('weeklyConversionChart').getContext('2d');
-        new Chart(weeklyConvCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.weeklyLabels,
-                datasets: [
-                    { label: 'click_contact (상담)', data: CONFIG.weeklyConversion.contact, backgroundColor: colors.contact},
-                    { label: 'click_download_intro (소개서)', data: CONFIG.weeklyConversion.download, backgroundColor: colors.download},
-                    { label: 'click_project_view (프로젝트)', data: CONFIG.weeklyConversion.project, backgroundColor: colors.project}
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top'}},
-                scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}}
+            // Meta 타겟별 성과
+            config.metaTargets = Object.entries(metaTargetAgg).map(([name, d]) => ({
+                name,
+                impressions: d.impressions,
+                clicks: d.clicks,
+                ctr: d.impressions > 0 ? (d.clicks / d.impressions * 100).toFixed(2) + '%' : '0%',
+                spend: d.spend,
+                cpc: d.clicks > 0 ? Math.round(d.spend / d.clicks) : 0,
+                conversions: d.conversions,
+                convRate: d.clicks > 0 ? (d.conversions / d.clicks * 100).toFixed(1) + '%' : '0%'
+            }));
+
+            // ── 2. GA4 트래픽 집계 ──
+            // GA4 트래픽 시트: 날짜(0), 소스(1), 매체(2), 캠페인(3), 세션수(4), 사용자수(5), 신규 사용자수(6), 참여 세션수(7), 평균 참여시간(8), 이벤트수(9), 전환수(10)
+            if (raw.ga4Traffic && raw.ga4Traffic.length > 0) {
+                liveCount++;
+                const chAgg = {};
+                raw.ga4Traffic.forEach(row => {
+                    const v = Object.values(row);
+                    const date = v[0] || '';
+                    if (!inMonth(date, M)) return;
+                    const source = v[1] || '';
+                    const medium = v[2] || '';
+                    const campaign = v[3] || '';
+                    const sessions = pn(v[4]);
+                    const users = pn(v[5]);
+                    const newUsers = pn(v[6]);
+                    const engaged = pn(v[7]);
+                    const ch = classifyChannel(source, medium, campaign);
+                    if (!chAgg[ch]) chAgg[ch] = { sessions: 0, users: 0, newUsers: 0, engaged: 0 };
+                    chAgg[ch].sessions += sessions;
+                    chAgg[ch].users += users;
+                    chAgg[ch].newUsers += newUsers;
+                    chAgg[ch].engaged += engaged;
+                });
+
+                const sorted = Object.entries(chAgg).sort((a, b) => b[1].sessions - a[1].sessions);
+                const totalSessions = sorted.reduce((s, [, d]) => s + d.sessions, 0);
+                const totalNewUsers = sorted.reduce((s, [, d]) => s + d.newUsers, 0);
+
+                config.ga4Traffic = {
+                    doughnutLabels: sorted.map(([ch]) => ch),
+                    doughnutData: sorted.map(([, d]) => d.sessions),
+                    engagementLabels: [...sorted].sort((a, b) => {
+                        const rA = a[1].sessions > 0 ? a[1].engaged / a[1].sessions * 100 : 0;
+                        const rB = b[1].sessions > 0 ? b[1].engaged / b[1].sessions * 100 : 0;
+                        return rB - rA;
+                    }).map(([ch]) => ch),
+                    engagementRates: [...sorted].sort((a, b) => {
+                        const rA = a[1].sessions > 0 ? a[1].engaged / a[1].sessions * 100 : 0;
+                        const rB = b[1].sessions > 0 ? b[1].engaged / b[1].sessions * 100 : 0;
+                        return rB - rA;
+                    }).map(([, d]) => d.sessions > 0 ? Math.round(d.engaged / d.sessions * 1000) / 10 : 0),
+                    trafficTable: sorted.map(([ch, d]) => ({
+                        name: ch, colorClass: channelColorClass(ch),
+                        sessions: d.sessions, users: d.users, engaged: d.engaged,
+                        rate: d.sessions > 0 ? (d.engaged / d.sessions * 100).toFixed(1) + '%' : '0%'
+                    }))
+                };
+
+                // 주간 세션
+                const wSessions = new Array(SETTINGS.weeks.length).fill(0);
+                raw.ga4Traffic.forEach(row => {
+                    const v = Object.values(row);
+                    const date = v[0] || '';
+                    if (!inMonth(date, M)) return;
+                    const wi = getWeekIndex(date);
+                    if (wi >= 0) wSessions[wi] += pn(v[4]);
+                });
+                config.weeklySessions = wSessions;
+
+                // KPI 세션수 업데이트
+                config.kpi[3] = { class: 'session', label: 'GA4 세션수', value: totalSessions, unit: '', subtext: `신규 ${totalNewUsers.toLocaleString()}명` };
             }
-        });
 
-        // Weekly Session Chart
-        const weeklySessionCtx = document.getElementById('weeklySessionChart').getContext('2d');
-        new Chart(weeklySessionCtx, {
-            type: 'line',
-            data: {
-                labels: ['W1', 'W2', 'W3', 'W4', 'W5'],
-                datasets: [{
-                    label: '세션수', data: CONFIG.weeklySessions,
-                    borderColor: colors.ga4, backgroundColor: 'rgba(221, 132, 82, 0.05)',
-                    borderWidth: 2.5, tension: 0.3, pointRadius: 5, pointBackgroundColor: colors.ga4, fill: true
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false}},
-                scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return value + '건'; }}}}
+            // ── 3. GA4 전환이벤트 집계 ──
+            // GA4 전환이벤트 시트: 날짜(0), 이벤트명(1), 소스(2), 매체(3), 캠페인(4), 이벤트 횟수(5), 사용자수(6)
+            if (raw.ga4Conversion && raw.ga4Conversion.length > 0) {
+                liveCount++;
+                const eventTypes = { click_contact: {}, click_download_intro: {}, click_project_view: {} };
+                const dailyEvents = {};
+                const weeklyEvents = { contact: new Array(SETTINGS.weeks.length).fill(0), download: new Array(SETTINGS.weeks.length).fill(0), project: new Array(SETTINGS.weeks.length).fill(0) };
+                let totalEvents = 0;
+
+                raw.ga4Conversion.forEach(row => {
+                    const v = Object.values(row);
+                    const date = v[0] || '';
+                    if (!inMonth(date, M)) return;
+                    const eventName = v[1] || '';
+                    const source = v[2] || '';
+                    const medium = v[3] || '';
+                    const campaign = v[4] || '';
+                    const count = pn(v[5]);
+                    totalEvents += count;
+
+                    const ch = classifyChannel(source, medium, campaign);
+                    const day = parseInt(date.split('-')[2], 10);
+                    const wi = getWeekIndex(date);
+
+                    if (eventName === 'click_contact') {
+                        eventTypes.click_contact[ch] = (eventTypes.click_contact[ch] || 0) + count;
+                        if (!dailyEvents[day]) dailyEvents[day] = { contact: 0, download: 0, project: 0 };
+                        dailyEvents[day].contact += count;
+                        if (wi >= 0) weeklyEvents.contact[wi] += count;
+                    } else if (eventName.startsWith('click_download')) {
+                        eventTypes.click_download_intro[ch] = (eventTypes.click_download_intro[ch] || 0) + count;
+                        if (!dailyEvents[day]) dailyEvents[day] = { contact: 0, download: 0, project: 0 };
+                        dailyEvents[day].download += count;
+                        if (wi >= 0) weeklyEvents.download[wi] += count;
+                    } else if (eventName.startsWith('click_project')) {
+                        eventTypes.click_project_view[ch] = (eventTypes.click_project_view[ch] || 0) + count;
+                        if (!dailyEvents[day]) dailyEvents[day] = { contact: 0, download: 0, project: 0 };
+                        dailyEvents[day].project += count;
+                        if (wi >= 0) weeklyEvents.project[wi] += count;
+                    }
+                });
+
+                // 채널별 전환 기여
+                const makeChannelData = (obj) => {
+                    const sorted = Object.entries(obj).sort((a, b) => b[1] - a[1]);
+                    return { total: sorted.reduce((s, [, v]) => s + v, 0), labels: sorted.map(([k]) => k), data: sorted.map(([, v]) => v) };
+                };
+                config.contactChannel = makeChannelData(eventTypes.click_contact);
+                config.downloadChannel = makeChannelData(eventTypes.click_download_intro);
+
+                // 주간 전환
+                config.weeklyConversion = weeklyEvents;
+                config.weeklyLeadDeal = { contact: weeklyEvents.contact, download: weeklyEvents.download, leads: new Array(SETTINGS.weeks.length).fill(0), deals: new Array(SETTINGS.weeks.length).fill(0) };
+
+                // 일별 전환
+                const lastDay = new Date(SETTINGS.weeks[SETTINGS.weeks.length - 1].end);
+                const numDays = lastDay.getDate();
+                const days = Array.from({ length: numDays }, (_, i) => i + 1);
+                config.dailyConversion = {
+                    days,
+                    contact: days.map(d => dailyEvents[d] ? dailyEvents[d].contact : null),
+                    download: days.map(d => dailyEvents[d] ? dailyEvents[d].download : null),
+                    project: days.map(d => dailyEvents[d] ? dailyEvents[d].project : null)
+                };
+
+                // KPI 전환이벤트 합계 업데이트
+                config.kpi[2] = { class: 'event', label: '전환이벤트 합계', value: totalEvents, unit: '건', subtext: 'GA4 기준' };
             }
-        });
 
-        // CTR Comparison Chart
-        const ctrCtx = document.getElementById('ctrComparisonChart').getContext('2d');
-        new Chart(ctrCtx, {
-            type: 'bar', data: {
-                labels: CONFIG.adPerformance.map(item => item.name),
-                datasets: [{ label: 'CTR (%)', data: CONFIG.adPerformance.map(item => parseFloat(item.ctr)),
-                    backgroundColor: CONFIG.adPerformance.map(item => colors[item.colorClass.replace('color-', '')]), borderRadius: 4}]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false}},
-                scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return value + '%'; }}}}
+            // ── 4. 리캐치 리드/딜 집계 ──
+            let totalLeads = 0, totalDeals = 0;
+            if (raw.recatchLead && raw.recatchLead.length > 0) {
+                liveCount++;
+                raw.recatchLead.forEach(row => {
+                    const v = Object.values(row);
+                    const date = v[0] || ''; // 리캐치_리드는 생성일이 index 0
+                    if (inMonth(date, M)) {
+                        totalLeads++;
+                        const wi = getWeekIndex(date);
+                        if (wi >= 0 && config.weeklyLeadDeal) config.weeklyLeadDeal.leads[wi]++;
+                    }
+                });
+                config.kpi[0] = { class: 'lead', label: '리드(소개서 다운)', value: totalLeads, unit: '건', subtext: 'Recatch 기준' };
             }
-        });
-
-        // CPC Comparison Chart
-        const cpcCtx = document.getElementById('cpcComparisonChart').getContext('2d');
-        new Chart(cpcCtx, {
-            type: 'bar', data: {
-                labels: CONFIG.adPerformance.map(item => item.name),
-                datasets: [{ label: 'CPC (₩)', data: CONFIG.adPerformance.map(item => item.cpc),
-                    backgroundColor: CONFIG.adPerformance.map(item => colors[item.colorClass.replace('color-', '')]), borderRadius: 4}]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false}, tooltip: { callbacks: {
-                    label: function(context) { return '₩' + formatNumber(context.parsed.y); }}}},
-                scales: { y: { beginAtZero: true, ticks: { callback: function(value) { return '₩' + formatNumber(value); }}}}
+            if (raw.recatchDeal && raw.recatchDeal.length > 0) {
+                liveCount++;
+                raw.recatchDeal.forEach(row => {
+                    const v = Object.values(row);
+                    // FIX BUG 1: 리캐치_딜 컬럼 구조: 회사(0), 폼/리드라우트 제목(1), 폼 제출 일자(2), 담당자 성함(3), 담당자 연락처(4), ...
+                    // 날짜는 index 2에 있음
+                    const date = v[2] || '';
+                    if (inMonth(date.substring(0, 7), M)) { // "2026-03-03 13:52:52" -> "2026-03" 추출
+                        totalDeals++;
+                        const wi = getWeekIndex(date);
+                        if (wi >= 0 && config.weeklyLeadDeal) config.weeklyLeadDeal.deals[wi]++;
+                    }
+                });
+                config.kpi[1] = { class: 'deal', label: '딜(상담문의)', value: totalDeals, unit: '건', subtext: 'Recatch 기준' };
             }
-        });
 
-        // Ad Performance Table
-        const adTable = document.getElementById('ad-performance-table');
-        adTable.innerHTML = `
-            <thead>
-                <tr>
-                    <th>매체</th>
-                    <th>노출</th>
-                    <th>클릭</th>
-                    <th>CTR</th>
-                    <th>광고비</th>
-                    <th>CPC</th>
-                    <th>전환수</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${CONFIG.adPerformance.map(item => `
-                    <tr>
-                        <td><strong class="${item.colorClass}">${item.name}</strong></td>
-                        <td>${formatNumber(item.impressions)}</td>
-                        <td>${formatNumber(item.clicks)}</td>
-                        <td>${item.ctr}</td>
-                        <td>₩${formatNumber(item.spend)}</td>
-                        <td>₩${formatNumber(item.cpc)}</td>
-                        <td>${item.conversions}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        `;
-
-        // Channel Doughnut Chart
-        const channelCtx = document.getElementById('channelDoughnutChart').getContext('2d');
-        new Chart(channelCtx, {
-            type: 'doughnut', data: {
-                labels: CONFIG.ga4Traffic.doughnutLabels,
-                datasets: [{ data: CONFIG.ga4Traffic.doughnutData,
-                    backgroundColor: [colors.meta, colors.direct, colors.google, colors.organic, colors.referral, colors.naver, colors.naver],
-                    borderColor: '#fff', borderWidth: 2}]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { padding: 15}},
-                    tooltip: { callbacks: { label: function(context) {
-                        const total = 6637;
-                        const pct = ((context.parsed / total) * 100).toFixed(1);
-                        return context.label + ': ' + context.parsed + '건 (' + pct + '%)';
-                    }}}}
+            // ── 5. 퍼널 계산 (Y형 분기) ──
+            // 경로 A: GA4 세션 → click_contact → 딜
+            // 경로 B: GA4 세션 → click_download_intro → 리드
+            if (liveCount > 0) {
+                const sessions = typeof config.kpi[3].value === 'number' ? config.kpi[3].value : pn(config.kpi[3].value);
+                const events = typeof config.kpi[2].value === 'number' ? config.kpi[2].value : pn(config.kpi[2].value);
+                const contactTotal = config.contactChannel ? config.contactChannel.total : 0;
+                const downloadTotal = config.downloadChannel ? config.downloadChannel.total : 0;
+                const leads = totalLeads || pn(config.kpi[0].value);
+                const deals = totalDeals || pn(config.kpi[1].value);
+                config.funnel = {
+                    sessions: { value: sessions, label: 'GA4 세션' },
+                    events: { value: events, label: '전환이벤트 합계', rate: sessions > 0 ? (events / sessions * 100).toFixed(1) + '%' : '0%' },
+                    pathA: {
+                        event: { value: contactTotal, label: 'click_contact', rate: sessions > 0 ? (contactTotal / sessions * 100).toFixed(1) + '%' : '0%' },
+                        result: { value: deals, label: '딜(상담문의)', rate: contactTotal > 0 ? (deals / contactTotal * 100).toFixed(1) + '%' : '0%' }
+                    },
+                    pathB: {
+                        event: { value: downloadTotal, label: 'click_download_intro', rate: sessions > 0 ? (downloadTotal / sessions * 100).toFixed(1) + '%' : '0%' },
+                        result: { value: leads, label: '리드(소개서)', rate: downloadTotal > 0 ? (leads / downloadTotal * 100).toFixed(1) + '%' : '0%' }
+                    }
+                };
             }
-        });
 
-        // Engagement Rate Chart
-        const engageCtx = document.getElementById('engagementRateChart').getContext('2d');
-        new Chart(engageCtx, {
-            type: 'bar', data: {
-                labels: CONFIG.ga4Traffic.engagementLabels,
-                datasets: [{ label: '참여율 (%)', data: CONFIG.ga4Traffic.engagementRates,
-                    backgroundColor: [colors.referral, colors.naver, colors.google, colors.organic, colors.direct, colors.naver, colors.meta],
-                    borderRadius: 4}]
-            },
-            options: {
-                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false}},
-                scales: { x: { beginAtZero: true, max: 100, ticks: { callback: function(value) { return value + '%'; }}}}
+            // 광고 KPI 업데이트
+            if (adLive) {
+                const totImpr = Object.values(adAgg).reduce((s, d) => s + d.impressions, 0);
+                const totClick = Object.values(adAgg).reduce((s, d) => s + d.clicks, 0);
+                const totSpend = Object.values(adAgg).reduce((s, d) => s + d.spend, 0);
+                config.kpi[4] = { class: 'budget', label: '총 광고비', value: `₩${(totSpend / 1000000).toFixed(1)}M`, unit: '', subtext: '네이버+구글+Meta' };
+                config.kpi[5] = { class: 'impression', label: '총 노출', value: totImpr, unit: '', subtext: '전 매체' };
+                config.kpi[6] = { class: 'click', label: '총 클릭', value: totClick, unit: '', subtext: `CTR ${totImpr > 0 ? (totClick / totImpr * 100).toFixed(2) : 0}%` };
+                config.kpi[7] = { class: 'ctr', label: '평균 CTR', value: totImpr > 0 ? (totClick / totImpr * 100).toFixed(2) + '%' : '0%', unit: '', subtext: '채널 평균' };
             }
-        });
 
-        // GA4 Traffic Table
-        const ga4Table = document.getElementById('ga4-traffic-table');
-        ga4Table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>채널 그룹</th>
-                    <th>세션수</th>
-                    <th>사용자수</th>
-                    <th>참여세션수</th>
-                    <th>참여율</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${CONFIG.ga4Traffic.trafficTable.map(item => `
-                    <tr>
-                        <td><strong class="${item.colorClass}">${item.name}</strong></td>
-                        <td>${formatNumber(item.sessions)}</td>
-                        <td>${formatNumber(item.users)}</td>
-                        <td>${formatNumber(item.engaged)}</td>
-                        <td>${item.rate}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        `;
+            config.dataSource = liveCount > 0 ? 'live' : 'fallback';
+            console.log(`Data loaded: ${liveCount} sheets processed live`);
+            return config;
+        }
 
-        // Daily Conversion Chart
-        const dailyConvCtx = document.getElementById('dailyConversionChart').getContext('2d');
-        new Chart(dailyConvCtx, {
-            type: 'line',
-            data: {
-                labels: CONFIG.dailyConversion.days,
-                datasets: [
-                    { label: 'click_contact (상담문의)',
-                        data: CONFIG.dailyConversion.contact,
-                        borderColor: colors.contact, backgroundColor: 'rgba(231, 76, 60, 0.05)',
-                        borderWidth: 2, tension: 0.2, fill: true, pointRadius: 3},
-                    { label: 'click_download_intro (소개서)',
-                        data: CONFIG.dailyConversion.download,
-                        borderColor: colors.download, backgroundColor: 'rgba(39, 174, 96, 0.05)',
-                        borderWidth: 2, tension: 0.2, fill: true, pointRadius: 3},
-                    { label: 'click_project_view (프로젝트)',
-                        data: CONFIG.dailyConversion.project,
-                        borderColor: colors.project, backgroundColor: 'rgba(243, 156, 18, 0.05)',
-                        borderWidth: 2, tension: 0.2, fill: false, pointRadius: 3}
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false},
-                plugins: { legend: { position: 'top'}},
-                scales: {
-                    x: { title: { display: true, text: '3월 일자'}},
-                    y: { beginAtZero: true, title: { display: true, text: '발생 건수'},
-                        ticks: { callback: function(value) { return value + '건'; }}}
-                }
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  📊 대시보드 렌더링 클래스                                      ║
+        // ╚══════════════════════════════════════════════════════════════════╝
+
+        class DashboardRenderer {
+            constructor(config) {
+                this.config = config;
+                this.charts = {};
             }
-        });
 
-        // Meta Performance Chart
-        const metaPerfCtx = document.getElementById('metaPerformanceChart').getContext('2d');
-        new Chart(metaPerfCtx, {
-            type: 'bar',
-            data: {
-                labels: CONFIG.metaTargets.map(item => item.name),
-                datasets: [
-                    { label: 'CTR (%)', data: CONFIG.metaTargets.map(item => parseFloat(item.ctr)), backgroundColor: '#3498db', yAxisID: 'y'},
-                    { label: '전환율 (%)', data: CONFIG.metaTargets.map(item => parseFloat(item.convRate)), backgroundColor: '#e74c3c', yAxisID: 'y'}
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top'}},
-                scales: { y: { beginAtZero: true, title: { display: true, text: '비율 (%)'},
-                    ticks: { callback: function(value) { return value + '%'; }}}}
+            renderKPIs() {
+                const container = document.getElementById('kpi-container');
+                let html = '';
+                this.config.kpi.forEach((kpi, index) => {
+                    const prevVal = SETTINGS.previousMonth[index] || 0;
+                    // 숫자형 값 추출 (₩1.2M, 3.5% 등 문자열에서 숫자만)
+                    const curVal = typeof kpi.value === 'number' ? kpi.value : parseFloat(String(kpi.value).replace(/[^0-9.-]/g, '')) || 0;
+                    const change = prevVal > 0 ? curVal - prevVal : 0;
+                    const changePercent = prevVal > 0 ? ((change / prevVal) * 100).toFixed(1) : 0;
+                    const changeHtml = change !== 0 && prevVal > 0
+                        ? `<span class="kpi-change ${change > 0 ? 'up' : 'down'}">${change > 0 ? '▲' : '▼'} ${Math.abs(changePercent)}%</span>`
+                        : '';
+
+                    const displayValue = typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value;
+                    html += `
+                        <div class="kpi-card ${kpi.class}">
+                            <div class="kpi-label">${kpi.label} ${changeHtml}</div>
+                            <div class="kpi-value">${displayValue}<span style="font-size: 0.4em; margin-left: 8px;">${kpi.unit}</span></div>
+                            <div class="kpi-subtext">${kpi.subtext}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
             }
-        });
 
-        // Meta Performance Table
-        const metaTable = document.getElementById('meta-performance-table');
-        metaTable.innerHTML = `
-            <thead>
-                <tr>
-                    <th>광고세트</th>
-                    <th>노출</th>
-                    <th>클릭</th>
-                    <th>CTR</th>
-                    <th>광고비</th>
-                    <th>CPC</th>
-                    <th>전환수</th>
-                    <th>전환율</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${CONFIG.metaTargets.map(item => `
-                    <tr>
-                        <td><strong>${item.name}</strong></td>
-                        <td>${formatNumber(item.impressions)}</td>
-                        <td>${formatNumber(item.clicks)}</td>
-                        <td>${item.ctr}</td>
-                        <td>₩${formatNumber(item.spend)}</td>
-                        <td>₩${formatNumber(item.cpc)}</td>
-                        <td>${formatNumber(item.conversions)}</td>
-                        <td>${item.convRate}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        `;
+            renderFunnel() {
+                const container = document.getElementById('funnel-container');
+                const f = this.config.funnel;
 
-        // Insights Container
-        const insightsContainer = document.getElementById('insights-container');
-        insightsContainer.innerHTML = CONFIG.insights.map(insight => `
-            <div class="insight-card priority-${insight.priority}">
-                <h4>${insight.title}</h4>
-                <p>${insight.body}</p>
-            </div>
-        `).join('');
+                container.innerHTML = `
+                    <!-- 상단: GA4 세션 → 전환이벤트 합계 -->
+                    <div class="funnel-top-row">
+                        <div class="funnel-step">
+                            <div class="funnel-box start">
+                                <div class="funnel-value">${f.sessions.value.toLocaleString()}</div>
+                                <div class="funnel-label">${f.sessions.label}</div>
+                            </div>
+                        </div>
+                        <div class="funnel-arrow-inline">→</div>
+                        <div class="funnel-step">
+                            <div class="funnel-box start">
+                                <div class="funnel-value">${f.events.value.toLocaleString()}</div>
+                                <div class="funnel-label">${f.events.label}</div>
+                                <div class="funnel-rate">전환율 ${f.events.rate}</div>
+                            </div>
+                        </div>
+                    </div>
 
-        // Action Items Container
-        const actionContainer = document.getElementById('action-items-container');
-        actionContainer.innerHTML = CONFIG.actionItems.map(action => `
-            <div class="action-item priority-${action.priority}">
-                <p>${action.text}</p>
-            </div>
-        `).join('');
+                    <div class="funnel-arrow-down">↓</div>
 
-        // Footer
-        const footerContainer = document.getElementById('footer-container');
-        footerContainer.innerHTML = `
-            <p>${CONFIG.reportTitle} | 데이터 기간: ${CONFIG.reportPeriod}</p>
-            <p>출처: ${CONFIG.dataSources}</p>
-            <p>리포트 생성일: ${CONFIG.reportDate}</p>
-        `;
+                    <!-- 하단: 2갈래 분기 -->
+                    <div class="funnel-branch">
+                        <!-- 경로 A: click_contact → 딜 -->
+                        <div class="funnel-branch-path">
+                            <div class="funnel-path-label a">경로 A: 상담문의</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-a">
+                                    <div class="funnel-value">${f.pathA.event.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathA.event.label}</div>
+                                    <div class="funnel-rate">세션 대비 ${f.pathA.event.rate}</div>
+                                </div>
+                            </div>
+                            <div class="funnel-arrow-down">↓</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-a">
+                                    <div class="funnel-value">${f.pathA.result.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathA.result.label}</div>
+                                    <div class="funnel-rate">전환율 ${f.pathA.result.rate}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 경로 B: click_download_intro → 리드 -->
+                        <div class="funnel-branch-path">
+                            <div class="funnel-path-label b">경로 B: 소개서 다운</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-b">
+                                    <div class="funnel-value">${f.pathB.event.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathB.event.label}</div>
+                                    <div class="funnel-rate">세션 대비 ${f.pathB.event.rate}</div>
+                                </div>
+                            </div>
+                            <div class="funnel-arrow-down">↓</div>
+                            <div class="funnel-step">
+                                <div class="funnel-box path-b">
+                                    <div class="funnel-value">${f.pathB.result.value.toLocaleString()}</div>
+                                    <div class="funnel-label">${f.pathB.result.label}</div>
+                                    <div class="funnel-rate">전환율 ${f.pathB.result.rate}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderChannelCharts() {
+                // Contact Channel Chart
+                const contactCtx = document.getElementById('contactChannelChart').getContext('2d');
+                const contactColors = this.config.contactChannel.labels.map(label => {
+                    if (label.includes('네이버')) return '#4C72B0';
+                    if (label.includes('구글')) return '#55A868';
+                    if (label.includes('Meta')) return '#2D7BF6';
+                    if (label === 'Direct') return '#D4D4D4';
+                    return '#D4D4D4';
+                });
+
+                this.charts.contactChannel = new Chart(contactCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.contactChannel.labels,
+                        datasets: [{
+                            label: `상담문의(click_contact) ${this.config.contactChannel.total}건`,
+                            data: this.config.contactChannel.data,
+                            backgroundColor: contactColors,
+                            borderColor: contactColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => {
+                                        const value = context.parsed.x;
+                                        const pct = ((value / this.config.contactChannel.total) * 100).toFixed(1);
+                                        return `${value}건 (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+
+                // Download Channel Chart
+                const downloadCtx = document.getElementById('downloadChannelChart').getContext('2d');
+                const downloadColors = this.config.downloadChannel.labels.map(label => {
+                    if (label.includes('네이버')) return '#4C72B0';
+                    if (label.includes('구글')) return '#55A868';
+                    if (label.includes('Meta')) return '#2D7BF6';
+                    if (label === 'Direct') return '#D4D4D4';
+                    return '#D4D4D4';
+                });
+
+                this.charts.downloadChannel = new Chart(downloadCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.downloadChannel.labels,
+                        datasets: [{
+                            label: `소개서 다운(click_download_intro) ${this.config.downloadChannel.total}건`,
+                            data: this.config.downloadChannel.data,
+                            backgroundColor: downloadColors,
+                            borderColor: downloadColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: context => {
+                                        const value = context.parsed.x;
+                                        const pct = ((value / this.config.downloadChannel.total) * 100).toFixed(1);
+                                        return `${value}건 (${pct}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+
+                // Lead/Deal Trend Chart
+                const trendCtx = document.getElementById('leadDealTrendChart').getContext('2d');
+
+                this.charts.leadDealTrend = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: this.config.weeklyLabels,
+                        datasets: [
+                            {
+                                label: 'click_contact(상담문의)',
+                                data: this.config.weeklyLeadDeal.contact,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'click_download_intro(소개서)',
+                                data: this.config.weeklyLeadDeal.download,
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: '리드(소개서 다운)',
+                                data: this.config.weeklyLeadDeal.leads,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.4
+                            },
+                            {
+                                label: '딜(상담문의)',
+                                data: this.config.weeklyLeadDeal.deals,
+                                borderColor: '#27ae60',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' }
+                        },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+
+                // Lead/Deal Insights
+                const insightContainer = document.getElementById('lead-deal-insights');
+                let insightHtml = '';
+                SETTINGS.leadDealInsights.forEach(insight => {
+                    insightHtml += `<p>• ${insight}</p>`;
+                });
+                insightContainer.innerHTML = insightHtml;
+            }
+
+            renderWeeklyTrends() {
+                // Weekly Spend Chart
+                const spendCtx = document.getElementById('weeklySpendChart').getContext('2d');
+
+                this.charts.weeklySpend = new Chart(spendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.weeklyLabels,
+                        datasets: [
+                            { label: '네이버', data: this.config.weeklySpend.naver, backgroundColor: '#4C72B0' },
+                            { label: '구글', data: this.config.weeklySpend.google, backgroundColor: '#55A868' },
+                            { label: 'Meta', data: this.config.weeklySpend.meta, backgroundColor: '#2D7BF6' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    footer: context => {
+                                        let sum = 0;
+                                        context.forEach(item => sum += item.parsed.y);
+                                        return '합계: ₩' + sum.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+                    }
+                });
+
+                // Weekly Conversion Chart
+                const convCtx = document.getElementById('weeklyConversionChart').getContext('2d');
+
+                this.charts.weeklyConversion = new Chart(convCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.weeklyLabels,
+                        datasets: [
+                            { label: 'click_contact', data: this.config.weeklyConversion.contact, backgroundColor: '#e74c3c' },
+                            { label: 'click_download_intro', data: this.config.weeklyConversion.download, backgroundColor: '#f39c12' },
+                            { label: 'click_project_view', data: this.config.weeklyConversion.project, backgroundColor: '#3498db' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'top' } },
+                        scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
+                    }
+                });
+
+                // Weekly Sessions Chart
+                const sessCtx = document.getElementById('weeklySessionChart').getContext('2d');
+
+                this.charts.weeklySessions = new Chart(sessCtx, {
+                    type: 'line',
+                    data: {
+                        labels: this.config.weeklyLabels,
+                        datasets: [{
+                            label: 'GA4 세션',
+                            data: this.config.weeklySessions,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            renderAdPerformance() {
+                // CTR Chart
+                const ctrCtx = document.getElementById('ctrComparisonChart').getContext('2d');
+
+                this.charts.ctrComparison = new Chart(ctrCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.adPerformance.map(a => a.name),
+                        datasets: [{
+                            label: 'CTR (%)',
+                            data: this.config.adPerformance.map(a => parseFloat(a.ctr)),
+                            backgroundColor: this.config.adPerformance.map(a => {
+                                const colorMap = { 'color-naver': '#4C72B0', 'color-google': '#55A868', 'color-meta': '#2D7BF6' };
+                                return colorMap[a.colorClass] || '#999';
+                            })
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+
+                // CPC Chart
+                const cpcCtx = document.getElementById('cpcComparisonChart').getContext('2d');
+
+                this.charts.cpcComparison = new Chart(cpcCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.adPerformance.map(a => a.name),
+                        datasets: [{
+                            label: 'CPC (원)',
+                            data: this.config.adPerformance.map(a => a.cpc),
+                            backgroundColor: this.config.adPerformance.map(a => {
+                                const colorMap = { 'color-naver': '#4C72B0', 'color-google': '#55A868', 'color-meta': '#2D7BF6' };
+                                return colorMap[a.colorClass] || '#999';
+                            })
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+
+                // Ad Performance Table
+                const tableContainer = document.getElementById('ad-performance-table');
+                let tableHtml = '<thead><tr><th>매체</th><th>노출</th><th>클릭</th><th>CTR</th><th>비용</th><th>CPC</th><th>전환수</th></tr></thead><tbody>';
+                this.config.adPerformance.forEach(a => {
+                    tableHtml += `
+                        <tr>
+                            <td><span class="${a.colorClass}"><strong>${a.name}</strong></span></td>
+                            <td>${a.impressions.toLocaleString()}</td>
+                            <td>${a.clicks.toLocaleString()}</td>
+                            <td>${a.ctr}</td>
+                            <td>₩${a.spend.toLocaleString()}</td>
+                            <td>₩${a.cpc.toLocaleString()}</td>
+                            <td>${a.conversions}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += '</tbody>';
+                tableContainer.innerHTML = tableHtml;
+            }
+
+            renderGA4Traffic() {
+                // Doughnut Chart
+                const doughnutCtx = document.getElementById('channelDoughnutChart').getContext('2d');
+                const colors = ['#2D7BF6', '#D4D4D4', '#55A868', '#55A868', '#D4D4D4', '#4C72B0', '#4C72B0'];
+
+                this.charts.channelDoughnut = new Chart(doughnutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: this.config.ga4Traffic.doughnutLabels,
+                        datasets: [{
+                            data: this.config.ga4Traffic.doughnutData,
+                            backgroundColor: colors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right' } }
+                    }
+                });
+
+                // Engagement Rate Chart
+                const engageCtx = document.getElementById('engagementRateChart').getContext('2d');
+
+                this.charts.engagementRate = new Chart(engageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: this.config.ga4Traffic.engagementLabels,
+                        datasets: [{
+                            label: '참여율 (%)',
+                            data: this.config.ga4Traffic.engagementRates,
+                            backgroundColor: colors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+
+                // GA4 Traffic Table
+                const tableContainer = document.getElementById('ga4-traffic-table');
+                let tableHtml = '<thead><tr><th>채널</th><th>세션</th><th>사용자</th><th>참여세션</th><th>참여율</th></tr></thead><tbody>';
+                this.config.ga4Traffic.trafficTable.forEach(t => {
+                    tableHtml += `
+                        <tr>
+                            <td><span class="${t.colorClass}"><strong>${t.name}</strong></span></td>
+                            <td>${t.sessions.toLocaleString()}</td>
+                            <td>${t.users.toLocaleString()}</td>
+                            <td>${t.engaged.toLocaleString()}</td>
+                            <td>${t.rate}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += '</tbody>';
+                tableContainer.innerHTML = tableHtml;
+            }
+
+            renderDailyConversion() {
+                const dailyCtx = document.getElementById('dailyConversionChart').getContext('2d');
+
+                this.charts.dailyConversion = new Chart(dailyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: this.config.dailyConversion.days.map(d => `${d}일`),
+                        datasets: [
+                            {
+                                label: 'click_contact',
+                                data: this.config.dailyConversion.contact,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.05)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'click_download_intro',
+                                data: this.config.dailyConversion.download,
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.05)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'click_project_view',
+                                data: this.config.dailyConversion.project,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.05)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'top' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            renderMetaPerformance() {
+                const targets = this.config.metaTargets;
+                const labels = targets.map(t => t.name);
+
+                // 콤보 차트: 막대(전환수, CPC) + 선(CTR) — 듀얼 Y축
+                this.charts.metaCombo = new Chart(document.getElementById('metaComboChart').getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: '전환수',
+                                data: targets.map(t => t.conversions),
+                                backgroundColor: 'rgba(52, 152, 219, 0.75)',
+                                borderRadius: 4,
+                                yAxisID: 'y',
+                                order: 2
+                            },
+                            {
+                                label: 'CPC (₩)',
+                                data: targets.map(t => t.cpc),
+                                backgroundColor: 'rgba(243, 156, 18, 0.75)',
+                                borderRadius: 4,
+                                yAxisID: 'y',
+                                order: 3
+                            },
+                            {
+                                label: 'CTR (%)',
+                                data: targets.map(t => parseFloat(t.ctr)),
+                                type: 'line',
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 2.5,
+                                pointRadius: 5,
+                                pointBackgroundColor: '#e74c3c',
+                                fill: false,
+                                yAxisID: 'y1',
+                                order: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        if (ctx.dataset.label === 'CPC (₩)') return `CPC: ₩${ctx.raw.toLocaleString()}`;
+                                        if (ctx.dataset.label === 'CTR (%)') return `CTR: ${ctx.raw}%`;
+                                        return `전환수: ${ctx.raw.toLocaleString()}건`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                position: 'left',
+                                beginAtZero: true,
+                                title: { display: true, text: '전환수 / CPC (₩)', font: { size: 11 } },
+                                ticks: { callback: v => v.toLocaleString() }
+                            },
+                            y1: {
+                                position: 'right',
+                                beginAtZero: true,
+                                title: { display: true, text: 'CTR (%)', font: { size: 11 } },
+                                ticks: { callback: v => v + '%' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+
+                // Meta Performance Table
+                const tableContainer = document.getElementById('meta-performance-table');
+                let tableHtml = '<thead><tr><th>광고세트</th><th>노출</th><th>클릭</th><th>CTR</th><th>비용</th><th>CPC</th><th>전환수</th><th>전환율</th></tr></thead><tbody>';
+                this.config.metaTargets.forEach(t => {
+                    tableHtml += `
+                        <tr>
+                            <td><strong>${t.name}</strong></td>
+                            <td>${t.impressions.toLocaleString()}</td>
+                            <td>${t.clicks.toLocaleString()}</td>
+                            <td>${t.ctr}</td>
+                            <td>₩${t.spend.toLocaleString()}</td>
+                            <td>₩${t.cpc.toLocaleString()}</td>
+                            <td>${t.conversions.toLocaleString()}</td>
+                            <td>${t.convRate}</td>
+                        </tr>
+                    `;
+                });
+                tableHtml += '</tbody>';
+                tableContainer.innerHTML = tableHtml;
+            }
+
+            renderInsights() {
+                const container = document.getElementById('insights-container');
+                let html = '';
+                SETTINGS.insights.forEach(insight => {
+                    html += `
+                        <div class="insight-card priority-${insight.priority}">
+                            <h4>${insight.title}</h4>
+                            <p>${insight.content}</p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            renderActionItems() {
+                const container = document.getElementById('action-items-container');
+                let html = '';
+                SETTINGS.actionItems.forEach(item => {
+                    html += `<div class="action-item priority-${item.priority}"><p>${item.content}</p></div>`;
+                });
+                container.innerHTML = html;
+            }
+
+            renderHeader() {
+                document.getElementById('header-title').textContent = SETTINGS.reportTitle;
+                document.getElementById('header-subtitle').textContent = SETTINGS.reportSubtitle;
+                document.getElementById('header-meta').innerHTML = `
+                    <span>데이터 소스: ${SETTINGS.reportPeriod} | 리포트 생성: ${SETTINGS.reportDate}</span>
+                    <span class="data-source-badge ${this.config.dataSource}">${this.config.dataSource === 'live' ? '라이브' : '대체 데이터'}</span>
+                `;
+            }
+
+            renderFooter() {
+                document.getElementById('footer-container').innerHTML = `
+                    <p>리스페이스 월간 퍼포먼스 리포트</p>
+                    <p style="font-size: 0.8em; margin-top: 10px;">데이터 소스: ${SETTINGS.reportPeriod}</p>
+                `;
+            }
+
+            renderAll() {
+                this.renderHeader();
+                this.renderKPIs();
+                this.renderFunnel();
+                this.renderChannelCharts();
+                this.renderWeeklyTrends();
+                this.renderAdPerformance();
+                this.renderGA4Traffic();
+                this.renderDailyConversion();
+                this.renderMetaPerformance();
+                this.renderInsights();
+                this.renderActionItems();
+                this.renderFooter();
+            }
+        }
+
+        // ╔══════════════════════════════════════════════════════════════════╗
+        // ║  🚀 메인 초기화 함수                                            ║
+        // ╚══════════════════════════════════════════════════════════════════╝
+
+        async function initDashboard() {
+            const loader = new DataLoader(SETTINGS.spreadsheetId);
+
+            try {
+                const rawData = await Promise.all([
+                    loader.loadSheet(SETTINGS.sheets.naverAd),
+                    loader.loadSheet(SETTINGS.sheets.googleAd),
+                    loader.loadSheet(SETTINGS.sheets.metaAd),
+                    loader.loadSheet(SETTINGS.sheets.ga4Traffic),
+                    loader.loadSheet(SETTINGS.sheets.ga4Conversion),
+                    loader.loadSheet(SETTINGS.sheets.recatchLead),
+                    loader.loadSheet(SETTINGS.sheets.recatchDeal)
+                ]);
+
+                const config = transformSheetData({
+                    naverAd: rawData[0],
+                    googleAd: rawData[1],
+                    metaAd: rawData[2],
+                    ga4Traffic: rawData[3],
+                    ga4Conversion: rawData[4],
+                    recatchLead: rawData[5],
+                    recatchDeal: rawData[6]
+                });
+
+                const renderer = new DashboardRenderer(config);
+                renderer.renderAll();
+
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                }, 500);
+            } catch (error) {
+                console.error('Dashboard initialization error:', error);
+                const renderer = new DashboardRenderer(FALLBACK_CONFIG);
+                renderer.renderAll();
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
+        }
+
+        // 페이지 로드 시 대시보드 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
     </script>
 </body>
 </html>
