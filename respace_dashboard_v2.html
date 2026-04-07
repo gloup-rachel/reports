@@ -613,15 +613,54 @@
             cursor: pointer;
         }
 
+        .comparison-options {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .comparison-options.hidden {
+            display: none;
+        }
+
+        .comp-preset-btn {
+            padding: 4px 10px;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-family: Pretendard, sans-serif;
+        }
+
+        .comp-preset-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .comp-preset-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
         .comparison-date-group {
             display: flex;
             gap: 8px;
             align-items: center;
-            margin-left: 16px;
         }
 
         .comparison-date-group.hidden {
             display: none;
+        }
+
+        .comp-period-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-left: 4px;
         }
 
         .kpi-change {
@@ -821,6 +860,13 @@
                 <input type="checkbox" id="comparisonToggle" class="comparison-checkbox">
                 <label class="filter-label" for="comparisonToggle">비교 기능</label>
             </div>
+            <div class="comparison-options hidden" id="comparisonOptions">
+                <button class="comp-preset-btn active" data-comp="same-period">동기간 대비</button>
+                <button class="comp-preset-btn" data-comp="prev-month">전월 대비</button>
+                <button class="comp-preset-btn" data-comp="prev-year">전년 대비</button>
+                <button class="comp-preset-btn" data-comp="custom">Custom</button>
+                <span class="comp-period-label" id="compPeriodLabel"></span>
+            </div>
             <div class="comparison-date-group hidden" id="comparisonDateGroup">
                 <label class="filter-label">비교기간:</label>
                 <input type="date" id="comparisonStartDate" class="filter-input">
@@ -840,14 +886,14 @@
     <!-- Tabs -->
     <div class="tabs">
         <div class="tabs-container">
-            <button class="tab-button active" data-tab="search">검색광고</button>
+            <button class="tab-button active" data-tab="analytics">트래픽/리드</button>
+            <button class="tab-button" data-tab="search">검색광고</button>
             <button class="tab-button" data-tab="meta">Meta 광고</button>
-            <button class="tab-button" data-tab="analytics">트래픽/리드</button>
         </div>
     </div>
 
     <!-- Tab Contents -->
-    <div class="tab-content active" id="searchTab">
+    <div class="tab-content" id="searchTab">
         <!-- Search Ads Level 1: Platform Selection -->
         <div class="sub-tabs" id="searchPlatformTabs">
             <button class="sub-tab-button active" data-platform="naver">네이버</button>
@@ -1098,7 +1144,7 @@
     </div>
 
     <!-- GA4/Leads Tab -->
-    <div class="tab-content" id="analyticsTab">
+    <div class="tab-content active" id="analyticsTab">
         <!-- Level 1: Source Type -->
         <div class="sub-tabs" id="analyticSourceTabs">
             <button class="sub-tab-button active" data-source="ga4">GA4</button>
@@ -1303,7 +1349,7 @@
             startDate: null,
             endDate: null,
             search: '',
-            currentTab: 'search',
+            currentTab: 'analytics',
             currentPlatform: 'naver',
             currentSubtab: 'naver-summary'
         };
@@ -1413,6 +1459,7 @@
                 };
 
                 setInitialDateRange();
+                updateAnalyticsSourceView('ga4');
                 applyFilters();
                 updateStatus('live', '데이터 준비됨');
                 document.getElementById('lastUpdate').textContent = `마지막 업데이트: ${new Date().toLocaleTimeString('ko-KR')}`;
@@ -1429,12 +1476,19 @@
         }
 
         // Date Range Management
+        function toDateInputValue(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
         function setInitialDateRange() {
             const today = new Date();
             const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-            document.getElementById('filterStartDate').valueAsDate = firstOfMonth;
-            document.getElementById('filterEndDate').valueAsDate = today;
+            document.getElementById('filterStartDate').value = toDateInputValue(firstOfMonth);
+            document.getElementById('filterEndDate').value = toDateInputValue(today);
 
             currentFilter.startDate = firstOfMonth;
             currentFilter.endDate = today;
@@ -1635,11 +1689,22 @@
                 totalConversions += (row['전환수'] || 0);
             });
 
+            // Comparison data for this platform
+            let compImp = 0, compClk = 0, compCost = 0, compConv = 0;
+            if (isComparisonMode && comparisonData[platform]) {
+                comparisonData[platform].forEach(row => {
+                    compImp += (row['노출'] || 0);
+                    compClk += (row['클릭'] || 0);
+                    compCost += (row['비용'] || 0);
+                    compConv += (row['전환수'] || 0);
+                });
+            }
+
             const kpis = [
-                { label: '노출', value: formatNumber(totalImpressions) },
-                { label: '클릭', value: formatNumber(totalClicks) },
-                { label: '비용', value: formatCurrency(totalCost) },
-                { label: '전환', value: formatNumber(totalConversions) },
+                { label: '노출', value: formatNumber(totalImpressions), raw: totalImpressions, comp: compImp },
+                { label: '클릭', value: formatNumber(totalClicks), raw: totalClicks, comp: compClk },
+                { label: '비용', value: formatCurrency(totalCost), raw: totalCost, comp: compCost },
+                { label: '전환', value: formatNumber(totalConversions), raw: totalConversions, comp: compConv },
                 { label: 'CTR', value: formatPercent(totalClicks / (totalImpressions || 1)) },
                 { label: 'CPC', value: formatCurrency(totalCost / (totalClicks || 1)) },
                 { label: 'CPA', value: formatCurrency(totalCost / (totalConversions || 1)) }
@@ -1648,7 +1713,11 @@
             kpis.forEach(kpi => {
                 const card = document.createElement('div');
                 card.className = 'kpi-card';
-                card.innerHTML = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                let html = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                if (isComparisonMode && kpi.raw !== undefined) {
+                    html += getComparisonValue(kpi.raw, kpi.comp);
+                }
+                card.innerHTML = html;
                 kpiRow.appendChild(card);
             });
 
@@ -1846,12 +1915,24 @@
                 totalFrequency += (row['노출빈도'] || 0);
             });
 
+            // Comparison data for Meta
+            let compImp = 0, compReach = 0, compClk = 0, compCost = 0, compConv = 0;
+            if (isComparisonMode && comparisonData.meta) {
+                comparisonData.meta.forEach(row => {
+                    compImp += (row['노출'] || 0);
+                    compReach += (row['도달'] || 0);
+                    compClk += (row['클릭(링크클릭)'] || 0);
+                    compCost += (row['비용'] || 0);
+                    compConv += (row['전환수'] || 0);
+                });
+            }
+
             const kpis = [
-                { label: '노출', value: formatNumber(totalImpressions) },
-                { label: '도달', value: formatNumber(totalReach) },
-                { label: '클릭', value: formatNumber(totalClicks) },
-                { label: '비용', value: formatCurrency(totalCost) },
-                { label: '전환', value: formatNumber(totalConversions) },
+                { label: '노출', value: formatNumber(totalImpressions), raw: totalImpressions, comp: compImp },
+                { label: '도달', value: formatNumber(totalReach), raw: totalReach, comp: compReach },
+                { label: '클릭', value: formatNumber(totalClicks), raw: totalClicks, comp: compClk },
+                { label: '비용', value: formatCurrency(totalCost), raw: totalCost, comp: compCost },
+                { label: '전환', value: formatNumber(totalConversions), raw: totalConversions, comp: compConv },
                 { label: 'CTR', value: formatPercent(totalClicks / (totalImpressions || 1)) },
                 { label: 'CPM', value: formatCurrency((totalCost / (totalImpressions || 1)) * 1000) },
                 { label: '노출빈도', value: (totalFrequency / (data.length || 1)).toFixed(2) }
@@ -1860,7 +1941,11 @@
             kpis.forEach(kpi => {
                 const card = document.createElement('div');
                 card.className = 'kpi-card';
-                card.innerHTML = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                let html = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                if (isComparisonMode && kpi.raw !== undefined) {
+                    html += getComparisonValue(kpi.raw, kpi.comp);
+                }
+                card.innerHTML = html;
                 kpiRow.appendChild(card);
             });
 
@@ -2493,28 +2578,72 @@
             return '기타';
         }
 
+        let currentCompPreset = 'same-period';
+
         function toggleComparisonMode(e) {
             isComparisonMode = e.target.checked;
-            const comparisonDateGroup = document.getElementById('comparisonDateGroup');
+            const compOptions = document.getElementById('comparisonOptions');
+            const compDateGroup = document.getElementById('comparisonDateGroup');
             if (isComparisonMode) {
-                comparisonDateGroup.classList.remove('hidden');
-                // Set default comparison period (30 days before current filter)
-                const startDate = new Date(currentFilter.startDate);
-                const endDate = new Date(currentFilter.endDate);
-                const daysBefore = Math.floor((currentFilter.endDate - currentFilter.startDate) / (1000 * 60 * 60 * 24));
-                
-                const compStart = new Date(startDate);
-                compStart.setDate(compStart.getDate() - daysBefore - 1);
-                
-                const compEnd = new Date(startDate);
-                compEnd.setDate(compEnd.getDate() - 1);
-                
-                document.getElementById('comparisonStartDate').valueAsDate = compStart;
-                document.getElementById('comparisonEndDate').valueAsDate = compEnd;
+                compOptions.classList.remove('hidden');
+                currentCompPreset = 'same-period';
+                document.querySelectorAll('.comp-preset-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-comp="same-period"]').classList.add('active');
+                applyComparisonPreset('same-period');
+                compDateGroup.classList.add('hidden');
             } else {
-                comparisonDateGroup.classList.add('hidden');
+                compOptions.classList.add('hidden');
+                compDateGroup.classList.add('hidden');
                 comparisonData = {};
             }
+        }
+
+        function applyComparisonPreset(preset) {
+            currentCompPreset = preset;
+            const startDate = new Date(currentFilter.startDate);
+            const endDate = new Date(currentFilter.endDate);
+            const daysDiff = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const compDateGroup = document.getElementById('comparisonDateGroup');
+            const periodLabel = document.getElementById('compPeriodLabel');
+
+            let compStart, compEnd;
+
+            if (preset === 'same-period') {
+                // 동기간 대비: 동일 기간 길이만큼 직전 기간
+                compEnd = new Date(startDate);
+                compEnd.setDate(compEnd.getDate() - 1);
+                compStart = new Date(compEnd);
+                compStart.setDate(compStart.getDate() - daysDiff);
+                compDateGroup.classList.add('hidden');
+            } else if (preset === 'prev-month') {
+                // 전월 대비: 전월 같은 일자
+                compStart = new Date(startDate);
+                compStart.setMonth(compStart.getMonth() - 1);
+                compEnd = new Date(endDate);
+                compEnd.setMonth(compEnd.getMonth() - 1);
+                compDateGroup.classList.add('hidden');
+            } else if (preset === 'prev-year') {
+                // 전년 대비: 전년 같은 일자
+                compStart = new Date(startDate);
+                compStart.setFullYear(compStart.getFullYear() - 1);
+                compEnd = new Date(endDate);
+                compEnd.setFullYear(compEnd.getFullYear() - 1);
+                compDateGroup.classList.add('hidden');
+            } else if (preset === 'custom') {
+                // Custom: 직접 날짜 지정
+                compDateGroup.classList.remove('hidden');
+                compEnd = new Date(startDate);
+                compEnd.setDate(compEnd.getDate() - 1);
+                compStart = new Date(compEnd);
+                compStart.setDate(compStart.getDate() - daysDiff);
+            }
+
+            document.getElementById('comparisonStartDate').value = toDateInputValue(compStart);
+            document.getElementById('comparisonEndDate').value = toDateInputValue(compEnd);
+
+            // Update period label
+            const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+            periodLabel.textContent = `(${fmt(compStart)} ~ ${fmt(compEnd)})`;
         }
 
         function applyComparisonFilters() {
@@ -2903,6 +3032,15 @@
         // Comparison Mode
         document.getElementById('comparisonToggle').addEventListener('change', toggleComparisonMode);
 
+        // Comparison preset buttons
+        document.querySelectorAll('.comp-preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.comp-preset-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                applyComparisonPreset(e.target.dataset.comp);
+            });
+        });
+
                 document.getElementById('refreshBtn').addEventListener('click', () => {
             document.getElementById('refreshBtn').classList.add('loading');
             loadData().then(() => {
@@ -2944,8 +3082,8 @@
                     start = new Date(2020, 0, 1);
                 }
 
-                document.getElementById('filterStartDate').valueAsDate = start;
-                document.getElementById('filterEndDate').valueAsDate = end;
+                document.getElementById('filterStartDate').value = toDateInputValue(start);
+                document.getElementById('filterEndDate').value = toDateInputValue(end);
             });
         });
 
