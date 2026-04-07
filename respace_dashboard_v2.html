@@ -599,6 +599,51 @@
             margin-bottom: 24px;
         }
 
+
+        /* Comparison Mode */
+        .comparison-toggle {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .comparison-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .comparison-date-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: 16px;
+        }
+
+        .comparison-date-group.hidden {
+            display: none;
+        }
+
+        .kpi-change {
+            font-size: 11px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .kpi-change.up {
+            color: #27ae60;
+        }
+
+        .kpi-change.down {
+            color: #e74c3c;
+        }
+
+        .comparison-badge {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
         /* Loading */
         .loading-spinner {
             display: inline-block;
@@ -762,7 +807,25 @@
             </div>
             <div class="filter-group" style="flex: 1; min-width: 200px;">
                 <label class="filter-label">검색:</label>
-                <input type="text" id="filterSearch" class="filter-input" placeholder="캠페인, 광고그룹, 키워드..." style="flex: 1;">
+                <select id="filterCategory" class="filter-input" style="width: 160px; cursor: pointer;">
+                    <option value="all">전체</option>
+                    <option value="campaign">캠페인</option>
+                    <option value="adgroup">광고그룹</option>
+                    <option value="keyword">키워드</option>
+                    <option value="creative">광고명/소재</option>
+                    <option value="source">유입경로(소스/매체)</option>
+                </select>
+                <input type="text" id="filterSearch" class="filter-input" placeholder="검색어 입력..." style="flex: 1;">
+            </div>
+            <div class="comparison-toggle">
+                <input type="checkbox" id="comparisonToggle" class="comparison-checkbox">
+                <label class="filter-label" for="comparisonToggle">비교 기능</label>
+            </div>
+            <div class="comparison-date-group hidden" id="comparisonDateGroup">
+                <label class="filter-label">비교기간:</label>
+                <input type="date" id="comparisonStartDate" class="filter-input">
+                <label class="filter-label">~</label>
+                <input type="date" id="comparisonEndDate" class="filter-input">
             </div>
             <div class="filter-buttons">
                 <button class="filter-btn apply" id="applyFilterBtn">적용</button>
@@ -779,7 +842,7 @@
         <div class="tabs-container">
             <button class="tab-button active" data-tab="search">검색광고</button>
             <button class="tab-button" data-tab="meta">Meta 광고</button>
-            <button class="tab-button" data-tab="analytics">GA4/리드</button>
+            <button class="tab-button" data-tab="analytics">트래픽/리드</button>
         </div>
     </div>
 
@@ -1046,13 +1109,62 @@
         <div id="ga4Section">
             <!-- Level 2: View Type -->
             <div class="sub-tabs">
-                <button class="sub-tab-button active" data-subtab="ga4-traffic">유입 트래픽</button>
+                <button class="sub-tab-button active" data-subtab="ga4-unified">통합</button>
+                <button class="sub-tab-button" data-subtab="ga4-traffic">유입 트래픽</button>
                 <button class="sub-tab-button" data-subtab="ga4-funnel">전환 퍼널</button>
             </div>
 
+            <!-- GA4 Unified Funnel -->
+            <div class="sub-tab-content active" id="ga4-unified">
+                <div class="kpi-row" id="ga4UnifiedKpiRow"></div>
+                <div id="unified-funnel-container" style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
+                    <div id="unified-funnel"></div>
+                </div>
+                <div class="table-container">
+                    <table id="ga4UnifiedFunnelTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable">날짜</th>
+                                <th class="sortable">GA4 세션</th>
+                                <th class="sortable">전환이벤트</th>
+                                <th class="sortable">전환율</th>
+                                <th class="sortable">상담문의</th>
+                                <th class="sortable">상담문의율</th>
+                                <th class="sortable">소개서 다운</th>
+                                <th class="sortable">소개서율</th>
+                                <th class="sortable">딜(상담)</th>
+                                <th class="sortable">리드(소개서)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- GA4 Traffic -->
-            <div class="sub-tab-content active" id="ga4-traffic">
+            <div class="sub-tab-content" id="ga4-traffic">
                 <div class="kpi-row" id="ga4TrafficKpiRow"></div>
+                <div class="chart-container">
+                    <div class="chart-title">채널별 일별 세션 (스택)</div>
+                    <div class="chart-wrapper">
+                        <canvas id="ga4ChannelStackChart"></canvas>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="ga4ChannelTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable">채널</th>
+                                <th class="sortable">세션</th>
+                                <th class="sortable">사용자</th>
+                                <th class="sortable">신규사용자</th>
+                                <th class="sortable">참여세션</th>
+                                <th class="sortable">참여율</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <div class="chart-container">
                     <div class="chart-title">일별 세션 트렌드</div>
                     <div class="chart-wrapper">
@@ -1082,6 +1194,25 @@
             <!-- GA4 Funnel -->
             <div class="sub-tab-content" id="ga4-funnel">
                 <div class="kpi-row" id="ga4FunnelKpiRow"></div>
+                <div class="chart-container">
+                    <div class="chart-title">채널별 이벤트 (스택)</div>
+                    <div class="chart-wrapper">
+                        <canvas id="ga4EventSourceStackChart"></canvas>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="ga4EventSourceTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable">이벤트명</th>
+                                <th class="sortable">이벤트 횟수(합)</th>
+                                <th class="sortable">사용자수(합)</th>
+                                <th class="sortable">채널별 분석</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <div class="chart-container">
                     <div class="chart-title">이벤트별 전환</div>
                     <div class="chart-wrapper">
@@ -1127,21 +1258,7 @@
                         <canvas id="leadsDailyChart"></canvas>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="leadsTable">
-                        <thead>
-                            <tr>
-                                <th class="sortable">생성일</th>
-                                <th class="sortable">회사명</th>
-                                <th class="sortable">성명</th>
-                                <th class="sortable">유입경로</th>
-                                <th class="sortable">전화번호</th>
-                                <th class="sortable">이메일</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <!-- RAW 테이블 제거 -->
             </div>
 
             <!-- Deals List -->
@@ -1153,20 +1270,7 @@
                         <canvas id="dealsDailyChart"></canvas>
                     </div>
                 </div>
-                <div class="table-container">
-                    <table id="dealsTable">
-                        <thead>
-                            <tr>
-                                <th class="sortable">회사</th>
-                                <th class="sortable">폼/리드라우트 제목</th>
-                                <th class="sortable">폼 제출 일자</th>
-                                <th class="sortable">담당자 성함</th>
-                                <th class="sortable">담당자 연락처</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <!-- RAW 테이블 제거 -->
             </div>
         </div>
     </div>
@@ -1350,42 +1454,65 @@
             const endDate = new Date(document.getElementById('filterEndDate').value);
             endDate.setHours(23, 59, 59, 999);
             const search = document.getElementById('filterSearch').value.toLowerCase();
+            const category = document.getElementById('filterCategory').value;
 
             currentFilter.startDate = startDate;
             currentFilter.endDate = endDate;
             currentFilter.search = search;
+            currentFilter.category = category;
 
             filteredData = {
-                naver: filterSearchData(rawData.naver, startDate, endDate, search, 'naver'),
-                google: filterSearchData(rawData.google, startDate, endDate, search, 'google'),
-                meta: filterMetaData(rawData.meta, startDate, endDate, search),
+                naver: filterSearchData(rawData.naver, startDate, endDate, search, category),
+                google: filterSearchData(rawData.google, startDate, endDate, search, category),
+                meta: filterMetaData(rawData.meta, startDate, endDate, search, category),
                 leads: filterLeadsData(rawData.leads, startDate, endDate),
                 deals: filterDealsData(rawData.deals, startDate, endDate),
                 ga4Traffic: filterGA4TrafficData(rawData.ga4Traffic, startDate, endDate),
                 ga4Conversion: filterGA4ConversionData(rawData.ga4Conversion, startDate, endDate),
-                insights: rawData.insights.filter(row => row['상태'] === '활성')
+                insights: rawData.insights.filter(row => {
+                    if (row['상태'] !== '활성') return false;
+                    const date = parseGvizDate(row['날짜']);
+                    return isDateInRange(date, startDate, endDate);
+                })
             };
 
+            applyComparisonFilters();
             render();
             updatePeriodInfo();
         }
 
-        function filterSearchData(data, startDate, endDate, search, platform) {
+        function getSearchColumns(category, type) {
+            const colMap = {
+                all: type === 'search' ? ['캠페인', '광고그룹', '키워드'] : type === 'meta' ? ['캠페인', '광고세트', '광고명'] : ['소스', '매체', '캠페인'],
+                campaign: ['캠페인'],
+                adgroup: type === 'meta' ? ['광고세트'] : ['광고그룹'],
+                keyword: ['키워드'],
+                creative: type === 'meta' ? ['광고명'] : ['광고명', '키워드'],
+                source: ['소스', '매체', '유입경로']
+            };
+            return colMap[category] || colMap.all;
+        }
+
+        function filterSearchData(data, startDate, endDate, search, category) {
             return data.filter(row => {
                 const date = parseGvizDate(row['날짜']);
                 if (!isDateInRange(date, startDate, endDate)) return false;
-                if (search && !['캠페인', '광고그룹', '키워드'].some(col =>
-                    row[col]?.toString().toLowerCase().includes(search))) return false;
+                if (search) {
+                    const cols = getSearchColumns(category, 'search');
+                    if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                }
                 return true;
             });
         }
 
-        function filterMetaData(data, startDate, endDate, search) {
+        function filterMetaData(data, startDate, endDate, search, category) {
             return data.filter(row => {
                 const date = parseGvizDate(row['날짜']);
                 if (!isDateInRange(date, startDate, endDate)) return false;
-                if (search && !['캠페인', '광고세트', '광고명'].some(col =>
-                    row[col]?.toString().toLowerCase().includes(search))) return false;
+                if (search) {
+                    const cols = getSearchColumns(category, 'meta');
+                    if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                }
                 return true;
             });
         }
@@ -1458,7 +1585,25 @@
             kpis.forEach(kpi => {
                 const card = document.createElement('div');
                 card.className = 'kpi-card';
-                card.innerHTML = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                let html = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                
+                if (isComparisonMode) {
+                    let compVal = 0;
+                    let compData = [...comparisonData.naver, ...comparisonData.google, ...comparisonData.meta];
+                    if (kpi.label === '총 노출') {
+                        compData.forEach(r => compVal += (r['노출'] || 0));
+                    } else if (kpi.label === '총 클릭') {
+                        compData.forEach(r => compVal += (r['클릭'] || 0));
+                    } else if (kpi.label === '총 비용') {
+                        compData.forEach(r => compVal += (r['비용'] || 0));
+                    } else if (kpi.label === '총 전환') {
+                        compData.forEach(r => compVal += (r['전환수'] || r['전환'] || 0));
+                    }
+                    const currentVal = parseInt(kpi.value.replace(/,/g, '').replace(/₩/g, ''));
+                    html += getComparisonValue(currentVal, compVal);
+                }
+                
+                card.innerHTML = html;
                 kpiRow.appendChild(card);
             });
         }
@@ -1886,9 +2031,11 @@
         }
 
         function renderGA4() {
-            const subtab = document.querySelector('#ga4Section [data-subtab].sub-tab-button.active')?.dataset.subtab || 'ga4-traffic';
+            const subtab = document.querySelector('#ga4Section [data-subtab].sub-tab-button.active')?.dataset.subtab || 'ga4-unified';
 
-            if (subtab === 'ga4-traffic') {
+            if (subtab === 'ga4-unified') {
+                renderGA4Unified();
+            } else if (subtab === 'ga4-traffic') {
                 renderGA4Traffic();
             } else {
                 renderGA4Funnel();
@@ -1923,6 +2070,8 @@
                 kpiRow.appendChild(card);
             });
 
+            renderGA4ChannelStackChart(data);
+            renderGA4ChannelTable(data);
             renderGA4SessionTrendChart(data);
             renderGA4TrafficTable(data);
         }
@@ -2033,6 +2182,8 @@
                 kpiRow.appendChild(card);
             });
 
+            renderGA4EventSourceStackChart(data);
+            renderGA4EventSourceTable(data);
             renderGA4FunnelChart(data);
             renderGA4FunnelTable(data);
         }
@@ -2128,7 +2279,7 @@
 
             renderLeadsSourceChart(data);
             renderLeadsDailyChart(data);
-            renderLeadsTable(data);
+            // renderLeadsTable 제거 - RAW 데이터 테이블 불필요
         }
 
         function renderLeadsSourceChart(data) {
@@ -2226,7 +2377,7 @@
             });
 
             renderDealsDailyChart(data);
-            renderDealsTable(data);
+            // renderDealsTable 제거 - RAW 데이터 테이블 불필요
         }
 
         function renderDealsDailyChart(data) {
@@ -2288,10 +2439,15 @@
                 const pB = priorityOrder[b['우선순위']] || 999;
                 if (pA !== pB) return pA - pB;
 
-                const dateA = new Date(a['날짜'] || 0);
-                const dateB = new Date(b['날짜'] || 0);
+                const dateA = parseGvizDate(a['날짜']) || new Date(0);
+                const dateB = parseGvizDate(b['날짜']) || new Date(0);
                 return dateB - dateA;
             });
+
+            if (sorted.length === 0) {
+                insightsGrid.innerHTML = '<p style="color:#888;text-align:center;padding:24px;">선택한 기간에 해당하는 인사이트가 없습니다.</p>';
+                return;
+            }
 
             sorted.forEach(insight => {
                 const card = document.createElement('div');
@@ -2305,7 +2461,7 @@
                     <div class="insight-content">${insight['내용']}</div>
                     <div class="insight-meta">
                         <span class="insight-category">${insight['카테고리']}</span>
-                        <span>${insight['날짜']}</span>
+                        <span>${getDateKey(insight['날짜'])}</span>
                     </div>
                 `;
                 insightsGrid.appendChild(card);
@@ -2319,8 +2475,433 @@
             }
         }
 
+
+        // ============= FEATURE 1: Comparison Mode =============
+        let comparisonData = {};
+        let isComparisonMode = false;
+
+        function classifyChannel(source, medium, campaign) {
+            const s = (source || '').toLowerCase();
+            const m = (medium || '').toLowerCase();
+            const c = (campaign || '').toLowerCase();
+            if (s.includes('naver') && (m === 'cpc' || m === 'paidsearch')) return '네이버 검색광고';
+            if (s.includes('google') && (m === 'cpc' || m === 'paidsearch')) return '구글 검색광고';
+            if (s.includes('facebook') || s.includes('instagram') || s.includes('meta') || m === 'paid_social' || m === 'display') return 'Meta 광고';
+            if (m === 'organic' || m === 'organic search') return '자연검색';
+            if (s === '(direct)' || s === 'direct') return '직접유입';
+            if (m === 'referral') return '레퍼럴';
+            return '기타';
+        }
+
+        function toggleComparisonMode(e) {
+            isComparisonMode = e.target.checked;
+            const comparisonDateGroup = document.getElementById('comparisonDateGroup');
+            if (isComparisonMode) {
+                comparisonDateGroup.classList.remove('hidden');
+                // Set default comparison period (30 days before current filter)
+                const startDate = new Date(currentFilter.startDate);
+                const endDate = new Date(currentFilter.endDate);
+                const daysBefore = Math.floor((currentFilter.endDate - currentFilter.startDate) / (1000 * 60 * 60 * 24));
+                
+                const compStart = new Date(startDate);
+                compStart.setDate(compStart.getDate() - daysBefore - 1);
+                
+                const compEnd = new Date(startDate);
+                compEnd.setDate(compEnd.getDate() - 1);
+                
+                document.getElementById('comparisonStartDate').valueAsDate = compStart;
+                document.getElementById('comparisonEndDate').valueAsDate = compEnd;
+            } else {
+                comparisonDateGroup.classList.add('hidden');
+                comparisonData = {};
+            }
+        }
+
+        function applyComparisonFilters() {
+            if (!isComparisonMode) {
+                comparisonData = {};
+                return;
+            }
+            
+            const compStart = new Date(document.getElementById('comparisonStartDate').value);
+            const compEnd = new Date(document.getElementById('comparisonEndDate').value);
+            compEnd.setHours(23, 59, 59, 999);
+
+            comparisonData = {
+                naver: filterSearchData(rawData.naver, compStart, compEnd, '', 'all'),
+                google: filterSearchData(rawData.google, compStart, compEnd, '', 'all'),
+                meta: filterMetaData(rawData.meta, compStart, compEnd, '', 'all'),
+                leads: filterLeadsData(rawData.leads, compStart, compEnd),
+                deals: filterDealsData(rawData.deals, compStart, compEnd),
+                ga4Traffic: filterGA4TrafficData(rawData.ga4Traffic, compStart, compEnd),
+                ga4Conversion: filterGA4ConversionData(rawData.ga4Conversion, compStart, compEnd)
+            };
+        }
+
+        function getComparisonValue(currentValue, comparisonValue) {
+            if (comparisonValue === 0 || !isComparisonMode) return '';
+            const change = currentValue - comparisonValue;
+            const percent = (change / comparisonValue) * 100;
+            const arrow = change >= 0 ? '↑' : '↓';
+            const cssClass = change >= 0 ? 'up' : 'down';
+            return `<div class="kpi-change ${cssClass}">(vs ${formatNumber(comparisonValue)}) ${arrow} ${Math.abs(percent).toFixed(1)}%</div>`;
+        }
+
+        // ============= FEATURE 2: GA4 Unified Funnel =============
+        function renderGA4Unified() {
+            const gaData = filteredData.ga4Traffic;
+            const convData = filteredData.ga4Conversion;
+            const leadsData = filteredData.leads;
+            const dealsData = filteredData.deals;
+
+            const kpiRow = document.getElementById('ga4UnifiedKpiRow');
+            kpiRow.innerHTML = '';
+
+            // Calculate totals
+            let totalSessions = 0, totalConversions = 0;
+            let contactEvents = 0, downloadEvents = 0;
+            
+            gaData.forEach(row => {
+                totalSessions += (row['세션수'] || 0);
+            });
+            
+            convData.forEach(row => {
+                totalConversions += (row['이벤트 횟수'] || 0);
+                if (row['이벤트명'] === 'click_contact') contactEvents = row['이벤트 횟수'];
+                if (row['이벤트명'] === 'click_download_intro') downloadEvents = row['이벤트 횟수'];
+            });
+
+            const contactLeads = dealsData.length;
+            const downloadLeads = leadsData.length;
+            const conversionRate = (totalConversions / (totalSessions || 1)) * 100;
+            const contactRate = (contactEvents / (totalSessions || 1)) * 100;
+            const downloadRate = (downloadEvents / (totalSessions || 1)) * 100;
+            const contactDealRate = (contactLeads / (contactEvents || 1)) * 100;
+            const downloadLeadRate = (downloadLeads / (downloadEvents || 1)) * 100;
+
+            const kpis = [
+                { label: 'GA4 세션', value: formatNumber(totalSessions) },
+                { label: '전환이벤트', value: formatNumber(totalConversions) },
+                { label: '전환율', value: formatPercent(conversionRate) },
+                { label: '상담문의', value: formatNumber(contactEvents) },
+                { label: '소개서 다운', value: formatNumber(downloadEvents) },
+                { label: '딜(상담)', value: formatNumber(contactLeads) },
+                { label: '리드(소개서)', value: formatNumber(downloadLeads) }
+            ];
+
+            kpis.forEach(kpi => {
+                const card = document.createElement('div');
+                card.className = 'kpi-card';
+                let html = `<div class="kpi-label">${kpi.label}</div><div class="kpi-value">${kpi.value}</div>`;
+                
+                if (isComparisonMode) {
+                    let compVal = 0;
+                    if (kpi.label === 'GA4 세션') {
+                        comparisonData.ga4Traffic.forEach(r => compVal += (r['세션수'] || 0));
+                    } else if (kpi.label === '전환이벤트') {
+                        comparisonData.ga4Conversion.forEach(r => compVal += (r['이벤트 횟수'] || 0));
+                    } else if (kpi.label === '상담문의') {
+                        const row = comparisonData.ga4Conversion.find(r => r['이벤트명'] === 'click_contact');
+                        compVal = row ? row['이벤트 횟수'] : 0;
+                    } else if (kpi.label === '소개서 다운') {
+                        const row = comparisonData.ga4Conversion.find(r => r['이벤트명'] === 'click_download_intro');
+                        compVal = row ? row['이벤트 횟수'] : 0;
+                    } else if (kpi.label === '딜(상담)') {
+                        compVal = comparisonData.deals.length;
+                    } else if (kpi.label === '리드(소개서)') {
+                        compVal = comparisonData.leads.length;
+                    }
+                    const currentVal = parseInt(kpi.value.replace(/,/g, ''));
+                    html += getComparisonValue(currentVal, compVal);
+                }
+                
+                card.innerHTML = html;
+                kpiRow.appendChild(card);
+            });
+
+            // Render Y-funnel visualization
+            renderUnifiedFunnelViz(totalSessions, totalConversions, contactEvents, downloadEvents, contactLeads, downloadLeads, contactRate, downloadRate, contactDealRate, downloadLeadRate);
+            
+            // Render daily breakdown table
+            renderUnifiedFunnelTable(totalSessions, totalConversions, contactEvents, downloadEvents, contactLeads, downloadLeads);
+        }
+
+        function renderUnifiedFunnelViz(sessions, events, contact, download, deals, leads, contactRate, downloadRate, dealRate, leadRate) {
+            const container = document.getElementById('unified-funnel');
+            const eventRate = (events / (sessions || 1)) * 100;
+
+            container.innerHTML = `
+                <div style="text-align: center; font-family: inherit;">
+                    <div style="background: #3498db; color: white; padding: 20px; border-radius: 8px; margin-bottom: 12px; font-weight: bold; font-size: 16px;">
+                        GA4 세션: ${formatNumber(sessions)}
+                    </div>
+                    <div style="font-size: 20px; margin-bottom: 12px;">↓</div>
+                    <div style="background: #9b59b6; color: white; padding: 20px; border-radius: 8px; margin-bottom: 12px; font-weight: bold;">
+                        전환이벤트 합계: ${formatNumber(events)}<br>
+                        <span style="font-size: 12px; opacity: 0.9;">전환율 ${eventRate.toFixed(1)}%</span>
+                    </div>
+                    <div style="font-size: 20px; margin-bottom: 12px;">↓     ↓</div>
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 12px;">
+                        <div style="flex: 1; max-width: 250px;">
+                            <div style="background: #e74c3c; color: white; padding: 15px; border-radius: 8px; margin-bottom: 8px; font-weight: bold;">
+                                경로 A: 상담문의<br>
+                                <span style="font-size: 13px;">${formatNumber(contact)} (${contactRate.toFixed(1)}%)</span>
+                            </div>
+                            <div style="font-size: 14px; margin-bottom: 8px;">↓</div>
+                            <div style="background: #c0392b; color: white; padding: 12px; border-radius: 8px; font-weight: bold;">
+                                딜(상담문의): ${formatNumber(deals)}<br>
+                                <span style="font-size: 12px;">전환율 ${dealRate.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; max-width: 250px;">
+                            <div style="background: #f39c12; color: white; padding: 15px; border-radius: 8px; margin-bottom: 8px; font-weight: bold;">
+                                경로 B: 소개서 다운<br>
+                                <span style="font-size: 13px;">${formatNumber(download)} (${downloadRate.toFixed(1)}%)</span>
+                            </div>
+                            <div style="font-size: 14px; margin-bottom: 8px;">↓</div>
+                            <div style="background: #d68910; color: white; padding: 12px; border-radius: 8px; font-weight: bold;">
+                                리드(소개서): ${formatNumber(leads)}<br>
+                                <span style="font-size: 12px;">전환율 ${leadRate.toFixed(1)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderUnifiedFunnelTable(sessions, events, contact, download, deals, leads) {
+            const byDate = {};
+            
+            filteredData.ga4Traffic.forEach(row => {
+                const dateStr = getDateKey(row['날짜']);
+                if (!byDate[dateStr]) {
+                    byDate[dateStr] = {
+                        sessions: 0, events: 0, contactCount: 0, downloadCount: 0, dealsCount: 0, leadsCount: 0
+                    };
+                }
+                byDate[dateStr].sessions += (row['세션수'] || 0);
+            });
+
+            filteredData.ga4Conversion.forEach(row => {
+                const dateStr = getDateKey(row['날짜']);
+                if (!byDate[dateStr]) {
+                    byDate[dateStr] = {
+                        sessions: 0, events: 0, contactCount: 0, downloadCount: 0, dealsCount: 0, leadsCount: 0
+                    };
+                }
+                byDate[dateStr].events += (row['이벤트 횟수'] || 0);
+                if (row['이벤트명'] === 'click_contact') byDate[dateStr].contactCount = row['이벤트 횟수'];
+                if (row['이벤트명'] === 'click_download_intro') byDate[dateStr].downloadCount = row['이벤트 횟수'];
+            });
+
+            filteredData.leads.forEach(row => {
+                const dateStr = getDateKey(row['생성일']);
+                if (dateStr && byDate[dateStr]) byDate[dateStr].leadsCount += 1;
+            });
+
+            filteredData.deals.forEach(row => {
+                const dateStr = getDateKey(row['폼 제출 일자']);
+                if (dateStr && byDate[dateStr]) byDate[dateStr].dealsCount += 1;
+            });
+
+            const tbody = document.querySelector('#ga4UnifiedFunnelTable tbody');
+            tbody.innerHTML = '';
+
+            const sortedDates = Object.keys(byDate).sort();
+            sortedDates.forEach(dateStr => {
+                const data = byDate[dateStr];
+                const convRate = (data.events / (data.sessions || 1)) * 100;
+                const contactRate = (data.contactCount / (data.sessions || 1)) * 100;
+                const downloadRate = (data.downloadCount / (data.sessions || 1)) * 100;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${formatNumber(data.sessions)}</td>
+                    <td>${formatNumber(data.events)}</td>
+                    <td>${convRate.toFixed(1)}%</td>
+                    <td>${formatNumber(data.contactCount)}</td>
+                    <td>${contactRate.toFixed(1)}%</td>
+                    <td>${formatNumber(data.downloadCount)}</td>
+                    <td>${downloadRate.toFixed(1)}%</td>
+                    <td>${formatNumber(data.dealsCount)}</td>
+                    <td>${formatNumber(data.leadsCount)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ============= FEATURE 3: GA4 Traffic Channel Chart =============
+        function renderGA4ChannelStackChart(data) {
+            destroyChart('ga4ChannelStackChart');
+            
+            const byDateAndChannel = {};
+            const channels = new Set();
+
+            data.forEach(row => {
+                const dateStr = getDateKey(row['날짜']);
+                const channel = classifyChannel(row['소스'], row['매체'], row['캠페인']);
+                channels.add(channel);
+
+                if (!byDateAndChannel[dateStr]) {
+                    byDateAndChannel[dateStr] = {};
+                }
+                if (!byDateAndChannel[dateStr][channel]) {
+                    byDateAndChannel[dateStr][channel] = 0;
+                }
+                byDateAndChannel[dateStr][channel] += (row['세션수'] || 0);
+            });
+
+            const labels = Object.keys(byDateAndChannel).sort();
+            const channelArray = Array.from(channels);
+            const colors = ['#3498db', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c', '#34495e'];
+
+            const datasets = channelArray.map((channel, idx) => ({
+                label: channel,
+                data: labels.map(date => byDateAndChannel[date][channel] || 0),
+                backgroundColor: colors[idx % colors.length]
+            }));
+
+            const ctx = document.getElementById('ga4ChannelStackChart').getContext('2d');
+            charts['ga4ChannelStackChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } }
+                }
+            });
+        }
+
+        function renderGA4ChannelTable(data) {
+            const byChannel = {};
+            
+            data.forEach(row => {
+                const channel = classifyChannel(row['소스'], row['매체'], row['캠페인']);
+                if (!byChannel[channel]) {
+                    byChannel[channel] = {
+                        sessions: 0, users: 0, newUsers: 0, engaged: 0, avgTime: 0, count: 0
+                    };
+                }
+                byChannel[channel].sessions += (row['세션수'] || 0);
+                byChannel[channel].users += (row['사용자수'] || 0);
+                byChannel[channel].newUsers += (row['신규 사용자수'] || 0);
+                byChannel[channel].engaged += (row['참여 세션수'] || 0);
+                byChannel[channel].avgTime += (row['평균 참여시간'] || 0);
+                byChannel[channel].count += 1;
+            });
+
+            const tbody = document.querySelector('#ga4ChannelTable tbody');
+            tbody.innerHTML = '';
+
+            Object.entries(byChannel).forEach(([channel, vals]) => {
+                const engageRate = (vals.engaged / (vals.sessions || 1)) * 100;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${channel}</td>
+                    <td>${formatNumber(vals.sessions)}</td>
+                    <td>${formatNumber(vals.users)}</td>
+                    <td>${formatNumber(vals.newUsers)}</td>
+                    <td>${formatNumber(vals.engaged)}</td>
+                    <td>${formatPercent(engageRate)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ============= FEATURE 4: GA4 Conversion Event Source Chart =============
+        function renderGA4EventSourceStackChart(data) {
+            destroyChart('ga4EventSourceStackChart');
+
+            const eventMap = {
+                'click_contact': '상담문의',
+                'click_download_intro': '소개서 다운로드',
+                'click_project_view': '프로젝트 보기'
+            };
+
+            const byEventAndChannel = {};
+            const channels = new Set();
+
+            data.forEach(row => {
+                const eventName = eventMap[row['이벤트명']] || row['이벤트명'];
+                const channel = classifyChannel(row['소스'], row['매체'], row['캠페인']);
+                channels.add(channel);
+
+                if (!byEventAndChannel[eventName]) {
+                    byEventAndChannel[eventName] = {};
+                }
+                if (!byEventAndChannel[eventName][channel]) {
+                    byEventAndChannel[eventName][channel] = 0;
+                }
+                byEventAndChannel[eventName][channel] += (row['이벤트 횟수'] || 0);
+            });
+
+            const events = Object.keys(byEventAndChannel);
+            const channelArray = Array.from(channels);
+            const colors = ['#3498db', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6', '#1abc9c', '#34495e'];
+
+            const datasets = channelArray.map((channel, idx) => ({
+                label: channel,
+                data: events.map(event => byEventAndChannel[event][channel] || 0),
+                backgroundColor: colors[idx % colors.length]
+            }));
+
+            const ctx = document.getElementById('ga4EventSourceStackChart').getContext('2d');
+            charts['ga4EventSourceStackChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: events, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } },
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        function renderGA4EventSourceTable(data) {
+            const eventMap = {
+                'click_contact': '상담문의',
+                'click_download_intro': '소개서 다운로드',
+                'click_project_view': '프로젝트 보기'
+            };
+
+            const byEvent = {};
+            data.forEach(row => {
+                const eventName = eventMap[row['이벤트명']] || row['이벤트명'];
+                if (!byEvent[eventName]) {
+                    byEvent[eventName] = { count: 0, users: 0, rows: [] };
+                }
+                byEvent[eventName].count += (row['이벤트 횟수'] || 0);
+                byEvent[eventName].users += (row['사용자수'] || 0);
+                byEvent[eventName].rows.push(row);
+            });
+
+            const tbody = document.querySelector('#ga4EventSourceTable tbody');
+            tbody.innerHTML = '';
+
+            Object.entries(byEvent).forEach(([eventName, vals]) => {
+                const channels = new Set();
+                vals.rows.forEach(r => channels.add(classifyChannel(r['소스'], r['매체'], r['캠페인'])));
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${eventName}</strong></td>
+                    <td>${formatNumber(vals.count)}</td>
+                    <td>${formatNumber(vals.users)}</td>
+                    <td>${Array.from(channels).join(', ')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+
         // Event Listeners
-        document.getElementById('refreshBtn').addEventListener('click', () => {
+        // Comparison Mode
+        document.getElementById('comparisonToggle').addEventListener('change', toggleComparisonMode);
+
+                document.getElementById('refreshBtn').addEventListener('click', () => {
             document.getElementById('refreshBtn').classList.add('loading');
             loadData().then(() => {
                 document.getElementById('refreshBtn').classList.remove('loading');
@@ -2331,6 +2912,7 @@
         document.getElementById('resetFilterBtn').addEventListener('click', () => {
             setInitialDateRange();
             document.getElementById('filterSearch').value = '';
+            document.getElementById('filterCategory').value = 'all';
             document.querySelector('[data-range="month"]').classList.add('active');
             document.querySelectorAll('[data-range]').forEach(b => {
                 if (b.dataset.range !== 'month') b.classList.remove('active');
