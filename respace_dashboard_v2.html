@@ -683,6 +683,30 @@
             margin-top: 2px;
         }
 
+        /* Aggregation Mode Selector */
+        .agg-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0 8px;
+        }
+
+        .agg-selector label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .agg-select {
+            padding: 4px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: Pretendard, sans-serif;
+            cursor: pointer;
+            background: white;
+        }
+
         /* Loading */
         .loading-spinner {
             display: inline-block;
@@ -842,6 +866,7 @@
                 <button class="quick-date-btn" data-range="7days">최근 7일</button>
                 <button class="quick-date-btn" data-range="30days">최근 30일</button>
                 <button class="quick-date-btn active" data-range="month">이번 달</button>
+                <button class="quick-date-btn" data-range="lastMonth">지난달</button>
                 <button class="quick-date-btn" data-range="all">전체</button>
             </div>
             <div class="filter-group" style="flex: 1; min-width: 200px;">
@@ -911,8 +936,16 @@
             <!-- Naver Summary -->
             <div class="sub-tab-content active" id="naver-summary">
                 <div class="kpi-row" id="naverKpiRow"></div>
+                <div class="agg-selector">
+                    <label>집계 기준:</label>
+                    <select class="agg-select" data-target="naver">
+                        <option value="daily">일자별</option>
+                        <option value="weekly">주차별</option>
+                        <option value="monthly">월별</option>
+                    </select>
+                </div>
                 <div class="chart-container">
-                    <div class="chart-title">일별 트렌드 (클릭 & 전환)</div>
+                    <div class="chart-title">트렌드 (클릭 & 전환)</div>
                     <div class="chart-wrapper">
                         <canvas id="naverTrendChart"></canvas>
                     </div>
@@ -992,6 +1025,14 @@
             <!-- Google Summary -->
             <div class="sub-tab-content active" id="google-summary">
                 <div class="kpi-row" id="googleKpiRow"></div>
+                <div class="agg-selector">
+                    <label>집계 기준:</label>
+                    <select class="agg-select" data-target="google">
+                        <option value="daily">일자별</option>
+                        <option value="weekly">주차별</option>
+                        <option value="monthly">월별</option>
+                    </select>
+                </div>
                 <div class="chart-container">
                     <div class="chart-title">일별 트렌드 (클릭 & 전환)</div>
                     <div class="chart-wrapper">
@@ -1074,6 +1115,14 @@
         <!-- Meta Summary -->
         <div class="sub-tab-content active" id="meta-summary">
             <div class="kpi-row" id="metaKpiRow"></div>
+            <div class="agg-selector">
+                <label>집계 기준:</label>
+                <select class="agg-select" data-target="meta">
+                    <option value="daily">일자별</option>
+                    <option value="weekly">주차별</option>
+                    <option value="monthly">월별</option>
+                </select>
+            </div>
             <div class="chart-container">
                 <div class="chart-title">일별 트렌드 (클릭 & 전환)</div>
                 <div class="chart-wrapper">
@@ -1107,7 +1156,7 @@
                     <thead>
                         <tr>
                             <th class="sortable">캠페인</th>
-                            <th class="sortable">캠페인유형</th>
+                            <th class="sortable">캠페인 유형</th>
                             <th class="sortable">노출</th>
                             <th class="sortable">도달</th>
                             <th class="sortable">클릭</th>
@@ -1163,6 +1212,14 @@
             <!-- GA4 Unified Funnel -->
             <div class="sub-tab-content active" id="ga4-unified">
                 <div class="kpi-row" id="ga4UnifiedKpiRow"></div>
+                <div class="agg-selector">
+                    <label>집계 기준:</label>
+                    <select class="agg-select" data-target="ga4">
+                        <option value="daily">일자별</option>
+                        <option value="weekly">주차별</option>
+                        <option value="monthly">월별</option>
+                    </select>
+                </div>
                 <div id="unified-funnel-container" style="background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);">
                     <div id="unified-funnel"></div>
                 </div>
@@ -1396,6 +1453,57 @@
             const mm = String(d.getMonth() + 1).padStart(2, '0');
             const dd = String(d.getDate()).padStart(2, '0');
             return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // ============= Aggregation Utilities =============
+        function getAggMode(target) {
+            const sel = document.querySelector(`.agg-select[data-target="${target}"]`);
+            return sel ? sel.value : 'daily';
+        }
+
+        function getWeekStart(d) {
+            const date = new Date(d);
+            const day = date.getDay();
+            const diff = day === 0 ? 6 : day - 1; // Monday as start
+            date.setDate(date.getDate() - diff);
+            return date;
+        }
+
+        function getAggKey(dateStr, mode) {
+            if (mode === 'daily') return dateStr;
+            const d = parseGvizDate(dateStr) || new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]);
+            if (mode === 'weekly') {
+                const ws = getWeekStart(d);
+                const we = new Date(ws);
+                we.setDate(we.getDate() + 6);
+                const fmt = (dt) => `${dt.getMonth()+1}/${dt.getDate()}`;
+                return `${fmt(ws)}~${fmt(we)}`;
+            }
+            if (mode === 'monthly') {
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            }
+            return dateStr;
+        }
+
+        function getAggSortKey(dateStr, mode) {
+            if (mode === 'daily') return dateStr;
+            const d = parseGvizDate(dateStr) || new Date(dateStr.split('-')[0], dateStr.split('-')[1]-1, dateStr.split('-')[2]);
+            if (mode === 'weekly') {
+                const ws = getWeekStart(d);
+                return `${ws.getFullYear()}-${String(ws.getMonth()+1).padStart(2,'0')}-${String(ws.getDate()).padStart(2,'0')}`;
+            }
+            if (mode === 'monthly') {
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            }
+            return dateStr;
+        }
+
+        function getAggDisplayLabel(key, mode) {
+            if (mode === 'monthly') {
+                const parts = key.split('-');
+                return `${parseInt(parts[1])}월`;
+            }
+            return key;
         }
 
         function isDateInRange(date, startDate, endDate) {
@@ -1736,29 +1844,34 @@
             const table = document.getElementById(tableId);
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
+            const aggMode = getAggMode(platform);
 
-            const byDate = {};
+            const byKey = {};
+            const sortKeys = {};
             data.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = { 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, rows: [] };
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                if (!byKey[key]) {
+                    byKey[key] = { 노출: 0, 클릭: 0, 비용: 0, 전환수: 0 };
+                    sortKeys[key] = sk;
                 }
-                byDate[dateStr].노출 += (row['노출'] || 0);
-                byDate[dateStr].클릭 += (row['클릭'] || 0);
-                byDate[dateStr].비용 += (row['비용'] || 0);
-                byDate[dateStr].전환수 += (row['전환수'] || 0);
-                byDate[dateStr].rows.push(row);
+                byKey[key].노출 += (row['노출'] || 0);
+                byKey[key].클릭 += (row['클릭'] || 0);
+                byKey[key].비용 += (row['비용'] || 0);
+                byKey[key].전환수 += (row['전환수'] || 0);
             });
 
-            Object.keys(byDate).sort().forEach(dateStr => {
-                const agg = byDate[dateStr];
+            Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b)).forEach(key => {
+                const agg = byKey[key];
                 const ctr = agg.클릭 / (agg.노출 || 1);
                 const cpc = agg.비용 / (agg.클릭 || 1);
                 const cpa = agg.비용 / (agg.전환수 || 1);
+                const label = getAggDisplayLabel(key, aggMode);
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${dateStr}</td>
+                    <td>${label}</td>
                     <td>${formatNumber(agg.노출)}</td>
                     <td>${formatNumber(agg.클릭)}</td>
                     <td>${formatCurrency(agg.비용)}</td>
@@ -1773,20 +1886,26 @@
 
         function renderSearchTrendChart(platform, data, chartId) {
             destroyChart(chartId);
+            const aggMode = getAggMode(platform);
 
-            const byDate = {};
+            const byKey = {};
+            const sortKeys = {};
             data.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = { 클릭: 0, 전환수: 0 };
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                if (!byKey[key]) {
+                    byKey[key] = { 클릭: 0, 전환수: 0 };
+                    sortKeys[key] = sk;
                 }
-                byDate[dateStr].클릭 += (row['클릭'] || 0);
-                byDate[dateStr].전환수 += (row['전환수'] || 0);
+                byKey[key].클릭 += (row['클릭'] || 0);
+                byKey[key].전환수 += (row['전환수'] || 0);
             });
 
-            const labels = Object.keys(byDate).sort();
-            const clicks = labels.map(d => byDate[d].클릭);
-            const conversions = labels.map(d => byDate[d].전환수);
+            const sorted = Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b));
+            const labels = sorted.map(k => getAggDisplayLabel(k, aggMode));
+            const clicks = sorted.map(k => byKey[k].클릭);
+            const conversions = sorted.map(k => byKey[k].전환수);
 
             const ctx = document.getElementById(chartId).getContext('2d');
             charts[chartId] = new Chart(ctx, {
@@ -1914,7 +2033,7 @@
                 totalClicks += (row['클릭(링크클릭)'] || 0);
                 totalCost += (row['비용'] || 0);
                 totalConversions += (row['전환수'] || 0);
-                totalFrequency += (row['노출빈도'] || 0);
+                totalFrequency += (row['노출 빈도'] || 0);
             });
 
             // Comparison data for Meta
@@ -1957,20 +2076,26 @@
 
         function renderMetaTrendChart(data) {
             destroyChart('metaTrendChart');
+            const aggMode = getAggMode('meta');
 
-            const byDate = {};
+            const byKey = {};
+            const sortKeys = {};
             data.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = { 클릭: 0, 전환수: 0 };
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                if (!byKey[key]) {
+                    byKey[key] = { 클릭: 0, 전환수: 0 };
+                    sortKeys[key] = sk;
                 }
-                byDate[dateStr].클릭 += (row['클릭(링크클릭)'] || 0);
-                byDate[dateStr].전환수 += (row['전환수'] || 0);
+                byKey[key].클릭 += (row['클릭(링크클릭)'] || 0);
+                byKey[key].전환수 += (row['전환수'] || 0);
             });
 
-            const labels = Object.keys(byDate).sort();
-            const clicks = labels.map(d => byDate[d].클릭);
-            const conversions = labels.map(d => byDate[d].전환수);
+            const sorted = Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b));
+            const labels = sorted.map(k => getAggDisplayLabel(k, aggMode));
+            const clicks = sorted.map(k => byKey[k].클릭);
+            const conversions = sorted.map(k => byKey[k].전환수);
 
             const ctx = document.getElementById('metaTrendChart').getContext('2d');
             charts['metaTrendChart'] = new Chart(ctx, {
@@ -2011,31 +2136,37 @@
         function renderMetaSummaryTable(data) {
             const tbody = document.querySelector('#metaSummaryTable tbody');
             tbody.innerHTML = '';
+            const aggMode = getAggMode('meta');
 
-            const byDate = {};
+            const byKey = {};
+            const sortKeys = {};
             data.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = { 노출: 0, 도달: 0, 클릭: 0, 비용: 0, 전환수: 0, 노출빈도: 0, count: 0 };
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                if (!byKey[key]) {
+                    byKey[key] = { 노출: 0, 도달: 0, 클릭: 0, 비용: 0, 전환수: 0, 노출빈도: 0, count: 0 };
+                    sortKeys[key] = sk;
                 }
-                byDate[dateStr].노출 += (row['노출'] || 0);
-                byDate[dateStr].도달 += (row['도달'] || 0);
-                byDate[dateStr].클릭 += (row['클릭(링크클릭)'] || 0);
-                byDate[dateStr].비용 += (row['비용'] || 0);
-                byDate[dateStr].전환수 += (row['전환수'] || 0);
-                byDate[dateStr].노출빈도 += (row['노출빈도'] || 0);
-                byDate[dateStr].count += 1;
+                byKey[key].노출 += (row['노출'] || 0);
+                byKey[key].도달 += (row['도달'] || 0);
+                byKey[key].클릭 += (row['클릭(링크클릭)'] || 0);
+                byKey[key].비용 += (row['비용'] || 0);
+                byKey[key].전환수 += (row['전환수'] || 0);
+                byKey[key].노출빈도 += (row['노출 빈도'] || 0);
+                byKey[key].count += 1;
             });
 
-            Object.keys(byDate).sort().forEach(dateStr => {
-                const agg = byDate[dateStr];
+            Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b)).forEach(key => {
+                const agg = byKey[key];
                 const ctr = agg.클릭 / (agg.노출 || 1);
                 const cpm = (agg.비용 / (agg.노출 || 1)) * 1000;
                 const freq = agg.노출빈도 / agg.count;
+                const label = getAggDisplayLabel(key, aggMode);
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${dateStr}</td>
+                    <td>${label}</td>
                     <td>${formatNumber(agg.노출)}</td>
                     <td>${formatNumber(agg.도달)}</td>
                     <td>${formatNumber(agg.클릭)}</td>
@@ -2054,7 +2185,7 @@
             data.forEach(row => {
                 const camp = row['캠페인'];
                 if (!byCampaign[camp]) {
-                    byCampaign[camp] = { 캠페인유형: row['캠페인유형'], 노출: 0, 도달: 0, 클릭: 0, 비용: 0, 전환수: 0 };
+                    byCampaign[camp] = { '캠페인 유형': row['캠페인 유형'], 노출: 0, 도달: 0, 클릭: 0, 비용: 0, 전환수: 0 };
                 }
                 byCampaign[camp].노출 += (row['노출'] || 0);
                 byCampaign[camp].도달 += (row['도달'] || 0);
@@ -2073,7 +2204,7 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${camp}</td>
-                    <td>${agg.캠페인유형}</td>
+                    <td>${agg['캠페인 유형']}</td>
                     <td>${formatNumber(agg.노출)}</td>
                     <td>${formatNumber(agg.도달)}</td>
                     <td>${formatNumber(agg.클릭)}</td>
@@ -2699,8 +2830,8 @@
             
             convData.forEach(row => {
                 totalConversions += (row['이벤트 횟수'] || 0);
-                if (row['이벤트명'] === 'click_contact') contactEvents = row['이벤트 횟수'];
-                if (row['이벤트명'] === 'click_download_intro') downloadEvents = row['이벤트 횟수'];
+                if (row['이벤트명'] === 'click_contact') contactEvents += (row['이벤트 횟수'] || 0);
+                if (row['이벤트명'] === 'click_download_intro') downloadEvents += (row['이벤트 횟수'] || 0);
             });
 
             const contactLeads = dealsData.length;
@@ -2733,11 +2864,9 @@
                     } else if (kpi.label === '전환이벤트') {
                         comparisonData.ga4Conversion.forEach(r => compVal += (r['이벤트 횟수'] || 0));
                     } else if (kpi.label === '상담문의') {
-                        const row = comparisonData.ga4Conversion.find(r => r['이벤트명'] === 'click_contact');
-                        compVal = row ? row['이벤트 횟수'] : 0;
+                        comparisonData.ga4Conversion.filter(r => r['이벤트명'] === 'click_contact').forEach(r => compVal += (r['이벤트 횟수'] || 0));
                     } else if (kpi.label === '소개서 다운') {
-                        const row = comparisonData.ga4Conversion.find(r => r['이벤트명'] === 'click_download_intro');
-                        compVal = row ? row['이벤트 횟수'] : 0;
+                        comparisonData.ga4Conversion.filter(r => r['이벤트명'] === 'click_download_intro').forEach(r => compVal += (r['이벤트 횟수'] || 0));
                     } else if (kpi.label === '딜(상담)') {
                         compVal = comparisonData.deals.length;
                     } else if (kpi.label === '리드(소개서)') {
@@ -2804,53 +2933,65 @@
         }
 
         function renderUnifiedFunnelTable(sessions, events, contact, download, deals, leads) {
-            const byDate = {};
-            
+            const aggMode = getAggMode('ga4');
+            const byKey = {};
+            const sortKeys = {};
+
+            const ensureKey = (key, sk) => {
+                if (!byKey[key]) {
+                    byKey[key] = { sessions: 0, events: 0, contactCount: 0, downloadCount: 0, dealsCount: 0, leadsCount: 0 };
+                    sortKeys[key] = sk;
+                }
+            };
+
             filteredData.ga4Traffic.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = {
-                        sessions: 0, events: 0, contactCount: 0, downloadCount: 0, dealsCount: 0, leadsCount: 0
-                    };
-                }
-                byDate[dateStr].sessions += (row['세션수'] || 0);
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                ensureKey(key, sk);
+                byKey[key].sessions += (row['세션수'] || 0);
             });
 
             filteredData.ga4Conversion.forEach(row => {
                 const dateStr = getDateKey(row['날짜']);
-                if (!byDate[dateStr]) {
-                    byDate[dateStr] = {
-                        sessions: 0, events: 0, contactCount: 0, downloadCount: 0, dealsCount: 0, leadsCount: 0
-                    };
-                }
-                byDate[dateStr].events += (row['이벤트 횟수'] || 0);
-                if (row['이벤트명'] === 'click_contact') byDate[dateStr].contactCount = row['이벤트 횟수'];
-                if (row['이벤트명'] === 'click_download_intro') byDate[dateStr].downloadCount = row['이벤트 횟수'];
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                ensureKey(key, sk);
+                byKey[key].events += (row['이벤트 횟수'] || 0);
+                if (row['이벤트명'] === 'click_contact') byKey[key].contactCount += (row['이벤트 횟수'] || 0);
+                if (row['이벤트명'] === 'click_download_intro') byKey[key].downloadCount += (row['이벤트 횟수'] || 0);
             });
 
             filteredData.leads.forEach(row => {
                 const dateStr = getDateKey(row['생성일']);
-                if (dateStr && byDate[dateStr]) byDate[dateStr].leadsCount += 1;
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                ensureKey(key, sk);
+                byKey[key].leadsCount += 1;
             });
 
             filteredData.deals.forEach(row => {
                 const dateStr = getDateKey(row['폼 제출 일자']);
-                if (dateStr && byDate[dateStr]) byDate[dateStr].dealsCount += 1;
+                const key = getAggKey(dateStr, aggMode);
+                const sk = getAggSortKey(dateStr, aggMode);
+                ensureKey(key, sk);
+                byKey[key].dealsCount += 1;
             });
 
             const tbody = document.querySelector('#ga4UnifiedFunnelTable tbody');
             tbody.innerHTML = '';
 
-            const sortedDates = Object.keys(byDate).sort();
-            sortedDates.forEach(dateStr => {
-                const data = byDate[dateStr];
+            const sortedKeys = Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b));
+            sortedKeys.forEach(key => {
+                const data = byKey[key];
                 const convRate = (data.events / (data.sessions || 1)) * 100;
                 const contactRate = (data.contactCount / (data.sessions || 1)) * 100;
                 const downloadRate = (data.downloadCount / (data.sessions || 1)) * 100;
+                const label = getAggDisplayLabel(key, aggMode);
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${dateStr}</td>
+                    <td>${label}</td>
                     <td>${formatNumber(data.sessions)}</td>
                     <td>${formatNumber(data.events)}</td>
                     <td>${convRate.toFixed(1)}%</td>
@@ -3081,6 +3222,9 @@
                     start.setDate(start.getDate() - 29);
                 } else if (range === 'month') {
                     start = new Date(today.getFullYear(), today.getMonth(), 1);
+                } else if (range === 'lastMonth') {
+                    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    end = new Date(today.getFullYear(), today.getMonth(), 0); // 지난달 마지막일
                 } else if (range === 'all') {
                     start = new Date(2020, 0, 1);
                 }
@@ -3192,6 +3336,13 @@
             document.getElementById('ga4Section').style.display = source === 'ga4' ? 'block' : 'none';
             document.getElementById('leadsSection').style.display = source === 'leads' ? 'block' : 'none';
         }
+
+        // Aggregation dropdown listeners
+        document.querySelectorAll('.agg-select').forEach(sel => {
+            sel.addEventListener('change', () => {
+                render();
+            });
+        });
 
         // Auto-refresh
         function startAutoRefresh() {
