@@ -468,6 +468,20 @@
             background: #f0f2f5;
         }
 
+        /* Total row */
+        tr.total-row {
+            background: #edf2f7 !important;
+            font-weight: 700;
+            border-top: 2px solid #3498db;
+        }
+        tr.total-row td {
+            color: #1a1a2e;
+            padding: 14px 16px;
+        }
+        tr.total-row:hover {
+            background: #e2e8f0 !important;
+        }
+
         /* Insights */
         .insights-section {
             margin-top: 40px;
@@ -1862,8 +1876,10 @@
                 byKey[key].전환수 += (row['전환수'] || 0);
             });
 
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0;
             Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b)).forEach(key => {
                 const agg = byKey[key];
+                tImp += agg.노출; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
                 const ctr = agg.클릭 / (agg.노출 || 1);
                 const cpc = agg.비용 / (agg.클릭 || 1);
                 const cpa = agg.비용 / (agg.전환수 || 1);
@@ -1882,6 +1898,21 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+                <td>${formatCurrency(tCost / (tClk || 1))}</td>
+                <td>${formatCurrency(tCost / (tConv || 1))}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderSearchTrendChart(platform, data, chartId) {
@@ -1961,8 +1992,10 @@
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0;
             Object.keys(byCampaign).forEach(camp => {
                 const agg = byCampaign[camp];
+                tImp += agg.노출; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
                 const ctr = agg.클릭 / (agg.노출 || 1);
                 const cpc = agg.비용 / (agg.클릭 || 1);
                 const cpa = agg.비용 / (agg.전환수 || 1);
@@ -1980,6 +2013,19 @@
                 `;
                 tbody.appendChild(row);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+                <td>${formatCurrency(tCost / (tClk || 1))}</td>
+                <td>${formatCurrency(tCost / (tConv || 1))}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderSearchKeywords(platform, data) {
@@ -1988,7 +2034,9 @@
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0;
             data.slice(0, 30).forEach(row => {
+                tImp += (row['노출'] || 0); tClk += (row['클릭'] || 0); tCost += (row['비용'] || 0); tConv += (row['전환수'] || 0);
                 const ctr = (row['클릭'] || 0) / (row['노출'] || 1);
                 const cpc = (row['비용'] || 0) / (row['클릭'] || 1);
                 const cpa = (row['비용'] || 0) / (row['전환수'] || 1);
@@ -2008,6 +2056,21 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>-</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+                <td>${formatCurrency(tCost / (tClk || 1))}</td>
+                <td>${formatCurrency(tCost / (tConv || 1))}</td>
+                <td>-</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderMetaTab() {
@@ -2157,8 +2220,10 @@
                 byKey[key].count += 1;
             });
 
+            let tImp = 0, tReach = 0, tClk = 0, tCost = 0, tConv = 0, tFreq = 0, tCnt = 0;
             Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b)).forEach(key => {
                 const agg = byKey[key];
+                tImp += agg.노출; tReach += agg.도달; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수; tFreq += agg.노출빈도; tCnt += agg.count;
                 const ctr = agg.클릭 / (agg.노출 || 1);
                 const cpm = (agg.비용 / (agg.노출 || 1)) * 1000;
                 const freq = agg.노출빈도 / agg.count;
@@ -2178,6 +2243,22 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tReach)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+                <td>${formatCurrency((tCost / (tImp || 1)) * 1000)}</td>
+                <td>${(tFreq / (tCnt || 1)).toFixed(2)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderMetaCampaigns(data) {
@@ -2197,8 +2278,10 @@
             const tbody = document.querySelector('#metaCampaignTable tbody');
             tbody.innerHTML = '';
 
+            let tImp = 0, tReach = 0, tClk = 0, tCost = 0, tConv = 0;
             Object.keys(byCampaign).forEach(camp => {
                 const agg = byCampaign[camp];
+                tImp += agg.노출; tReach += agg.도달; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
                 const cpm = (agg.비용 / (agg.노출 || 1)) * 1000;
 
                 const row = document.createElement('tr');
@@ -2214,13 +2297,28 @@
                 `;
                 tbody.appendChild(row);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>-</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tReach)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatCurrency((tCost / (tImp || 1)) * 1000)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderMetaCreatives(data) {
             const tbody = document.querySelector('#metaCreativeTable tbody');
             tbody.innerHTML = '';
 
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0;
             data.forEach(row => {
+                tImp += (row['노출'] || 0); tClk += (row['클릭(링크클릭)'] || 0); tCost += (row['비용'] || 0); tConv += (row['전환수'] || 0);
                 const ctr = (row['클릭(링크클릭)'] || 0) / (row['노출'] || 1);
 
                 const tr = document.createElement('tr');
@@ -2236,6 +2334,19 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderAnalyticsTab() {
@@ -2357,7 +2468,9 @@
             const tbody = document.querySelector('#ga4TrafficTable tbody');
             tbody.innerHTML = '';
 
+            let tSess = 0, tUsers = 0, tNew = 0, tEng = 0, tTime = 0, tCnt = 0;
             Object.values(byChannel).forEach(row => {
+                tSess += row.세션수; tUsers += row.사용자수; tNew += row.신규사용자; tEng += row.참여세션; tTime += row.평균참여시간; tCnt += row.count;
                 const tr = document.createElement('tr');
                 const engagementRate = row.참여세션 / (row.세션수 || 1);
                 const avgTime = (row.평균참여시간 / row.count).toFixed(2);
@@ -2375,6 +2488,20 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${formatNumber(tSess)}</td>
+                <td>${formatNumber(tUsers)}</td>
+                <td>${formatNumber(tNew)}</td>
+                <td>${formatNumber(tEng)}</td>
+                <td>${formatPercent(tEng / (tSess || 1))}</td>
+                <td>${(tTime / (tCnt || 1)).toFixed(2)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderGA4Funnel() {
@@ -2450,7 +2577,9 @@
             const tbody = document.querySelector('#ga4FunnelTable tbody');
             tbody.innerHTML = '';
 
+            let tEvents = 0, tUsers = 0;
             data.forEach(row => {
+                tEvents += (row['이벤트 횟수'] || 0); tUsers += (row['사용자수'] || 0);
                 const tr = document.createElement('tr');
                 const eventName = eventMap[row['이벤트명']] || row['이벤트명'];
                 const desc = {
@@ -2467,6 +2596,15 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>-</td>
+                <td>${formatNumber(tEvents)}</td>
+                <td>${formatNumber(tUsers)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         function renderLeads() {
@@ -2981,9 +3119,11 @@
             const tbody = document.querySelector('#ga4UnifiedFunnelTable tbody');
             tbody.innerHTML = '';
 
+            let tSess = 0, tEvt = 0, tContact = 0, tDl = 0, tDeals = 0, tLeads = 0;
             const sortedKeys = Object.keys(byKey).sort((a,b) => (sortKeys[a]||a).localeCompare(sortKeys[b]||b));
             sortedKeys.forEach(key => {
                 const data = byKey[key];
+                tSess += data.sessions; tEvt += data.events; tContact += data.contactCount; tDl += data.downloadCount; tDeals += data.dealsCount; tLeads += data.leadsCount;
                 const convRate = (data.events / (data.sessions || 1)) * 100;
                 const contactRate = (data.contactCount / (data.sessions || 1)) * 100;
                 const downloadRate = (data.downloadCount / (data.sessions || 1)) * 100;
@@ -3004,6 +3144,23 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Total row
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tSess)}</td>
+                <td>${formatNumber(tEvt)}</td>
+                <td>${((tEvt / (tSess || 1)) * 100).toFixed(1)}%</td>
+                <td>${formatNumber(tContact)}</td>
+                <td>${((tContact / (tSess || 1)) * 100).toFixed(1)}%</td>
+                <td>${formatNumber(tDl)}</td>
+                <td>${((tDl / (tSess || 1)) * 100).toFixed(1)}%</td>
+                <td>${formatNumber(tDeals)}</td>
+                <td>${formatNumber(tLeads)}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         // ============= FEATURE 3: GA4 Traffic Channel Chart =============
@@ -3070,7 +3227,9 @@
             const tbody = document.querySelector('#ga4ChannelTable tbody');
             tbody.innerHTML = '';
 
+            let tSess = 0, tUsers = 0, tNew = 0, tEng = 0;
             Object.entries(byChannel).forEach(([channel, vals]) => {
+                tSess += vals.sessions; tUsers += vals.users; tNew += vals.newUsers; tEng += vals.engaged;
                 const engageRate = vals.engaged / (vals.sessions || 1);
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -3083,6 +3242,17 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tSess)}</td>
+                <td>${formatNumber(tUsers)}</td>
+                <td>${formatNumber(tNew)}</td>
+                <td>${formatNumber(tEng)}</td>
+                <td>${formatPercent(tEng / (tSess || 1))}</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
         // ============= FEATURE 4: GA4 Conversion Event Source Chart =============
@@ -3156,10 +3326,12 @@
             const tbody = document.querySelector('#ga4EventSourceTable tbody');
             tbody.innerHTML = '';
 
+            let tCount = 0, tUsers = 0;
             Object.entries(byEvent).forEach(([eventName, vals]) => {
+                tCount += vals.count; tUsers += vals.users;
                 const channels = new Set();
                 vals.rows.forEach(r => channels.add(classifyChannel(r['소스'], r['매체'], r['캠페인'])));
-                
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${eventName}</strong></td>
@@ -3169,6 +3341,15 @@
                 `;
                 tbody.appendChild(tr);
             });
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${formatNumber(tCount)}</td>
+                <td>${formatNumber(tUsers)}</td>
+                <td>-</td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
 
