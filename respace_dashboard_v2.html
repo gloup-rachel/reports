@@ -1504,9 +1504,11 @@
 
         // Filter Logic
         function applyFilters() {
-            const startDate = new Date(document.getElementById('filterStartDate').value);
-            const endDate = new Date(document.getElementById('filterEndDate').value);
-            endDate.setHours(23, 59, 59, 999);
+            // Parse date input as LOCAL time (not UTC) to match parseGvizDate
+            const startParts = document.getElementById('filterStartDate').value.split('-');
+            const endParts = document.getElementById('filterEndDate').value.split('-');
+            const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0, 0);
+            const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59, 999);
             const search = document.getElementById('filterSearch').value.toLowerCase();
             const category = document.getElementById('filterCategory').value;
 
@@ -2651,10 +2653,11 @@
                 comparisonData = {};
                 return;
             }
-            
-            const compStart = new Date(document.getElementById('comparisonStartDate').value);
-            const compEnd = new Date(document.getElementById('comparisonEndDate').value);
-            compEnd.setHours(23, 59, 59, 999);
+
+            const csParts = document.getElementById('comparisonStartDate').value.split('-');
+            const ceParts = document.getElementById('comparisonEndDate').value.split('-');
+            const compStart = new Date(parseInt(csParts[0]), parseInt(csParts[1]) - 1, parseInt(csParts[2]), 0, 0, 0, 0);
+            const compEnd = new Date(parseInt(ceParts[0]), parseInt(ceParts[1]) - 1, parseInt(ceParts[2]), 23, 59, 59, 999);
 
             comparisonData = {
                 naver: filterSearchData(rawData.naver, compStart, compEnd, '', 'all'),
