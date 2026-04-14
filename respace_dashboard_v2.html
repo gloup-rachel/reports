@@ -2036,24 +2036,22 @@
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
-            // 키워드별 집계 (동일 키워드 여러 날짜 데이터 합산)
+            // 광고그룹+키워드 조합별 집계 (동일 키워드라도 광고그룹이 다르면 별도 행)
             const byKeyword = {};
             data.forEach(row => {
                 const kw = row['키워드'] || '-';
-                if (!byKeyword[kw]) {
-                    byKeyword[kw] = { 광고그룹: row['광고그룹'] || '-', 매치타입: row['매치타입'] || '-', 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, 순위합: 0, 순위cnt: 0 };
+                const adGroup = row['광고그룹'] || '-';
+                const compositeKey = `${adGroup}|||${kw}`;
+                if (!byKeyword[compositeKey]) {
+                    byKeyword[compositeKey] = { 키워드: kw, 광고그룹: adGroup, 매치타입: row['매치타입'] || '-', 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, 순위합: 0, 순위cnt: 0 };
                 }
-                byKeyword[kw].노출 += (row['노출'] || 0);
-                byKeyword[kw].클릭 += (row['클릭'] || 0);
-                byKeyword[kw].비용 += (row['비용'] || 0);
-                byKeyword[kw].전환수 += (row['전환수'] || 0);
+                byKeyword[compositeKey].노출 += (row['노출'] || 0);
+                byKeyword[compositeKey].클릭 += (row['클릭'] || 0);
+                byKeyword[compositeKey].비용 += (row['비용'] || 0);
+                byKeyword[compositeKey].전환수 += (row['전환수'] || 0);
                 if (row['평균 노출 순위'] != null) {
-                    byKeyword[kw].순위합 += row['평균 노출 순위'] * (row['노출'] || 0); // 가중합
-                    byKeyword[kw].순위cnt += (row['노출'] || 0);
-                }
-                // 광고그룹이 여러개면 쉼표 병합
-                if (row['광고그룹'] && !byKeyword[kw].광고그룹.includes(row['광고그룹'])) {
-                    byKeyword[kw].광고그룹 += ', ' + row['광고그룹'];
+                    byKeyword[compositeKey].순위합 += row['평균 노출 순위'] * (row['노출'] || 0);
+                    byKeyword[compositeKey].순위cnt += (row['노출'] || 0);
                 }
             });
 
@@ -2069,13 +2067,13 @@
                 tImp = 0; tClk = 0; tCost = 0; tConv = 0; tRankSum = 0; tRankCnt = 0;
 
                 // 전체 합산 (보이는 것만이 아니라 전체 키워드 기준)
-                sorted.forEach(([kw, agg]) => {
+                sorted.forEach(([key, agg]) => {
                     tImp += agg.노출; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
                     tRankSum += agg.순위합; tRankCnt += agg.순위cnt;
                 });
 
                 const display = sorted.slice(0, limit);
-                display.forEach(([kw, agg]) => {
+                display.forEach(([key, agg]) => {
                     const ctr = agg.클릭 / (agg.노출 || 1);
                     const cpc = agg.비용 / (agg.클릭 || 1);
                     const cpa = agg.비용 / (agg.전환수 || 1);
@@ -2083,7 +2081,7 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${kw}</td>
+                        <td>${agg.키워드}</td>
                         <td>${agg.광고그룹}</td>
                         <td>${agg.매치타입}</td>
                         <td>${formatNumber(agg.노출)}</td>
