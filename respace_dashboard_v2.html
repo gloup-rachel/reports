@@ -1011,6 +1011,7 @@
                         <thead>
                             <tr>
                                 <th class="sortable">키워드</th>
+                                <th class="sortable">광고그룹</th>
                                 <th class="sortable">매치타입</th>
                                 <th class="sortable">노출</th>
                                 <th class="sortable">클릭</th>
@@ -1100,6 +1101,7 @@
                         <thead>
                             <tr>
                                 <th class="sortable">키워드</th>
+                                <th class="sortable">광고그룹</th>
                                 <th class="sortable">매치타입</th>
                                 <th class="sortable">노출</th>
                                 <th class="sortable">클릭</th>
@@ -2034,43 +2036,103 @@
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
-            let tImp = 0, tClk = 0, tCost = 0, tConv = 0;
-            data.slice(0, 30).forEach(row => {
-                tImp += (row['노출'] || 0); tClk += (row['클릭'] || 0); tCost += (row['비용'] || 0); tConv += (row['전환수'] || 0);
-                const ctr = (row['클릭'] || 0) / (row['노출'] || 1);
-                const cpc = (row['비용'] || 0) / (row['클릭'] || 1);
-                const cpa = (row['비용'] || 0) / (row['전환수'] || 1);
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${row['키워드']}</td>
-                    <td>${row['매치타입'] || '-'}</td>
-                    <td>${formatNumber(row['노출'])}</td>
-                    <td>${formatNumber(row['클릭'])}</td>
-                    <td>${formatCurrency(row['비용'])}</td>
-                    <td>${formatNumber(row['전환수'])}</td>
-                    <td>${formatPercent(ctr)}</td>
-                    <td>${formatCurrency(cpc)}</td>
-                    <td>${formatCurrency(cpa)}</td>
-                    <td>${row['평균노출순위'] || '-'}</td>
-                `;
-                tbody.appendChild(tr);
+            // 키워드별 집계 (동일 키워드 여러 날짜 데이터 합산)
+            const byKeyword = {};
+            data.forEach(row => {
+                const kw = row['키워드'] || '-';
+                if (!byKeyword[kw]) {
+                    byKeyword[kw] = { 광고그룹: row['광고그룹'] || '-', 매치타입: row['매치타입'] || '-', 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, 순위합: 0, 순위cnt: 0 };
+                }
+                byKeyword[kw].노출 += (row['노출'] || 0);
+                byKeyword[kw].클릭 += (row['클릭'] || 0);
+                byKeyword[kw].비용 += (row['비용'] || 0);
+                byKeyword[kw].전환수 += (row['전환수'] || 0);
+                if (row['평균 노출 순위'] != null) {
+                    byKeyword[kw].순위합 += row['평균 노출 순위'] * (row['노출'] || 0); // 가중합
+                    byKeyword[kw].순위cnt += (row['노출'] || 0);
+                }
+                // 광고그룹이 여러개면 쉼표 병합
+                if (row['광고그룹'] && !byKeyword[kw].광고그룹.includes(row['광고그룹'])) {
+                    byKeyword[kw].광고그룹 += ', ' + row['광고그룹'];
+                }
             });
-            const totalRow = document.createElement('tr');
-            totalRow.className = 'total-row';
-            totalRow.innerHTML = `
-                <td>Total</td>
-                <td>-</td>
-                <td>${formatNumber(tImp)}</td>
-                <td>${formatNumber(tClk)}</td>
-                <td>${formatCurrency(tCost)}</td>
-                <td>${formatNumber(tConv)}</td>
-                <td>${formatPercent(tClk / (tImp || 1))}</td>
-                <td>${formatCurrency(tCost / (tClk || 1))}</td>
-                <td>${formatCurrency(tCost / (tConv || 1))}</td>
-                <td>-</td>
-            `;
-            tbody.appendChild(totalRow);
+
+            // 클릭 기준 내림차순 정렬
+            const sorted = Object.entries(byKeyword).sort((a, b) => b[1].클릭 - a[1].클릭);
+            const INITIAL_SHOW = 30;
+            const totalKeywords = sorted.length;
+
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0, tRankSum = 0, tRankCnt = 0;
+
+            function renderRows(limit) {
+                tbody.innerHTML = '';
+                tImp = 0; tClk = 0; tCost = 0; tConv = 0; tRankSum = 0; tRankCnt = 0;
+
+                // 전체 합산 (보이는 것만이 아니라 전체 키워드 기준)
+                sorted.forEach(([kw, agg]) => {
+                    tImp += agg.노출; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
+                    tRankSum += agg.순위합; tRankCnt += agg.순위cnt;
+                });
+
+                const display = sorted.slice(0, limit);
+                display.forEach(([kw, agg]) => {
+                    const ctr = agg.클릭 / (agg.노출 || 1);
+                    const cpc = agg.비용 / (agg.클릭 || 1);
+                    const cpa = agg.비용 / (agg.전환수 || 1);
+                    const avgRank = agg.순위cnt > 0 ? (agg.순위합 / agg.순위cnt).toFixed(1) : '-';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${kw}</td>
+                        <td>${agg.광고그룹}</td>
+                        <td>${agg.매치타입}</td>
+                        <td>${formatNumber(agg.노출)}</td>
+                        <td>${formatNumber(agg.클릭)}</td>
+                        <td>${formatCurrency(agg.비용)}</td>
+                        <td>${formatNumber(agg.전환수)}</td>
+                        <td>${formatPercent(ctr)}</td>
+                        <td>${formatCurrency(cpc)}</td>
+                        <td>${formatCurrency(cpa)}</td>
+                        <td>${avgRank}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Total row
+                const totalAvgRank = tRankCnt > 0 ? (tRankSum / tRankCnt).toFixed(1) : '-';
+                const totalRow = document.createElement('tr');
+                totalRow.className = 'total-row';
+                totalRow.innerHTML = `
+                    <td>Total (${totalKeywords}개)</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${formatNumber(tImp)}</td>
+                    <td>${formatNumber(tClk)}</td>
+                    <td>${formatCurrency(tCost)}</td>
+                    <td>${formatNumber(tConv)}</td>
+                    <td>${formatPercent(tClk / (tImp || 1))}</td>
+                    <td>${formatCurrency(tCost / (tClk || 1))}</td>
+                    <td>${formatCurrency(tCost / (tConv || 1))}</td>
+                    <td>${totalAvgRank}</td>
+                `;
+                tbody.appendChild(totalRow);
+
+                // 더보기/접기 버튼
+                if (totalKeywords > INITIAL_SHOW) {
+                    const btnRow = document.createElement('tr');
+                    btnRow.className = 'show-more-row';
+                    const isExpanded = limit >= totalKeywords;
+                    btnRow.innerHTML = `<td colspan="11" style="text-align:center; padding:12px; cursor:pointer; color:#3498db; font-weight:600; background:#f8f9fa;">
+                        ${isExpanded ? '▲ 접기 (상위 30개만 보기)' : '▼ 더보기 (' + (totalKeywords - INITIAL_SHOW) + '개 키워드 더 보기)'}
+                    </td>`;
+                    btnRow.addEventListener('click', () => {
+                        renderRows(isExpanded ? INITIAL_SHOW : totalKeywords);
+                    });
+                    tbody.appendChild(btnRow);
+                }
+            }
+
+            renderRows(INITIAL_SHOW);
         }
 
         function renderMetaTab() {
@@ -3352,6 +3414,48 @@
             tbody.appendChild(totalRow);
         }
 
+
+        // ============= Table Sorting =============
+        document.addEventListener('click', (e) => {
+            const th = e.target.closest('th.sortable');
+            if (!th) return;
+            const table = th.closest('table');
+            if (!table) return;
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+
+            const colIndex = Array.from(th.parentElement.children).indexOf(th);
+            const isAsc = th.classList.contains('sort-asc');
+
+            // Reset all sort classes in this table
+            thead.querySelectorAll('th').forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+            th.classList.add(isAsc ? 'sort-desc' : 'sort-asc');
+
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            // Separate total-row and show-more-row from sortable rows
+            const dataRows = rows.filter(r => !r.classList.contains('total-row') && !r.classList.contains('show-more-row'));
+            const specialRows = rows.filter(r => r.classList.contains('total-row') || r.classList.contains('show-more-row'));
+
+            dataRows.sort((a, b) => {
+                const aText = a.children[colIndex]?.textContent.trim() || '';
+                const bText = b.children[colIndex]?.textContent.trim() || '';
+
+                // Try numeric comparison (remove %, ₩, 원, commas)
+                const aNum = parseFloat(aText.replace(/[,%₩원\s]/g, ''));
+                const bNum = parseFloat(bText.replace(/[,%₩원\s]/g, ''));
+
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return isAsc ? bNum - aNum : aNum - bNum;
+                }
+                // Fallback: string comparison
+                return isAsc ? bText.localeCompare(aText, 'ko') : aText.localeCompare(bText, 'ko');
+            });
+
+            // Re-append in sorted order
+            dataRows.forEach(r => tbody.appendChild(r));
+            specialRows.forEach(r => tbody.appendChild(r));
+        });
 
         // Event Listeners
         // Comparison Mode
