@@ -721,6 +721,49 @@
             background: white;
         }
 
+        /* 집중 관리 키워드 */
+        .focus-kw-badge {
+            display: inline-block;
+            background: #e8f4fd;
+            color: #2980b9;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+        .focus-kw-section {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+            border: 1px solid #bcdcf4;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .focus-kw-section .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a5276;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .focus-kw-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .focus-kw-tag {
+            background: white;
+            border: 1px solid #bcdcf4;
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
         /* Loading */
         .loading-spinner {
             display: inline-block;
@@ -893,6 +936,11 @@
                     <option value="creative">광고명/소재</option>
                     <option value="source">유입경로(소스/매체)</option>
                 </select>
+                <select id="filterMatchMode" class="filter-input" style="width: 120px; cursor: pointer;">
+                    <option value="contains">포함</option>
+                    <option value="exact">정확히 일치</option>
+                    <option value="exclude">제외</option>
+                </select>
                 <input type="text" id="filterSearch" class="filter-input" placeholder="검색어 입력..." style="flex: 1;">
             </div>
             <div class="comparison-toggle">
@@ -945,6 +993,7 @@
                 <button class="sub-tab-button active" data-subtab="naver-summary">통합</button>
                 <button class="sub-tab-button" data-subtab="naver-campaigns">캠페인별</button>
                 <button class="sub-tab-button" data-subtab="naver-keywords">키워드별</button>
+                <button class="sub-tab-button" data-subtab="naver-focus">집중 키워드</button>
             </div>
 
             <!-- Naver Summary -->
@@ -1027,6 +1076,41 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Naver Focus Keywords -->
+            <div class="sub-tab-content" id="naver-focus">
+                <div class="focus-kw-section">
+                    <div class="section-title">📌 집중 관리 키워드 분석 <span class="focus-kw-badge">FOCUS</span></div>
+                    <div class="focus-kw-tags" id="naverFocusTags"></div>
+                    <div class="kpi-row" id="naverFocusKpiRow"></div>
+                </div>
+                <div class="table-container">
+                    <table id="naverFocusTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable">키워드</th>
+                                <th class="sortable">광고그룹</th>
+                                <th class="sortable">매치타입</th>
+                                <th class="sortable">노출</th>
+                                <th class="sortable">클릭</th>
+                                <th class="sortable">비용</th>
+                                <th class="sortable">전환</th>
+                                <th class="sortable">CTR</th>
+                                <th class="sortable">CPC</th>
+                                <th class="sortable">CPA</th>
+                                <th class="sortable">평균순위</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="chart-title">집중 키워드 트렌드 (클릭)</div>
+                    <div class="chart-wrapper">
+                        <canvas id="naverFocusTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Google Sub-tabs (Level 2) -->
@@ -1035,6 +1119,7 @@
                 <button class="sub-tab-button active" data-subtab="google-summary">통합</button>
                 <button class="sub-tab-button" data-subtab="google-campaigns">캠페인별</button>
                 <button class="sub-tab-button" data-subtab="google-keywords">키워드별</button>
+                <button class="sub-tab-button" data-subtab="google-focus">집중 키워드</button>
             </div>
 
             <!-- Google Summary -->
@@ -1115,6 +1200,41 @@
                         </thead>
                         <tbody></tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Google Focus Keywords -->
+            <div class="sub-tab-content" id="google-focus">
+                <div class="focus-kw-section">
+                    <div class="section-title">📌 집중 관리 키워드 분석 <span class="focus-kw-badge">FOCUS</span></div>
+                    <div class="focus-kw-tags" id="googleFocusTags"></div>
+                    <div class="kpi-row" id="googleFocusKpiRow"></div>
+                </div>
+                <div class="table-container">
+                    <table id="googleFocusTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable">키워드</th>
+                                <th class="sortable">광고그룹</th>
+                                <th class="sortable">매치타입</th>
+                                <th class="sortable">노출</th>
+                                <th class="sortable">클릭</th>
+                                <th class="sortable">비용</th>
+                                <th class="sortable">전환</th>
+                                <th class="sortable">CTR</th>
+                                <th class="sortable">CPC</th>
+                                <th class="sortable">CPA</th>
+                                <th class="sortable">평균순위</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="chart-container" style="margin-top: 20px;">
+                    <div class="chart-title">집중 키워드 트렌드 (클릭)</div>
+                    <div class="chart-wrapper">
+                        <canvas id="googleFocusTrendChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1633,8 +1753,9 @@
             const endParts = document.getElementById('filterEndDate').value.split('-');
             const startDate = new Date(parseInt(startParts[0]), parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0, 0);
             const endDate = new Date(parseInt(endParts[0]), parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59, 999);
-            const search = document.getElementById('filterSearch').value.toLowerCase();
+            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
             const category = document.getElementById('filterCategory').value;
+            const matchMode = document.getElementById('filterMatchMode').value;
 
             currentFilter.startDate = startDate;
             currentFilter.endDate = endDate;
@@ -1642,9 +1763,9 @@
             currentFilter.category = category;
 
             filteredData = {
-                naver: filterSearchData(rawData.naver, startDate, endDate, search, category),
-                google: filterSearchData(rawData.google, startDate, endDate, search, category),
-                meta: filterMetaData(rawData.meta, startDate, endDate, search, category),
+                naver: filterSearchData(rawData.naver, startDate, endDate, search, category, matchMode),
+                google: filterSearchData(rawData.google, startDate, endDate, search, category, matchMode),
+                meta: filterMetaData(rawData.meta, startDate, endDate, search, category, matchMode),
                 leads: filterLeadsData(rawData.leads, startDate, endDate),
                 deals: filterDealsData(rawData.deals, startDate, endDate),
                 ga4Traffic: filterGA4TrafficData(rawData.ga4Traffic, startDate, endDate),
@@ -1673,25 +1794,45 @@
             return colMap[category] || colMap.all;
         }
 
-        function filterSearchData(data, startDate, endDate, search, category) {
+        function matchValue(value, search, mode) {
+            if (!value) return mode === 'exclude';
+            const v = value.toString().toLowerCase();
+            if (mode === 'exact') return v === search;
+            if (mode === 'exclude') return !v.includes(search);
+            return v.includes(search); // contains (default)
+        }
+
+        function filterSearchData(data, startDate, endDate, search, category, matchMode) {
             return data.filter(row => {
                 const date = parseGvizDate(row['날짜']);
                 if (!isDateInRange(date, startDate, endDate)) return false;
                 if (search) {
                     const cols = getSearchColumns(category, 'search');
-                    if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    if (matchMode === 'exclude') {
+                        if (cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    } else if (matchMode === 'exact') {
+                        if (!cols.some(col => row[col]?.toString().toLowerCase() === search)) return false;
+                    } else {
+                        if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    }
                 }
                 return true;
             });
         }
 
-        function filterMetaData(data, startDate, endDate, search, category) {
+        function filterMetaData(data, startDate, endDate, search, category, matchMode) {
             return data.filter(row => {
                 const date = parseGvizDate(row['날짜']);
                 if (!isDateInRange(date, startDate, endDate)) return false;
                 if (search) {
                     const cols = getSearchColumns(category, 'meta');
-                    if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    if (matchMode === 'exclude') {
+                        if (cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    } else if (matchMode === 'exact') {
+                        if (!cols.some(col => row[col]?.toString().toLowerCase() === search)) return false;
+                    } else {
+                        if (!cols.some(col => row[col]?.toString().toLowerCase().includes(search))) return false;
+                    }
                 }
                 return true;
             });
@@ -1799,6 +1940,8 @@
                 renderSearchCampaigns(platform, data);
             } else if (subtab === `${platform}-keywords`) {
                 renderSearchKeywords(platform, data);
+            } else if (subtab === `${platform}-focus`) {
+                renderFocusKeywords(platform, data);
             }
         }
 
@@ -2131,6 +2274,203 @@
             }
 
             renderRows(INITIAL_SHOW);
+        }
+
+        // ========== 집중 관리 키워드 ==========
+        const FOCUS_KEYWORDS = ['팝업기획', '팝업대행', '팝업디자인', '팝업스토어기획', '팝업스토어대행', '팝업스토어대행사', '팝업스토어제작', '팝업컨설팅', '행사기획', '행사기획사', '행사대행사'];
+
+        function renderFocusKeywords(platform, data) {
+            const tagsId = platform === 'naver' ? 'naverFocusTags' : 'googleFocusTags';
+            const kpiRowId = platform === 'naver' ? 'naverFocusKpiRow' : 'googleFocusKpiRow';
+            const tableId = platform === 'naver' ? 'naverFocusTable' : 'googleFocusTable';
+            const chartId = platform === 'naver' ? 'naverFocusTrendChart' : 'googleFocusTrendChart';
+
+            // 집중 키워드만 필터링
+            const focusData = data.filter(row => {
+                const kw = (row['키워드'] || '').trim();
+                return FOCUS_KEYWORDS.includes(kw);
+            });
+
+            // 태그 렌더링
+            const tagsEl = document.getElementById(tagsId);
+            if (tagsEl) {
+                const kwFound = {};
+                focusData.forEach(row => { kwFound[row['키워드']] = true; });
+                tagsEl.innerHTML = FOCUS_KEYWORDS.map(kw => {
+                    const found = kwFound[kw];
+                    return `<span class="focus-kw-tag" style="${found ? '' : 'opacity:0.4; text-decoration:line-through;'}">${kw}</span>`;
+                }).join('');
+            }
+
+            // KPI 집계
+            let totalImp = 0, totalClk = 0, totalCost = 0, totalConv = 0;
+            focusData.forEach(row => {
+                totalImp += (row['노출'] || 0);
+                totalClk += (row['클릭'] || 0);
+                totalCost += (row['비용'] || 0);
+                totalConv += (row['전환수'] || 0);
+            });
+            const ctr = totalClk / (totalImp || 1);
+            const cpc = totalCost / (totalClk || 1);
+            const cpa = totalCost / (totalConv || 1);
+
+            const kpiRow = document.getElementById(kpiRowId);
+            if (kpiRow) {
+                kpiRow.innerHTML = `
+                    <div class="kpi-card"><div class="kpi-label">노출</div><div class="kpi-value">${formatNumber(totalImp)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">클릭</div><div class="kpi-value">${formatNumber(totalClk)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">비용</div><div class="kpi-value">${formatCurrency(totalCost)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">전환</div><div class="kpi-value">${formatNumber(totalConv)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">CTR</div><div class="kpi-value">${formatPercent(ctr)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">CPC</div><div class="kpi-value">${formatCurrency(cpc)}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">CPA</div><div class="kpi-value">${formatCurrency(cpa)}</div></div>
+                `;
+            }
+
+            // 키워드별 상세 테이블 (광고그룹+키워드 조합)
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            const byKeyword = {};
+            focusData.forEach(row => {
+                const kw = row['키워드'] || '-';
+                const adGroup = row['광고그룹'] || '-';
+                const compositeKey = `${adGroup}|||${kw}`;
+                if (!byKeyword[compositeKey]) {
+                    byKeyword[compositeKey] = { 키워드: kw, 광고그룹: adGroup, 매치타입: row['매치타입'] || '-', 노출: 0, 클릭: 0, 비용: 0, 전환수: 0, 순위합: 0, 순위cnt: 0 };
+                }
+                byKeyword[compositeKey].노출 += (row['노출'] || 0);
+                byKeyword[compositeKey].클릭 += (row['클릭'] || 0);
+                byKeyword[compositeKey].비용 += (row['비용'] || 0);
+                byKeyword[compositeKey].전환수 += (row['전환수'] || 0);
+                if (row['평균 노출 순위'] != null) {
+                    byKeyword[compositeKey].순위합 += row['평균 노출 순위'] * (row['노출'] || 0);
+                    byKeyword[compositeKey].순위cnt += (row['노출'] || 0);
+                }
+            });
+
+            const sorted = Object.entries(byKeyword).sort((a, b) => b[1].클릭 - a[1].클릭);
+            let tImp = 0, tClk = 0, tCost = 0, tConv = 0, tRankSum = 0, tRankCnt = 0;
+
+            sorted.forEach(([key, agg]) => {
+                tImp += agg.노출; tClk += agg.클릭; tCost += agg.비용; tConv += agg.전환수;
+                tRankSum += agg.순위합; tRankCnt += agg.순위cnt;
+
+                const kwCtr = agg.클릭 / (agg.노출 || 1);
+                const kwCpc = agg.비용 / (agg.클릭 || 1);
+                const kwCpa = agg.비용 / (agg.전환수 || 1);
+                const avgRank = agg.순위cnt > 0 ? (agg.순위합 / agg.순위cnt).toFixed(1) : '-';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${agg.키워드}</td>
+                    <td>${agg.광고그룹}</td>
+                    <td>${agg.매치타입}</td>
+                    <td>${formatNumber(agg.노출)}</td>
+                    <td>${formatNumber(agg.클릭)}</td>
+                    <td>${formatCurrency(agg.비용)}</td>
+                    <td>${formatNumber(agg.전환수)}</td>
+                    <td>${formatPercent(kwCtr)}</td>
+                    <td>${formatCurrency(kwCpc)}</td>
+                    <td>${formatCurrency(kwCpa)}</td>
+                    <td>${avgRank}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Total row
+            const totalAvgRank = tRankCnt > 0 ? (tRankSum / tRankCnt).toFixed(1) : '-';
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td>Total (${sorted.length}개)</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${formatNumber(tImp)}</td>
+                <td>${formatNumber(tClk)}</td>
+                <td>${formatCurrency(tCost)}</td>
+                <td>${formatNumber(tConv)}</td>
+                <td>${formatPercent(tClk / (tImp || 1))}</td>
+                <td>${formatCurrency(tCost / (tClk || 1))}</td>
+                <td>${formatCurrency(tCost / (tConv || 1))}</td>
+                <td>${totalAvgRank}</td>
+            `;
+            tbody.appendChild(totalRow);
+
+            // 데이터 없음 안내
+            if (sorted.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="11" style="text-align:center; padding:24px; color:#95a5a6;">선택된 기간에 집중 관리 키워드 데이터가 없습니다.</td>`;
+                tbody.insertBefore(emptyRow, totalRow);
+            }
+
+            // 트렌드 차트 (키워드별 일자 클릭 트렌드)
+            renderFocusTrendChart(platform, focusData, chartId);
+        }
+
+        function renderFocusTrendChart(platform, focusData, chartId) {
+            destroyChart(chartId);
+
+            // 키워드별 일자 클릭 집계
+            const kwDateMap = {};
+            const allDates = new Set();
+            focusData.forEach(row => {
+                const kw = row['키워드'] || '-';
+                const dateStr = getDateKey(row['날짜']);
+                if (!dateStr) return;
+                allDates.add(dateStr);
+                if (!kwDateMap[kw]) kwDateMap[kw] = {};
+                kwDateMap[kw][dateStr] = (kwDateMap[kw][dateStr] || 0) + (row['클릭'] || 0);
+            });
+
+            const sortedDates = Array.from(allDates).sort();
+            const labels = sortedDates.map(d => {
+                const parts = d.split('-');
+                return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+            });
+
+            const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e', '#d35400', '#c0392b', '#16a085'];
+            const keywords = Object.keys(kwDateMap).sort();
+            const datasets = keywords.map((kw, idx) => ({
+                label: kw,
+                data: sortedDates.map(d => kwDateMap[kw][d] || 0),
+                borderColor: colors[idx % colors.length],
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3
+            }));
+
+            if (datasets.length === 0) return;
+
+            const ctx = document.getElementById(chartId).getContext('2d');
+            charts[chartId] = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { font: { size: 11, family: 'Pretendard' }, boxWidth: 12, padding: 10 }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(26,26,46,0.9)',
+                            titleFont: { family: 'Pretendard' },
+                            bodyFont: { family: 'Pretendard' }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 11, family: 'Pretendard' } } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 11, family: 'Pretendard' } } }
+                    }
+                }
+            });
         }
 
         function renderMetaTab() {
