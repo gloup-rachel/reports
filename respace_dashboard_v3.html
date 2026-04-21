@@ -4273,7 +4273,7 @@
                 periodLabel: '2026-04-13 (월) ~ 2026-04-19 (일)',
                 comparePeriod: '지난 주 (2026-04-06 ~ 2026-04-12)',
                 isLatest: true,
-                oneLineSummary: '광고비 -11.3%로 줄이고 리드 +12.5% 성장. 그러나 매체별 효율 편차 확대 — 구글은 절감 주도, 네이버는 내부 이동, Meta는 예산 구조 이슈.',
+                oneLineSummary: '총 광고비 ₩823,533 (-11.3%) · 실제 리드 18건 (+12.5%) · 매체별 CAC 구글 ₩3,852 / Meta ₩4,237 / 네이버 ₩11,684.',
                 kpis: [
                     { label: '총 광고비', value: '₩823,533', delta: '-11.3%', trend: 'pos' },
                     { label: '총 광고 전환', value: '125건', delta: '-15.5%', trend: 'neg' },
@@ -4298,18 +4298,15 @@
                                 <tr><td>Meta</td><td class="num">₩144,068</td><td class="num">34</td><td class="num">₩4,237</td><td class="num">₩3,939</td></tr>
                             </tbody>
                         </table>
-                        <h4 class="weekly-section-subtitle">주말 영향 분리 — 동일 요일 기준 GA4 전환이벤트</h4>
-                        <p>사용자 피드백에 따라 "4/17 최종 문의 완료 페이지 신설은 기존 click_contact/click_download 이벤트 집계에 영향 없음" 확인. 주말 급감은 B2B 자연 패턴으로 판명 (3주 연속 주말 합계가 평일 하루치보다 작은 수준).</p>
-                        <table class="weekly-table">
-                            <thead><tr><th>주차</th><th class="num">월</th><th class="num">화</th><th class="num">수</th><th class="num">목</th><th class="num">금</th><th class="num">토</th><th class="num">일</th><th class="num">평일</th><th class="num">주말</th></tr></thead>
-                            <tbody>
-                                <tr><td>W1 (3/30~4/5)</td><td class="num">142</td><td class="num">233</td><td class="num">177</td><td class="num">77</td><td class="num">40</td><td class="num">12</td><td class="num">6</td><td class="num">669</td><td class="num">18</td></tr>
-                                <tr><td>W2 (4/6~4/12)</td><td class="num">75</td><td class="num">107</td><td class="num">79</td><td class="num">99</td><td class="num">51</td><td class="num">10</td><td class="num">10</td><td class="num">411</td><td class="num">20</td></tr>
-                                <tr><td>W3 (4/13~4/19)</td><td class="num">84</td><td class="num">48</td><td class="num">73</td><td class="num">54</td><td class="num">73</td><td class="num">6</td><td class="num">3</td><td class="num">332</td><td class="num">9</td></tr>
-                            </tbody>
-                        </table>
                         <div class="weekly-summary-card weekly-summary-card-highlight">
-                            <strong>통합 총평:</strong> "전체 예산을 줄여도 좋은 데가 구글이고, 줄이지 못한 데가 네이버다"가 이번 주의 한 줄. (1) 구글 4/6 전환수 최대화 변경 효과로 CPC -48%, (2) Meta 4/14 신규 캠페인 분리 후 A타겟 일 예산 -41% 축소 → 참여 기회 감소로 CPC 급등, (3) 네이버는 행사 키워드 → 박람회/부스로 55,446원 내부 이동하며 CTR 악화·전환 감소 두 축 모두 이 흐름에서 발생.
+                            <strong>통합 총평 (데이터 기반)</strong>
+                            <ul style="margin-top: 8px; padding-left: 20px;">
+                                <li>총 광고비 ₩823,533 (전주 대비 -11.3%) · 실제 리드 16 → 18건 (+12.5%) · 실제 딜 19 → 16건 (-15.8%)</li>
+                                <li>매체별 CAC: 구글 ₩3,852 / Meta ₩4,237 / 네이버 ₩11,684 — 네이버가 구글의 3.03배</li>
+                                <li>네이버는 전체 광고 예산의 59.6% 집행, 전환 기여도는 33.6%로 예산 비중과 성과 비중의 격차가 가장 크게 나타남</li>
+                                <li>구글은 4/6 '전환수 최대화' 입찰 전략 변경 이후 첫 완전한 1주 운영에서 CPC ₩1,471 → ₩770 (-48%), 전환 51 → 49건으로 유사 유지</li>
+                                <li>Meta는 4/14 신규 캠페인 분리 이후 타겟별 고정 할당을 통해 적정 예산을 탐색하는 실험 구간 (이번 주는 1주차 관측치)</li>
+                            </ul>
                         </div>
                         `
                     },
