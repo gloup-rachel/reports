@@ -4267,12 +4267,200 @@
         // ============================================================
         const WEEKLY_REPORTS = [
             {
+                id: '2026-W17',
+                weekLabel: 'W17 (4/20~4/26)',
+                meetingDate: '2026-04-28 (월)',
+                periodLabel: '2026-04-20 (월) ~ 2026-04-26 (일)',
+                comparePeriod: '지난 주 W16 (2026-04-13 ~ 2026-04-19)',
+                isLatest: true,
+                oneLineSummary: '총 광고비 ₩691,800 (-16.0%) · 구글 전환 +91% 급등 · Meta 전환 추적 방식 변경(2건)으로 단순 비교 불가 · 네이버 박람회/부스 ₩124K 소진 전환 1건',
+                kpis: [
+                    { label: '총 광고비', value: '₩691,800', delta: '-16.0%', trend: 'pos' },
+                    { label: '총 광고 전환', value: '81건', delta: '-35.2%', trend: 'neg' },
+                    { label: '구글 전환', value: '42건', delta: '+91%', trend: 'pos' },
+                    { label: '실제 리드', value: '9건+', delta: '~4/24 기준', trend: 'neg' },
+                    { label: '네이버 CAC', value: '₩10,786', delta: '-7.7% vs W16', trend: 'pos' },
+                    { label: 'Meta 전환', value: '실질 0건', delta: '1건 테스트·스크립트 정상', trend: 'neg' }
+                ],
+                sections: [
+                    {
+                        title: '1. 통합 데이터 기반 인사이트',
+                        html: `
+                        <div class="weekly-summary-card">
+                            <strong>광고비 감소 속 구글 전환 급등 — Meta는 추적 방식 변경으로 단순 비교 불가.</strong>
+                            총 광고비 ₩691,800으로 전주 대비 -16.0% 절감됐지만, 총 광고 전환은 81건(-35.2%). 단, Meta 전환 2건은 4/20 캠페인 재편 후 전환 목표를 "최종 문의 완료 페이지"로 변경한 결과이며 소개서 다운로드 기준 이전 수치와 직접 비교 불가.
+                        </div>
+                        <table class="weekly-table">
+                            <thead><tr><th>매체</th><th class="num">이번 주 비용</th><th class="num">전환</th><th class="num">CAC</th><th class="num">전주 CAC</th><th class="num">비고</th></tr></thead>
+                            <tbody>
+                                <tr><td>네이버</td><td class="num">₩399,101</td><td class="num">37</td><td class="num"><strong>₩10,786</strong></td><td class="num">₩11,684</td><td>-7.7% 개선</td></tr>
+                                <tr><td>구글</td><td class="num">₩158,002</td><td class="num">42</td><td class="num"><strong>₩3,762</strong></td><td class="num">₩5,263*</td><td>전환 +91%↑</td></tr>
+                                <tr><td>Meta</td><td class="num">₩134,697</td><td class="num">2</td><td class="num">₩67,348</td><td class="num">₩4,237</td><td>⚠️전환 목표 변경</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card weekly-summary-card-highlight">
+                            <strong>통합 총평 (데이터 기반)</strong>
+                            <ul style="margin-top: 8px; padding-left: 20px;">
+                                <li>총 광고비 ₩691,800 (전주 대비 -16.0%) — 네이버 -18.7%, 구글 +36.4%, Meta -6.5%</li>
+                                <li>구글 행사 그룹 전환 22→42건(+91%), CAC ₩5,263→₩3,762으로 3매체 최고 효율 입증</li>
+                                <li>네이버 CAC ₩10,786으로 소폭 개선(W16 ₩11,684)되었으나 구글 대비 2.87배 여전히 격차 큼</li>
+                                <li>Meta: 4/20 캠페인 재편 + 전환 목표 변경(소개서 다운 → 최종 문의 완료 페이지) 이후 집계 전환 2건 중 1건은 테스트 전환 — 실질 전환 0건. 전환 스크립트 정상 설치 확인, 기술적 이슈 없음. 알고리즘 러닝 초기 구간으로 다음 주 전환 발생 여부 주목</li>
+                                <li>실제 리드(소개서 다운로드): 9건+ (4/24 기준, 4/25~4/26 미반영) — W16 18건 대비 집계 기간 차이 감안 필요</li>
+                            </ul>
+                        </div>
+                        `
+                    },
+                    {
+                        title: '2-1. 네이버 검색광고 — "박람회/부스 ₩124K 소진 전환 1건, 팝업은 여전히 효율 1위"',
+                        html: `
+                        <p><strong>주간 지표 변화</strong>: 노출 11,773→12,057(+2.4%), 클릭 109→104(-4.6%), 비용 ₩490,736→₩399,101(-18.7%), 전환 42→37(-11.9%)</p>
+                        <p>CTR 0.93%→0.86% 소폭 하락. 비용 감소폭(-18.7%) > 전환 감소폭(-11.9%) → <strong>단위 효율(CAC)은 개선</strong></p>
+                        <h4 class="weekly-section-subtitle">광고그룹별 W17 vs W16 비교</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>광고그룹</th><th class="num">W17 비용</th><th class="num">W16 비용</th><th class="num">증감</th><th class="num">W17 전환</th><th class="num">W16 전환</th><th class="num">W17 CAC</th></tr></thead>
+                            <tbody>
+                                <tr><td><strong>2.박람회/부스</strong></td><td class="num"><strong>₩123,975</strong></td><td class="num">₩87,736</td><td class="num delta-neg">+₩36,239 (+41%)</td><td class="num"><strong>1</strong></td><td class="num">0</td><td class="num delta-neg">₩123,975</td></tr>
+                                <tr><td>5.팝업스토어</td><td class="num">₩109,234</td><td class="num">₩139,065</td><td class="num delta-pos">-₩29,831 (-21%)</td><td class="num">16</td><td class="num">24</td><td class="num">₩6,827</td></tr>
+                                <tr><td>1.행사 일반</td><td class="num">₩52,300</td><td class="num">₩164,131</td><td class="num delta-pos">-₩111,831 (-68%)</td><td class="num">2</td><td class="num">6</td><td class="num">₩26,150</td></tr>
+                                <tr><td>고의도_행사</td><td class="num">₩45,866</td><td class="num">₩20,900</td><td class="num delta-neg">+₩24,966 (+119%)</td><td class="num">1</td><td class="num">0</td><td class="num">₩45,866</td></tr>
+                                <tr><td>3.기업/관공서</td><td class="num">₩30,797</td><td class="num">₩38,566</td><td class="num delta-pos">-₩7,769</td><td class="num">0</td><td class="num">1</td><td class="num">N/A</td></tr>
+                                <tr><td>자상호명</td><td class="num">₩3,311</td><td class="num">₩3,157</td><td class="num">유사</td><td class="num"><strong>15</strong></td><td class="num">5</td><td class="num"><strong>₩220</strong></td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card weekly-summary-card-highlight">
+                            <strong>주목: 자상호명 전환 5→15건(+200%) 급등</strong> — 클릭은 41→43건으로 거의 동일한데 전환이 3배로 급증. 복합적 요인이 동시에 작용했을 가능성이 있음.<br><br>
+                            <strong>① Meta Halo Effect</strong>: 4/20 Meta 캠페인 신규 세팅 이후 A/B/C 타겟 전체에서 노출이 대폭 확대(주간 노출 10,774회). Meta 지면 노출 증가 → 브랜드 인지도 상승 → 자사 브랜드 검색 전환 증가로 이어지는 매체 간 Halo Effect 가능성.<br><br>
+                            <strong>② 글로벌 타겟 콜드메일 병행 효과</strong>: 동 기간 행사/박람회 글로벌 타겟을 대상으로 한 콜드메일 발송이 진행 중. 메일 수신 후 브랜드 검색으로 이어지는 유입이 자상호명 전환에 기여했을 가능성도 있음.<br><br>
+                            두 채널의 기여도를 현재 데이터만으로 분리하기는 어려운 상황. 다음 주 콜드메일 발송 현황 및 Meta 노출량과 자상호명 전환 추이를 함께 모니터링하여 주요 기여 채널 파악 필요.
+                        </div>
+                        <div class="weekly-summary-card">
+                            <strong>박람회/부스 그룹 — 4/23 CPC 하향 조정 후 추이</strong><br><br>
+                            부스디자인·부스제작·전시부스디자인 3개 키워드의 입찰가를 ₩10,000 이상 → 9천원 초반대(10위 이내)로 하향 적용.<br><br>
+                            <strong>조정 전후 일별 추이:</strong>
+                            <table class="weekly-table" style="margin-top:8px">
+                                <thead><tr><th>날짜</th><th class="num">노출</th><th class="num">클릭</th><th class="num">비용</th><th class="num">전환</th><th>비고</th></tr></thead>
+                                <tbody>
+                                    <tr><td>4/20 (조정 전)</td><td class="num">47</td><td class="num">3</td><td class="num">₩34,278</td><td class="num">0</td><td>—</td></tr>
+                                    <tr><td>4/21 (조정 전)</td><td class="num">50</td><td class="num">1</td><td class="num">₩1,133</td><td class="num">0</td><td>소진 저조</td></tr>
+                                    <tr><td>4/22 (조정 전)</td><td class="num">49</td><td class="num">0</td><td class="num">₩0</td><td class="num">0</td><td>클릭 없음</td></tr>
+                                    <tr style="background:rgba(255,200,0,0.08)"><td><strong>4/23 (조정 당일)</strong></td><td class="num">38</td><td class="num">4</td><td class="num delta-neg"><strong>₩50,415</strong></td><td class="num">0</td><td>소진 급등</td></tr>
+                                    <tr><td>4/24 (조정 후)</td><td class="num">60</td><td class="num">4</td><td class="num delta-neg">₩38,149</td><td class="num">1</td><td>여전히 고비용</td></tr>
+                                    <tr><td>4/25~26 (주말)</td><td class="num">0</td><td class="num">0</td><td class="num">₩0</td><td class="num">0</td><td>—</td></tr>
+                                </tbody>
+                            </table>
+                            <br>CPC 하향에도 4/23 당일 ₩50,415 소진 — 조정 시점 이전에 고단가 입찰이 이미 실행됐거나, 9천원 초반 입찰가에서도 노출이 집중된 결과로 추정. 4/24에도 부스제작 키워드에서 ₩38,149 소진 지속. <strong>하향 조정만으로는 비용 제어 효과 제한적 → 추가 하향 또는 해당 키워드 일시 중단 재검토 필요.</strong>
+                        </div>
+                        <p><strong>팝업스토어 그룹</strong>: 비용 -21% 감소에도 전환 16건 유지 (W16: 24건). CAC ₩5,794→₩6,827(+18%) 소폭 상승이나 네이버 내 가장 효율적인 그룹 위치 유지.</p>
+                        `
+                    },
+                    {
+                        title: '2-2. 구글 검색광고 — "행사 그룹 전환 91% 급등, CAC 3,762원으로 3매체 최저"',
+                        html: `
+                        <div class="weekly-kpi-grid">
+                            <div class="weekly-kpi-box"><div class="weekly-kpi-label">CTR</div><div class="weekly-kpi-value">8.16%</div><div class="weekly-kpi-delta pos">벤치마크 &gt;5% 상회</div></div>
+                            <div class="weekly-kpi-box"><div class="weekly-kpi-label">CPC</div><div class="weekly-kpi-value">₩1,339</div><div class="weekly-kpi-delta neg">전주 ₩973 대비 +38%</div></div>
+                            <div class="weekly-kpi-box"><div class="weekly-kpi-label">전환</div><div class="weekly-kpi-value">42건</div><div class="weekly-kpi-delta pos">전주 22건 대비 +91%</div></div>
+                            <div class="weekly-kpi-box"><div class="weekly-kpi-label">CVR</div><div class="weekly-kpi-value">36.0%</div><div class="weekly-kpi-delta pos">전주 18.5% 대비 +17.5%p</div></div>
+                        </div>
+                        <p><strong>3주 연속 추이 (행사 그룹 기준)</strong></p>
+                        <table class="weekly-table">
+                            <thead><tr><th>지표</th><th class="num">W15 (4/6~4/12)</th><th class="num">W16 (4/13~4/19)</th><th class="num">W17 (4/20~4/26)</th></tr></thead>
+                            <tbody>
+                                <tr><td>비용</td><td class="num">₩21,669</td><td class="num">₩115,805</td><td class="num"><strong>₩158,002</strong></td></tr>
+                                <tr><td>클릭</td><td class="num">21</td><td class="num">119</td><td class="num">118</td></tr>
+                                <tr><td>전환</td><td class="num">6</td><td class="num">22</td><td class="num"><strong>42</strong></td></tr>
+                                <tr><td>CPC</td><td class="num">₩1,032</td><td class="num">₩973</td><td class="num">₩1,339</td></tr>
+                                <tr><td>CVR</td><td class="num">28.6%</td><td class="num">18.5%</td><td class="num"><strong>36.0%</strong></td></tr>
+                                <tr><td>CAC</td><td class="num">₩3,611</td><td class="num">₩5,263</td><td class="num"><strong>₩3,762</strong></td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card">
+                            <strong>CVR 36.0% — 3주 최고치 기록.</strong> 클릭 수는 유사(119→118)한데 전환이 22→42건으로 2배 가까이 증가. 4/17 "최종 문의 완료 페이지" 전환 목표 변경이 구글에서도 적용되기 시작한 효과이거나, 광고 소재·랜딩 매칭 품질 개선으로 실제 고의도 유입이 증가한 것으로 해석됨.
+                        </div>
+                        <p><strong>CPC 상승(₩973→₩1,339)에도 CAC 개선(₩5,263→₩3,762)</strong>: 비용 단가는 올랐지만 전환율이 2배 가까이 높아지면서 최종 획득 비용은 오히려 감소. 구글 행사 그룹의 효율 상승 트렌드 긍정적.</p>
+                        <p><strong>예산 추가 투입 검토 시점</strong>: CAC ₩3,762, CVR 36.0% — 3매체 내 가장 효율적인 채널임이 재확인. 네이버 박람회/부스 그룹 비효율 예산(~₩120K)을 구글로 이관하면 이론상 추가 전환 30~35건 창출 가능.</p>
+                        `
+                    },
+                    {
+                        title: '2-3. 검색 광고 총평 — 네이버 vs 구글, 효율 지표 너머 리드 퀄리티까지 고려해야',
+                        html: `
+                        <h4 class="weekly-section-subtitle">매체별 효율 비교 (W17 기준)</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>매체</th><th class="num">비용</th><th class="num">전환</th><th class="num">CAC</th><th class="num">CVR</th><th>평가</th></tr></thead>
+                            <tbody>
+                                <tr><td>구글 행사 그룹</td><td class="num">₩158,002</td><td class="num">42</td><td class="num delta-pos"><strong>₩3,762</strong></td><td class="num">36.0%</td><td>전환 효율 최고</td></tr>
+                                <tr><td>네이버 팝업스토어</td><td class="num">₩109,234</td><td class="num">16</td><td class="num">₩6,827</td><td class="num">76.2%</td><td>네이버 내 최효율</td></tr>
+                                <tr><td>네이버 행사 일반</td><td class="num">₩52,300</td><td class="num">2</td><td class="num delta-neg">₩26,150</td><td class="num">50.0%</td><td>관리 필요</td></tr>
+                                <tr><td>네이버 박람회/부스</td><td class="num">₩123,975</td><td class="num">1</td><td class="num delta-neg">₩123,975</td><td class="num">8.3%</td><td>CPC 조정 진행 중</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card">
+                            <strong>전환 효율 수치만으로 네이버 예산 이관을 결론 내리기엔 추가 고민이 필요한 시점.</strong><br><br>
+                            구글 CAC(₩3,762)가 네이버 박람회/부스(₩123,975) 대비 압도적으로 낮은 것은 사실이나, 리스페이스가 궁극적으로 목표하는 것은 <strong>전환 수 극대화가 아닌 고의도 리드 수집</strong>. 대한민국 메이저 포탈인 네이버에서 상위 노출되는 것 자체가 브랜드 신뢰도와 연결된다는 인식이 존재하며, 실제로 네이버를 통해 직접 문의하는 유저는 이미 충분한 검색 탐색 과정을 거친 고의도 타겟일 가능성이 높다.
+                        </div>
+                        <div class="weekly-summary-card weekly-summary-card-highlight">
+                            <strong>지금 단계에서 필요한 질문</strong><br><br>
+                            단순 CAC 비교를 넘어, <strong>네이버 유입 리드와 구글 유입 리드의 실제 퀄리티 차이</strong>가 있는지 확인이 선행되어야 함. 예를 들어 — 네이버 경유 문의 중 실제 계약 또는 미팅으로 이어지는 비율이 구글 대비 높다면, CAC가 높더라도 네이버 투자는 유지 혹은 최적화 방향이 맞을 수 있음.<br><br>
+                            <strong>현재는 데이터가 충분히 쌓이지 않은 단계</strong>인 만큼, 대규모 예산 이관 결정보다는 그룹별 비효율 키워드 정리(박람회/부스 등)를 우선 진행하면서 리드 퀄리티 데이터를 추적하는 방향이 적절.
+                        </div>
+                        <h4 class="weekly-section-subtitle">당장 실행 가능한 조치 (예산 이관과 별개로)</h4>
+                        <p><strong>① 네이버 박람회/부스 키워드 추가 조정</strong> — 4/23 CPC 하향 이후에도 비용 제어 효과 제한적. 전환 미발생 키워드(부스디자인·전시부스디자인) 일시 중단 검토.</p>
+                        <p><strong>② 네이버 행사 일반 일예산 캡 유지</strong> — ₩20K 캡 설정 후 소진 정상화. 전환 발생 키워드 중심으로 그룹 정비.</p>
+                        <p><strong>③ 구글 행사 그룹 현 기조 유지</strong> — CVR 36%, CAC ₩3,762. 안정적 효율 확인 중. 무리한 예산 확대보다는 현 수준 유지하며 추이 관찰.</p>
+                        `
+                    },
+                    {
+                        title: '3. Meta 광고 — "전환 목표 변경 후 실질 전환 0건 — 스크립트 정상 설치 확인"',
+                        html: `
+                        <div class="weekly-summary-card">
+                            <strong>⚠️ 집계된 전환 2건 중 1건은 전환 테스트 — 실질 전환은 현재 0건.</strong>
+                            4/20 캠페인 재편 + 전환 목표 변경(소개서 다운로드 → 최종 문의 완료 페이지) 이후 집계된 전환 2건 중 1건은 세팅 확인을 위한 테스트 전환으로 확인됨. 실제 광고를 통한 실질 전환은 현재 발생하지 않은 상태. 단, 전환 스크립트 설치 자체는 정상 작동 확인 완료 — 기술적 이슈 없음.
+                        </div>
+                        <h4 class="weekly-section-subtitle">캠페인별 W17 성과 (4/20~4/24, 5일 기준)</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>캠페인</th><th class="num">비용</th><th class="num">클릭</th><th class="num">전환</th><th class="num">CPC</th><th class="num">CVR</th></tr></thead>
+                            <tbody>
+                                <tr><td>A타겟(엔터프라이즈)</td><td class="num">₩44,557</td><td class="num">47</td><td class="num">1</td><td class="num">₩948</td><td class="num">2.1%</td></tr>
+                                <tr><td>B타겟(글로벌)</td><td class="num">₩45,604</td><td class="num">83</td><td class="num">1</td><td class="num">₩549</td><td class="num">1.2%</td></tr>
+                                <tr><td>C타겟(엔터/IP)</td><td class="num">₩44,536</td><td class="num">61</td><td class="num">0</td><td class="num">₩730</td><td class="num">0.0%</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>3개 캠페인이 거의 균등한 비용 배분(~₩44-45K)으로 출발.</strong> 전환 스크립트는 정상 설치 확인됐으나 실질 전환은 아직 발생하지 않은 상태. Meta 알고리즘이 신규 전환 목표(최종 문의 완료)를 학습하는 러닝 초기 구간으로, 전환 데이터 축적에 시간이 필요함.</p>
+                        <p><strong>다음 주 판단 기준</strong>: ① 실질 전환 첫 발생 시점 확인 ② A/B/C 타겟별 CVR 추이 ③ CPC 변동 패턴 (러닝 안정화 여부)</p>
+                        <div class="weekly-callout">
+                            <div class="weekly-callout-title">📌 다음 주 체크 포인트</div>
+                            전환 추적이 "최종 문의 완료 페이지"로 통일된 상태에서의 첫 주간 데이터. 타겟별 러닝 안정화 이후 A/B/C 예산 재조정 판단 — CVR 가장 높은 타겟에 예산 집중 배분.
+                        </div>
+                        `
+                    },
+                    {
+                        title: '4. 지난주 변화 사항 중심 인사이트',
+                        html: `
+                        <h4 class="weekly-section-subtitle">(1) 구글 — 4/20 이후 행사 그룹 CVR 급등 확인</h4>
+                        <p>4/17 전환 목표 변경(최종 문의 완료 페이지) 적용 후 구글 행사 그룹 CVR이 18.5% → 36.0%로 2배 가까이 개선됨. CPC는 ₩973 → ₩1,339로 올랐지만 CVR 개선폭이 더 커서 CAC는 오히려 ₩5,263 → ₩3,762으로 감소. <strong>전환 목표 변경의 효과가 구글에서 긍정적으로 작동</strong>하고 있음.</p>
+
+                        <h4 class="weekly-section-subtitle">(2) Meta — 4/20 캠페인 분리 + 전환 목표 통일 적용</h4>
+                        <p>A/B/C 타겟을 각각의 캠페인으로 분리하고 전환 목표를 "최종 문의 완료 페이지"로 통일 완료. 5일 데이터 기준 3개 캠페인 총 전환 2건 — 현재는 러닝 기간이므로 다음 주 미팅(5/5 예상)에서 본격 효과 판단.</p>
+
+                        <h4 class="weekly-section-subtitle">(3) 네이버 — 박람회/부스 그룹 비용 계속 증가 (⚠️ 즉시 조정 권고)</h4>
+                        <div class="weekly-summary-card">
+                            박람회/부스 그룹 비용 ₩87,736 → ₩123,975(+41%). 4/23 CPC 하향 조정 적용 후에도 4/23~4/24 2일 합산 ₩88,564 소진 — 2주 누적 ₩211,711에 전환 1건(누적 CAC ₩211,711). <strong>현재 진행 중인 CPC 조정 효과를 다음 주 초 데이터에서 확인 후, 제어 미흡 시 전환 없는 키워드(부스디자인·전시부스디자인) 일시 중단이 가장 임팩트 있는 다음 조치.</strong>
+                        </div>
+
+                        <h4 class="weekly-section-subtitle">(4) 자상호명 전환 급등 — 브랜드 인지도 모니터링</h4>
+                        <p>자상호명 그룹: 클릭 41→43건(거의 유사)인데 전환이 5→15건으로 +200%. 비용도 ₩3,157→₩3,311으로 거의 동일. 브랜드 키워드 검색 사용자의 전환 의향이 높아졌거나, 랜딩 품질 향상이 원인으로 추정. 네이버 자사 브랜드 검색 볼륨 추이와 함께 모니터링 권장.</p>
+                        `
+                    }
+                ]
+            },
+
+            {
                 id: '2026-W16',
                 weekLabel: 'W16 (4/13~4/19)',
                 meetingDate: '2026-04-21 (화)',
                 periodLabel: '2026-04-13 (월) ~ 2026-04-19 (일)',
                 comparePeriod: '지난 주 (2026-04-06 ~ 2026-04-12)',
-                isLatest: true,
+                isLatest: false,
                 oneLineSummary: '총 광고비 ₩823,533 (-11.3%) · 실제 리드 18건 (+12.5%) · 매체별 CAC 구글 ₩3,852 / Meta ₩4,237 / 네이버 ₩11,684.',
                 kpis: [
                     { label: '총 광고비', value: '₩823,533', delta: '-11.3%', trend: 'pos' },
@@ -4280,7 +4468,139 @@
                     { label: 'GA4 세션', value: '1,797', delta: '+1.2%', trend: 'pos' },
                     { label: '실제 리드', value: '18건', delta: '+12.5%', trend: 'pos' },
                     { label: '실제 딜', value: '16건', delta: '-15.8%', trend: 'neg' },
-                    { label: '세션→이벤트', value: '17.08%', delta: '-3.30%p', trend: 'neg' }
+                    { label: '세션→이벤트', value: '17.08%', delta: '-3.30%p', trend: 'neg' },
+                    {
+                        title: '5. [P0] 4/23 키워드 조정 현황 — 네이버 적용 내역 및 데이터 추이',
+                        html: `
+                        <div class="weekly-summary-card">
+                            <strong>4/23(수) 적용 변경사항 요약</strong>
+                            <table class="weekly-table" style="margin-top:10px">
+                                <thead><tr><th>매체</th><th>조정 항목</th><th>변경 내용</th><th>목적</th></tr></thead>
+                                <tbody>
+                                    <tr><td rowspan="2">네이버</td><td>2.박람회/부스 CPC 하향</td><td>부스디자인·부스제작·전시부스디자인<br>₩10,000이상 → 9천원 초반대 (10위 이내)</td><td>비효율 키워드 비용 제어</td></tr>
+                                    <tr><td>1.행사 일반 일예산 제한</td><td>그룹 일예산 ₩20,000 캡 설정</td><td>CAC 고비용 그룹 예산 제어</td></tr>
+                                    <tr><td rowspan="2">구글</td><td>일예산 증액</td><td>₩50,000 → ₩55,000 (+10%)</td><td>CAC 효율 좋은 채널 예산 확대</td></tr>
+                                    <tr><td>팝업 키워드 URL 수정</td><td>개별 URL 설정 삭제 (랜딩 오류 제거)</td><td>팝업 키워드 유입 정상화</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="weekly-section-subtitle">네이버 박람회/부스 — CPC 하향 전후 일별 비용 추이</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>날짜</th><th class="num">박람회/부스 비용</th><th class="num">클릭</th><th class="num">전환</th><th>비고</th></tr></thead>
+                            <tbody>
+                                <tr><td>4/20 (월)</td><td class="num">₩34,278</td><td class="num">3</td><td class="num">0</td><td>조정 전</td></tr>
+                                <tr><td>4/21 (화)</td><td class="num">₩1,133</td><td class="num">1</td><td class="num">0</td><td>조정 전</td></tr>
+                                <tr><td>4/22 (수)</td><td class="num">₩0</td><td class="num">0</td><td class="num">0</td><td>조정 전</td></tr>
+                                <tr style="background:rgba(255,200,0,0.08)"><td><strong>4/23 (수)</strong></td><td class="num"><strong>₩50,415</strong></td><td class="num">4</td><td class="num">0</td><td><strong>CPC 하향 조정 당일</strong></td></tr>
+                                <tr><td>4/24 (목)</td><td class="num">₩38,149</td><td class="num">4</td><td class="num">1</td><td>조정 후 1일차</td></tr>
+                                <tr><td>4/25~4/26</td><td class="num">₩0</td><td class="num">0</td><td class="num">0</td><td>주말 소진 없음</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card">
+                            <strong>⚠️ CPC 하향에도 4/23 당일 비용 급등 이유 확인 필요.</strong>
+                            조정 시점(4/23)에 부스디자인(₩25,707) + 부스제작(₩13,217) + 전시부스디자인(₩11,491) 3개 키워드가 하루에 ₩50,415 소진. CPC 하향 조정이 오전 중으로 적용됐다면, 조정 전 이미 고단가로 다수 입찰이 이루어졌을 가능성. 또는 9천원 초반 입찰가로도 10위 이내에서 다수 노출이 집중된 결과.
+                            4/24에도 부스제작 키워드에서 ₩38,149 소진 → 하향 이후에도 비용 제어 효과가 제한적. <strong>해당 키워드 추가 하향 또는 일시 중단 재검토 필요.</strong>
+                        </div>
+
+                        <h4 class="weekly-section-subtitle">네이버 행사 일반 — 일예산 2만원 캡 적용 전후</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>날짜</th><th class="num">행사 일반 비용</th><th class="num">클릭</th><th class="num">전환</th><th>비고</th></tr></thead>
+                            <tbody>
+                                <tr><td>4/20</td><td class="num delta-neg">₩23,588</td><td class="num">2</td><td class="num">0</td><td>캡 전 (₩2만 초과)</td></tr>
+                                <tr><td>4/21</td><td class="num">₩15,435</td><td class="num">1</td><td class="num">2</td><td>캡 전</td></tr>
+                                <tr><td>4/22</td><td class="num">₩0</td><td class="num">0</td><td class="num">0</td><td>캡 전</td></tr>
+                                <tr style="background:rgba(255,200,0,0.08)"><td><strong>4/23 ~</strong></td><td class="num delta-pos"><strong>₩13,277</strong></td><td class="num">1</td><td class="num">0</td><td><strong>일예산 캡 적용</strong></td></tr>
+                                <tr><td>4/24~</td><td class="num">₩0</td><td class="num">0</td><td class="num">0</td><td>소진 없음</td></tr>
+                            </tbody>
+                        </table>
+                        <p>4/23 적용 이후 행사 일반 그룹 일소진이 ₩13,277로 캡 이내 유지. 예산 제어 자체는 작동 중. 단, 해당 그룹 W17 전체 전환은 2건(CAC ₩26,150)으로 여전히 고비용 구조 — <strong>캡 유지 + 전환 발생 키워드 집중 운영 병행 권장.</strong></p>
+                        `
+                    },
+                    {
+                        title: '6. 행사 키워드 하향 & 팝업 집중 — 2주간 성과 리뷰 + 다음 방향',
+                        html: `
+                        <h4 class="weekly-section-subtitle">팝업스토어 그룹 2주 성과 (W16 vs W17)</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>지표</th><th class="num">W16 (4/13~4/19)</th><th class="num">W17 (4/20~4/26)</th><th class="num">변화</th></tr></thead>
+                            <tbody>
+                                <tr><td>팝업스토어 비용</td><td class="num">₩139,065</td><td class="num">₩109,234</td><td class="num delta-pos">-21% (절감)</td></tr>
+                                <tr><td>팝업스토어 전환</td><td class="num">24건</td><td class="num">16건</td><td class="num delta-neg">-33%</td></tr>
+                                <tr><td>팝업스토어 CAC</td><td class="num">₩5,794</td><td class="num">₩6,827</td><td class="num delta-neg">+₩1,033 (+18%)</td></tr>
+                                <tr><td>박람회/부스 비용</td><td class="num">₩87,736</td><td class="num">₩123,975</td><td class="num delta-neg">+41% 증가</td></tr>
+                                <tr><td>박람회/부스 전환</td><td class="num">0건</td><td class="num">1건</td><td class="num">—</td></tr>
+                                <tr><td>행사 일반 비용</td><td class="num">₩164,131</td><td class="num">₩52,300</td><td class="num delta-pos">-68% (예산캡 효과)</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card">
+                            <strong>팝업 집중 방향성은 유효 — 예산 배분이 의도대로 실행되지 않은 것이 문제.</strong>
+                            W17에서 박람회/부스 그룹이 +41% 증가해 ₩124K를 소진했고, 4/23 CPC 하향 조정 후에도 4/23~4/24 이틀간 ₩88K가 추가 소진됨. 팝업스토어 그룹 비용은 상대적으로 -21% 감소.
+                            결과적으로 팝업스토어 CAC가 소폭 상승(+18%). 2주 누적 팝업스토어 CAC = ₩6,207 (₩248,299 / 40전환) — 허용 범위이나, 박람회/부스를 정리하면 동일 예산으로 팝업 전환을 더 늘릴 수 있음.
+                        </div>
+                        <h4 class="weekly-section-subtitle">다음 운영 방향 (확정 제안)</h4>
+                        <p><strong>① 박람회/부스 그룹 완전 중단 (즉시)</strong><br>
+                        2주 누적 ₩211,711 소진에 전환 1건 = CAC ₩211,711. CPC 하향 후에도 4/24까지 ₩38K 소진 지속. <strong>해당 그룹 전체 일시 중단 후 절감 예산을 팝업스토어로 이전.</strong></p>
+                        <p><strong>② 팝업스토어 그룹 예산 ₩15K~₩20K/일로 상향</strong><br>
+                        W16 일평균 ₩19,866 → W17 일평균 ₩21,847. 전환이 안정적으로 나오는 유일한 네이버 그룹. 박람회/부스 해제 예산(₩20K/일 수준)을 팝업스토어로 이관 시 전환 +15~20건/주 기대.</p>
+                        <p><strong>③ 행사 일반 그룹 일예산 캡 ₩20K 유지</strong><br>
+                        W17 전환 2건(CAC ₩26,150)으로 고비용이지만, "행사 기획" 등 특정 키워드는 전환 발생. 캡을 유지하면서 전환 발생 키워드만 선택적으로 유지하는 방식으로 운영.</p>
+                        `
+                    },
+                    {
+                        title: '7. Meta 전환목표 재설정 후 1주 — 이슈 확인 & Action Item',
+                        html: `
+                        <div class="weekly-summary-card weekly-summary-card-highlight">
+                            <strong>이슈 없음 확인 ✅</strong><br>
+                            4/20 세팅 변경(캠페인 분리 + 전환 목표 "최종 문의 완료 페이지") 이후 5일 운영에서 광고 게재·비용 소진 정상 확인. 집계된 전환 2건 중 1건은 전환 테스트로 확인 — 실질 전환 0건이나, 전환 스크립트 설치는 정상 작동 확인 완료. 기술적 이슈 없음. 소재 품질·타겟 이슈와 무관.
+                        </div>
+                        <h4 class="weekly-section-subtitle">1주차 지표 요약 (4/20~4/24, 5일 기준)</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>캠페인</th><th class="num">비용</th><th class="num">노출</th><th class="num">클릭</th><th class="num">CPC</th><th class="num">CVR</th><th class="num">전환</th><th>상태</th></tr></thead>
+                            <tbody>
+                                <tr><td>A타겟 (엔터프라이즈)</td><td class="num">₩44,557</td><td class="num">3,459</td><td class="num">47</td><td class="num">₩948</td><td class="num">2.1%</td><td class="num">1</td><td>✅ 정상</td></tr>
+                                <tr><td>B타겟 (글로벌)</td><td class="num">₩45,604</td><td class="num">3,917</td><td class="num">83</td><td class="num">₩549</td><td class="num">1.2%</td><td class="num">1</td><td>✅ 정상</td></tr>
+                                <tr><td>C타겟 (엔터/IP)</td><td class="num">₩44,536</td><td class="num">3,398</td><td class="num">61</td><td class="num">₩730</td><td class="num">0.0%</td><td class="num">0</td><td>⏳ 러닝 중</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>현재 단계 해석</strong>: Meta 알고리즘은 전환 목표 기준 최소 50건 이상 누적 전환이 쌓여야 러닝 최적화가 완료됨. 현재 1주 2건 수준이므로 캠페인별 최적화까지 약 3~6주 소요 예상. 이 기간에 예산·타겟·소재를 자주 변경하면 러닝이 초기화되므로 현 구조 유지 권장.</p>
+                        <h4 class="weekly-section-subtitle">Action Items (확정)</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>#</th><th>Action</th><th>담당</th><th>시점</th><th>근거</th></tr></thead>
+                            <tbody>
+                                <tr><td>1</td><td>A타겟 일예산 ₩8.5K → ₩13~15K로 상향</td><td>매체 운영</td><td>W18 초반</td><td>W16 분석: A타겟 적정 예산 ₩14~15K 수준, 현재 예산 부족으로 CPC 상승</td></tr>
+                                <tr><td>2</td><td>C타겟 전환 발생 여부 모니터링</td><td>매체 운영</td><td>W18 확인</td><td>1주차 전환 0건 — 2주 연속 0건이면 소재 교체 또는 타겟 정의 재검토</td></tr>
+                                <tr><td>3</td><td>B타겟 전용 랜딩/소개서 연결 개선</td><td>콘텐츠/디자인</td><td>글로벌 소재 준비 시</td><td>W16 분석: 글로벌 페르소나 전용 CTA·언어 설계 필요</td></tr>
+                                <tr><td>4</td><td>2주 후(W19 기준) 타겟별 CVR 비교 후 예산 재배분</td><td>매체 운영</td><td>5/12 미팅</td><td>데이터 축적 후 A/B/C 중 효율 상위 타겟에 집중 배분</td></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="weekly-section-subtitle">구글 — 4/23 URL 수정 + 일예산 증액 효과</h4>
+                        <table class="weekly-table">
+                            <thead><tr><th>날짜</th><th class="num">비용</th><th class="num">클릭</th><th class="num">전환</th><th class="num">CVR</th><th>비고</th></tr></thead>
+                            <tbody>
+                                <tr><td>4/20 (조정전)</td><td class="num">₩55,686</td><td class="num">38</td><td class="num">16</td><td class="num">43%</td><td>—</td></tr>
+                                <tr><td>4/21 (조정전)</td><td class="num">₩29,372</td><td class="num">20</td><td class="num">4</td><td class="num">20%</td><td>—</td></tr>
+                                <tr><td>4/22 (조정전)</td><td class="num">₩26,399</td><td class="num">22</td><td class="num">8</td><td class="num">36%</td><td>—</td></tr>
+                                <tr style="background:rgba(255,200,0,0.08)"><td><strong>4/23 (조정당일)</strong></td><td class="num">₩29,422</td><td class="num">21</td><td class="num"><strong>13</strong></td><td class="num"><strong>62%</strong></td><td><strong>URL수정 + 예산↑</strong></td></tr>
+                                <tr><td>4/24 (조정후)</td><td class="num">₩17,123</td><td class="num">17</td><td class="num">1</td><td class="num">6%</td><td>—</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="weekly-summary-card">
+                            <strong>4/23 URL 수정 당일 CVR 62% 급등 포착.</strong>
+                            팝업 키워드 개별 URL 오류 수정 후 4/23 CVR이 62%로 이 주 최고치를 기록. 랜딩 경로 정상화로 팝업 키워드 클릭 → 정상 랜딩 연결이 개선된 효과로 해석됨.
+                            단, 4/24에 CVR이 6%로 급락 — 4/23 단일일 효과인지, 트래픽 구성(intent) 차이인지 추가 관찰 필요. 다음 주 팝업 키워드의 CVR 추이를 일별로 모니터링하여 효과 지속 여부 확인.
+                        </div>
+                        <div class="weekly-callout">
+                            <div class="weekly-callout-title">📌 다음 주 모니터링 포인트</div>
+                            <ul style="margin-top:6px; padding-left:18px; line-height:1.8">
+                                <li>구글 팝업 키워드 CVR — 4/23 수준(60%대) 유지 여부 일별 추적</li>
+                                <li>Meta C타겟 전환 발생 여부 (0건 지속 시 소재 교체 검토)</li>
+                                <li>네이버 박람회/부스 그룹 중단 후 팝업스토어 그룹 전환 변화</li>
+                                <li>자상호명 전환 급등(5→15건) 지속 여부 — 브랜드 인지도 추이</li>
+                            </ul>
+                        </div>
+                        `
+                    }
                 ],
                 sections: [
                     {
